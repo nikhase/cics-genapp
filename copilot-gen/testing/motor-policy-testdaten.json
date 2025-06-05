@@ -1,0 +1,552 @@
+{
+  "testSets": {
+    "standard": {
+      "description": "Standardtestdaten für reguläre Tests",
+      "testCases": [
+        {
+          "testId": "MP-A-001",
+          "operation": "add",
+          "description": "Erfolgreiche Erstellung einer neuen Kfz-Versicherung",
+          "input": {
+            "CA-REQUEST-ID": "AMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 0,
+            "CA-ISSUE-DATE": "2023-01-01",
+            "CA-EXPIRY-DATE": "2024-01-01",
+            "CA-BROKERID": 1234567890,
+            "CA-BROKERSREF": "BRREF12345",
+            "CA-PAYMENT": 120000,
+            "CA-M-MAKE": "Volkswagen",
+            "CA-M-MODEL": "Golf",
+            "CA-M-VALUE": 250000,
+            "CA-M-REGNUMBER": "K-AB-123",
+            "CA-M-COLOUR": "Rot",
+            "CA-M-CC": 1998,
+            "CA-M-MANUFACTURED": "2022-01-15",
+            "CA-M-PREMIUM": 120000,
+            "CA-M-ACCIDENTS": 0
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "New Motor Policy Inserted",
+            "dbCheck": "recordExists"
+          }
+        },
+        {
+          "testId": "MP-A-002",
+          "operation": "add",
+          "description": "Fehler beim Hinzufügen einer Police wegen fehlender Pflichtfelder",
+          "input": {
+            "CA-REQUEST-ID": "AMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 0,
+            "CA-ISSUE-DATE": "2023-01-01",
+            "CA-EXPIRY-DATE": "2024-01-01",
+            "CA-BROKERID": 1234567890,
+            "CA-BROKERSREF": "BRREF12345",
+            "CA-PAYMENT": 120000,
+            "CA-M-MAKE": "Volkswagen",
+            "CA-M-MODEL": "Golf",
+            "CA-M-VALUE": 250000,
+            "CA-M-REGNUMBER": "",
+            "CA-M-COLOUR": "Rot",
+            "CA-M-CC": 1998,
+            "CA-M-MANUFACTURED": "2022-01-15",
+            "CA-M-PREMIUM": 120000,
+            "CA-M-ACCIDENTS": 0
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "01",
+            "message": "Error Adding Motor Policy",
+            "dbCheck": "noRecord"
+          }
+        },
+        {
+          "testId": "MP-U-001",
+          "operation": "update",
+          "description": "Erfolgreiche Aktualisierung einer bestehenden Police",
+          "input": {
+            "CA-REQUEST-ID": "UMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 1000000001,
+            "CA-M-VALUE": 280000,
+            "CA-M-COLOUR": "Blau",
+            "CA-M-PREMIUM": 135000
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "Motor Policy Updated",
+            "dbCheck": {
+              "DB2-M-VALUE": 280000,
+              "DB2-M-COLOUR": "Blau",
+              "DB2-M-PREMIUM": 135000
+            }
+          }
+        },
+        {
+          "testId": "MP-D-001",
+          "operation": "delete",
+          "description": "Erfolgreiches Löschen einer bestehenden Police",
+          "input": {
+            "CA-REQUEST-ID": "DMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 1000000001
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "Motor Policy Deleted",
+            "dbCheck": "noRecord"
+          }
+        },
+        {
+          "testId": "MP-I-001",
+          "operation": "inquire",
+          "description": "Erfolgreiche Abfrage einer bestehenden Police",
+          "input": {
+            "CA-REQUEST-ID": "IMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 1000000001
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "CA-M-MAKE": "Volkswagen",
+            "CA-M-MODEL": "Golf",
+            "CA-M-VALUE": 250000,
+            "CA-M-REGNUMBER": "K-AB-123",
+            "CA-M-COLOUR": "Rot",
+            "CA-M-CC": 1998,
+            "CA-M-MANUFACTURED": "2022-01-15",
+            "CA-M-PREMIUM": 120000,
+            "CA-M-ACCIDENTS": 0
+          }
+        }
+      ]
+    },
+    "boundary": {
+      "description": "Grenzwerttests für maximale Werte und Längen",
+      "testCases": [
+        {
+          "testId": "MP-G-001",
+          "operation": "add",
+          "description": "Maximale Werte für numerische Felder",
+          "input": {
+            "CA-REQUEST-ID": "AMOTOR",
+            "CA-CUSTOMER-NUM": 9999999999,
+            "CA-POLICY-NUM": 0,
+            "CA-ISSUE-DATE": "2023-01-01",
+            "CA-EXPIRY-DATE": "2099-12-31",
+            "CA-BROKERID": 9999999999,
+            "CA-BROKERSREF": "ABCDEFGHIJ",
+            "CA-PAYMENT": 999999,
+            "CA-M-MAKE": "BMW",
+            "CA-M-MODEL": "X5",
+            "CA-M-VALUE": 999999,
+            "CA-M-REGNUMBER": "B-ZZ-999",
+            "CA-M-COLOUR": "Schwarz",
+            "CA-M-CC": 9999,
+            "CA-M-MANUFACTURED": "2023-12-31",
+            "CA-M-PREMIUM": 999999,
+            "CA-M-ACCIDENTS": 999999
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "New Motor Policy Inserted",
+            "dbCheck": "recordExists"
+          }
+        },
+        {
+          "testId": "MP-G-002",
+          "operation": "add",
+          "description": "Maximale Länge für Textfelder",
+          "input": {
+            "CA-REQUEST-ID": "AMOTOR",
+            "CA-CUSTOMER-NUM": 9999999999,
+            "CA-POLICY-NUM": 0,
+            "CA-ISSUE-DATE": "2023-01-01",
+            "CA-EXPIRY-DATE": "2024-01-01",
+            "CA-BROKERID": 1234567890,
+            "CA-BROKERSREF": "ABCDEFGHIJ",
+            "CA-PAYMENT": 120000,
+            "CA-M-MAKE": "AAAAABBBBBCCCCC",
+            "CA-M-MODEL": "DDDDDEEEEEFFFF",
+            "CA-M-VALUE": 250000,
+            "CA-M-REGNUMBER": "ABCDEFG",
+            "CA-M-COLOUR": "ABCDEFGH",
+            "CA-M-CC": 1998,
+            "CA-M-MANUFACTURED": "2022-01-15",
+            "CA-M-PREMIUM": 120000,
+            "CA-M-ACCIDENTS": 0
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "New Motor Policy Inserted",
+            "dbCheck": "recordExists"
+          }
+        }
+      ]
+    },
+    "error": {
+      "description": "Testfälle für Fehlerbehandlung",
+      "testCases": [
+        {
+          "testId": "MP-E-001",
+          "operation": "add",
+          "description": "Fehler beim Hinzufügen einer Police mit ungültigem Datum",
+          "input": {
+            "CA-REQUEST-ID": "AMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 0,
+            "CA-ISSUE-DATE": "31-02-2023",
+            "CA-EXPIRY-DATE": "2024/01/01",
+            "CA-BROKERID": 1234567890,
+            "CA-BROKERSREF": "BRREF12345",
+            "CA-PAYMENT": 120000,
+            "CA-M-MAKE": "Volkswagen",
+            "CA-M-MODEL": "Golf",
+            "CA-M-VALUE": 250000,
+            "CA-M-REGNUMBER": "K-AB-123",
+            "CA-M-COLOUR": "Rot",
+            "CA-M-CC": 1998,
+            "CA-M-MANUFACTURED": "2022-01-15",
+            "CA-M-PREMIUM": 120000,
+            "CA-M-ACCIDENTS": 0
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "01",
+            "message": "Error Adding Motor Policy",
+            "dbCheck": "noRecord"
+          }
+        },
+        {
+          "testId": "MP-E-002",
+          "operation": "add",
+          "description": "Fehler beim Hinzufügen einer Police mit ungültigen Zeichen im Kennzeichen",
+          "input": {
+            "CA-REQUEST-ID": "AMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 0,
+            "CA-ISSUE-DATE": "2023-01-01",
+            "CA-EXPIRY-DATE": "2024-01-01",
+            "CA-BROKERID": 1234567890,
+            "CA-BROKERSREF": "BRREF12345",
+            "CA-PAYMENT": 120000,
+            "CA-M-MAKE": "Volkswagen",
+            "CA-M-MODEL": "Golf",
+            "CA-M-VALUE": 250000,
+            "CA-M-REGNUMBER": "K@AB*123",
+            "CA-M-COLOUR": "Rot",
+            "CA-M-CC": 1998,
+            "CA-M-MANUFACTURED": "2022-01-15",
+            "CA-M-PREMIUM": 120000,
+            "CA-M-ACCIDENTS": 0
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "01",
+            "message": "Error Adding Motor Policy",
+            "dbCheck": "noRecord"
+          }
+        },
+        {
+          "testId": "MP-E-003",
+          "operation": "update",
+          "description": "Fehler beim Aktualisieren einer nicht existierenden Police",
+          "input": {
+            "CA-REQUEST-ID": "UMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 9876543210,
+            "CA-M-VALUE": 280000,
+            "CA-M-COLOUR": "Blau",
+            "CA-M-PREMIUM": 135000
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "01",
+            "message": "Error Updating Motor Policy",
+            "dbCheck": "noChange"
+          }
+        },
+        {
+          "testId": "MP-E-004",
+          "operation": "delete",
+          "description": "Fehler beim Löschen einer nicht existierenden Police",
+          "input": {
+            "CA-REQUEST-ID": "DMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 9876543210
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "01",
+            "message": "Error Deleting Motor Policy",
+            "dbCheck": "noChange"
+          }
+        },
+        {
+          "testId": "MP-E-005",
+          "operation": "inquire",
+          "description": "Fehler bei Abfrage einer nicht existierenden Police",
+          "input": {
+            "CA-REQUEST-ID": "IMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 9876543210
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "01",
+            "CA-M-MAKE": "",
+            "CA-M-MODEL": "",
+            "CA-M-VALUE": 0,
+            "CA-M-REGNUMBER": "",
+            "CA-M-COLOUR": "",
+            "CA-M-CC": 0,
+            "CA-M-MANUFACTURED": "",
+            "CA-M-PREMIUM": 0,
+            "CA-M-ACCIDENTS": 0
+          }
+        }
+      ]
+    },
+    "business_rules": {
+      "description": "Testfälle für Geschäftsregeln",
+      "testCases": [
+        {
+          "testId": "MP-BR-001",
+          "operation": "add",
+          "description": "Prämienberechnung für Neuwagen",
+          "input": {
+            "CA-REQUEST-ID": "AMOTOR",
+            "CA-CUSTOMER-NUM": 2345678901,
+            "CA-POLICY-NUM": 0,
+            "CA-ISSUE-DATE": "2025-01-01",
+            "CA-EXPIRY-DATE": "2026-01-01",
+            "CA-BROKERID": 1234567890,
+            "CA-BROKERSREF": "BRNEW12345",
+            "CA-PAYMENT": 180000,
+            "CA-M-MAKE": "Audi",
+            "CA-M-MODEL": "A4",
+            "CA-M-VALUE": 450000,
+            "CA-M-REGNUMBER": "M-NW-2025",
+            "CA-M-COLOUR": "Silber",
+            "CA-M-CC": 1984,
+            "CA-M-MANUFACTURED": "2025-01-01",
+            "CA-M-PREMIUM": 180000,
+            "CA-M-ACCIDENTS": 0
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "New Motor Policy Inserted",
+            "dbCheck": "recordExists"
+          }
+        },
+        {
+          "testId": "MP-BR-002",
+          "operation": "add",
+          "description": "Prämienberechnung für Fahrzeug mit Unfallhistorie",
+          "input": {
+            "CA-REQUEST-ID": "AMOTOR",
+            "CA-CUSTOMER-NUM": 3456789012,
+            "CA-POLICY-NUM": 0,
+            "CA-ISSUE-DATE": "2025-02-01",
+            "CA-EXPIRY-DATE": "2026-02-01",
+            "CA-BROKERID": 2345678901,
+            "CA-BROKERSREF": "BRACC12345",
+            "CA-PAYMENT": 250000,
+            "CA-M-MAKE": "BMW",
+            "CA-M-MODEL": "320i",
+            "CA-M-VALUE": 380000,
+            "CA-M-REGNUMBER": "B-AC-4321",
+            "CA-M-COLOUR": "Schwarz",
+            "CA-M-CC": 1998,
+            "CA-M-MANUFACTURED": "2023-06-15",
+            "CA-M-PREMIUM": 250000,
+            "CA-M-ACCIDENTS": 2
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "New Motor Policy Inserted",
+            "dbCheck": "recordExists"
+          }
+        },
+        {
+          "testId": "MP-BR-003",
+          "operation": "add",
+          "description": "Prämienberechnung für ältere Fahrzeuge",
+          "input": {
+            "CA-REQUEST-ID": "AMOTOR",
+            "CA-CUSTOMER-NUM": 4567890123,
+            "CA-POLICY-NUM": 0,
+            "CA-ISSUE-DATE": "2025-03-01",
+            "CA-EXPIRY-DATE": "2026-03-01",
+            "CA-BROKERID": 3456789012,
+            "CA-BROKERSREF": "BROLD12345",
+            "CA-PAYMENT": 95000,
+            "CA-M-MAKE": "Mercedes",
+            "CA-M-MODEL": "C180",
+            "CA-M-VALUE": 150000,
+            "CA-M-REGNUMBER": "S-OL-1990",
+            "CA-M-COLOUR": "Blau",
+            "CA-M-CC": 1800,
+            "CA-M-MANUFACTURED": "2015-03-15",
+            "CA-M-PREMIUM": 95000,
+            "CA-M-ACCIDENTS": 0
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "New Motor Policy Inserted",
+            "dbCheck": "recordExists"
+          }
+        },
+        {
+          "testId": "MP-BR-004",
+          "operation": "update",
+          "description": "Aktualisierung der Prämie nach Unfallmeldung",
+          "input": {
+            "CA-REQUEST-ID": "UMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 1000000001,
+            "CA-M-VALUE": 240000,
+            "CA-M-ACCIDENTS": 1,
+            "CA-M-PREMIUM": 145000
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "Motor Policy Updated",
+            "dbCheck": {
+              "DB2-M-VALUE": 240000,
+              "DB2-M-ACCIDENTS": 1,
+              "DB2-M-PREMIUM": 145000
+            }
+          }
+        },
+        {
+          "testId": "MP-BR-005",
+          "operation": "update",
+          "description": "Fahrzeugwertverlust über Zeit",
+          "input": {
+            "CA-REQUEST-ID": "UMOTOR",
+            "CA-CUSTOMER-NUM": 2345678901,
+            "CA-POLICY-NUM": 1000000002,
+            "CA-M-VALUE": 410000,
+            "CA-M-PREMIUM": 165000
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "Motor Policy Updated",
+            "dbCheck": {
+              "DB2-M-VALUE": 410000,
+              "DB2-M-PREMIUM": 165000
+            }
+          }
+        }
+      ]
+    },
+    "integration": {
+      "description": "Integrationstests mit anderen Systemkomponenten",
+      "testCases": [
+        {
+          "testId": "MP-INT-001",
+          "operation": "add",
+          "description": "Erstellung einer Motor Policy für neuen Kunden mit Kundenreferenz",
+          "input": {
+            "CA-REQUEST-ID": "AMOTOR",
+            "CA-CUSTOMER-NUM": 5678901234,
+            "CA-POLICY-NUM": 0,
+            "CA-ISSUE-DATE": "2025-04-01",
+            "CA-EXPIRY-DATE": "2026-04-01",
+            "CA-BROKERID": 4567890123,
+            "CA-BROKERSREF": "NEWCUST123",
+            "CA-PAYMENT": 130000,
+            "CA-M-MAKE": "Toyota",
+            "CA-M-MODEL": "Corolla",
+            "CA-M-VALUE": 280000,
+            "CA-M-REGNUMBER": "T-NC-5678",
+            "CA-M-COLOUR": "Weiß",
+            "CA-M-CC": 1600,
+            "CA-M-MANUFACTURED": "2024-01-15",
+            "CA-M-PREMIUM": 130000,
+            "CA-M-ACCIDENTS": 0
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "New Motor Policy Inserted",
+            "dbCheck": "recordExists"
+          }
+        },
+        {
+          "testId": "MP-INT-002",
+          "operation": "inquire",
+          "description": "Abfrage einer Motor Policy mit vollständigen Kundendaten",
+          "input": {
+            "CA-REQUEST-ID": "IMOTOR",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 1000000001,
+            "CA-INCLUDE-CUSTOMER-DATA": "Y"
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "CA-M-MAKE": "Volkswagen",
+            "CA-M-MODEL": "Golf",
+            "CA-M-VALUE": 250000,
+            "CA-M-REGNUMBER": "K-AB-123",
+            "CA-M-COLOUR": "Rot",
+            "CA-M-CC": 1998,
+            "CA-M-MANUFACTURED": "2022-01-15",
+            "CA-M-PREMIUM": 120000,
+            "CA-M-ACCIDENTS": 0,
+            "CA-CUSTOMER-DATA": {
+              "CA-FIRST-NAME": "Max",
+              "CA-LAST-NAME": "Mustermann",
+              "CA-DOB": "1980-01-01"
+            }
+          }
+        },
+        {
+          "testId": "MP-INT-003",
+          "operation": "add_claim",
+          "description": "Hinzufügen eines Schadenfalls zu einer Motor Policy",
+          "input": {
+            "CA-REQUEST-ID": "ACLAIM",
+            "CA-CUSTOMER-NUM": 1234567890,
+            "CA-POLICY-NUM": 1000000001,
+            "CA-C-DATE": "2025-05-01",
+            "CA-C-PAID": 0,
+            "CA-C-VALUE": 45000,
+            "CA-C-CAUSE": "Parkschaden",
+            "CA-C-OBSERVATIONS": "Stoßstange hinten beschädigt"
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "message": "Claim Added Successfully",
+            "CA-CLAIM-NUM": "CLAIM_NUM"
+          }
+        },
+        {
+          "testId": "MP-INT-004",
+          "operation": "policy_summary",
+          "description": "Zusammenfassung aller Policen eines Kunden",
+          "input": {
+            "CA-REQUEST-ID": "PSMRY",
+            "CA-CUSTOMER-NUM": 1234567890
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "CA-POLICY-COUNT": ">= 1",
+            "CA-HAS-MOTOR": true
+          }
+        },
+        {
+          "testId": "MP-INT-005",
+          "operation": "broker_report",
+          "description": "Broker-Bericht über alle Motorpolicen",
+          "input": {
+            "CA-REQUEST-ID": "BRKRP",
+            "CA-BROKERID": 1234567890,
+            "CA-POLICY-TYPE": "M"
+          },
+          "expectedResult": {
+            "CA-RETURN-CODE": "00",
+            "CA-POLICY-COUNT": ">= 1",
+            "CA-TOTAL-PREMIUM": "> 0"
+          }
+        }
+      ]
+    }
+  }
+}
