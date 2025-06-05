@@ -1,0 +1,966 @@
+openapi: 3.0.3
+info:
+  title: Motor Policy API
+  description: |
+    Eine moderne API für das Motor Policy Modul des GenApp-Versicherungssystems.
+    Diese API ermöglicht die Verwaltung von Kfz-Versicherungspolicen.
+  contact:
+    email: support@genapp.com
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: Basis-URL für alle API-Endpunkte
+tags:
+  - name: customers
+    description: Kundenverwaltung
+  - name: policies
+    description: Allgemeine Policen-Verwaltung
+  - name: motor-policies
+    description: Verwaltung von Kfz-Versicherungspolicen
+
+paths:
+  /customers:
+    get:
+      tags:
+        - customers
+      summary: Alle Kunden abrufen
+      description: Gibt eine Liste aller Kunden zurück (paginiert)
+      operationId: getCustomers
+      parameters:
+        - name: page
+          in: query
+          description: Seitennummer für Paginierung
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Anzahl der Einträge pro Seite
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Erfolgreich
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerPagedResponse'
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+    post:
+      tags:
+        - customers
+      summary: Neuen Kunden erstellen
+      description: Erstellt einen neuen Kunden im System
+      operationId: createCustomer
+      requestBody:
+        description: Kundendaten für die Erstellung
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+      responses:
+        '201':
+          description: Kunde erfolgreich erstellt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+  
+  /customers/{customerId}:
+    get:
+      tags:
+        - customers
+      summary: Einen bestimmten Kunden abrufen
+      description: Gibt die Daten eines bestimmten Kunden zurück
+      operationId: getCustomer
+      parameters:
+        - name: customerId
+          in: path
+          description: ID des Kunden
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Erfolgreich
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+        '404':
+          description: Kunde nicht gefunden
+    put:
+      tags:
+        - customers
+      summary: Kundendaten aktualisieren
+      description: Aktualisiert die Daten eines bestimmten Kunden
+      operationId: updateCustomer
+      parameters:
+        - name: customerId
+          in: path
+          description: ID des Kunden
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Kundendaten für die Aktualisierung
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+      responses:
+        '200':
+          description: Kunde erfolgreich aktualisiert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+        '404':
+          description: Kunde nicht gefunden
+    delete:
+      tags:
+        - customers
+      summary: Einen Kunden löschen
+      description: Löscht einen bestimmten Kunden aus dem System
+      operationId: deleteCustomer
+      parameters:
+        - name: customerId
+          in: path
+          description: ID des Kunden
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Kunde erfolgreich gelöscht
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+        '404':
+          description: Kunde nicht gefunden
+  
+  /customers/{customerId}/policies:
+    get:
+      tags:
+        - policies
+      summary: Alle Policen eines Kunden abrufen
+      description: Gibt eine Liste aller Policen eines bestimmten Kunden zurück
+      operationId: getCustomerPolicies
+      parameters:
+        - name: customerId
+          in: path
+          description: ID des Kunden
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: Seitennummer für Paginierung
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Anzahl der Einträge pro Seite
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Erfolgreich
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyPagedResponse'
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+        '404':
+          description: Kunde nicht gefunden
+  
+  /customers/{customerId}/policies/{policyId}:
+    get:
+      tags:
+        - policies
+      summary: Eine bestimmte Police abrufen
+      description: Gibt die Daten einer bestimmten Police zurück
+      operationId: getCustomerPolicy
+      parameters:
+        - name: customerId
+          in: path
+          description: ID des Kunden
+          required: true
+          schema:
+            type: integer
+        - name: policyId
+          in: path
+          description: ID der Police
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Erfolgreich
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+        '404':
+          description: Kunde oder Police nicht gefunden
+
+  /customers/{customerId}/policies/motor:
+    get:
+      tags:
+        - motor-policies
+      summary: Alle Motor-Policen eines Kunden abrufen
+      description: Gibt eine Liste aller Kfz-Versicherungspolicen eines bestimmten Kunden zurück
+      operationId: getCustomerMotorPolicies
+      parameters:
+        - name: customerId
+          in: path
+          description: ID des Kunden
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: Seitennummer für Paginierung
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Anzahl der Einträge pro Seite
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: expiringSoon
+          in: query
+          description: Nur Policen, die bald ablaufen
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: policyStatus
+          in: query
+          description: Status der Policen
+          required: false
+          schema:
+            type: string
+            enum: [active, expired, pending]
+        - name: sortBy
+          in: query
+          description: Sortierfeld
+          required: false
+          schema:
+            type: string
+            enum: [premium, expiryDate, make, model, value]
+        - name: order
+          in: query
+          description: Sortierreihenfolge
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: Erfolgreich
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MotorPolicyPagedResponse'
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+        '404':
+          description: Kunde nicht gefunden
+    post:
+      tags:
+        - motor-policies
+      summary: Neue Motor-Police erstellen
+      description: Erstellt eine neue Kfz-Versicherungspolice für einen Kunden
+      operationId: createMotorPolicy
+      parameters:
+        - name: customerId
+          in: path
+          description: ID des Kunden
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Daten für die neue Motor-Police
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MotorPolicyRequest'
+      responses:
+        '201':
+          description: Motor-Police erfolgreich erstellt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MotorPolicyResponse'
+        '400':
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+        '404':
+          description: Kunde nicht gefunden
+  
+  /customers/{customerId}/policies/motor/{policyId}:
+    get:
+      tags:
+        - motor-policies
+      summary: Eine bestimmte Motor-Police abrufen
+      description: Gibt die Daten einer bestimmten Kfz-Versicherungspolice zurück
+      operationId: getMotorPolicy
+      parameters:
+        - name: customerId
+          in: path
+          description: ID des Kunden
+          required: true
+          schema:
+            type: integer
+        - name: policyId
+          in: path
+          description: ID der Motor-Police
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Erfolgreich
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MotorPolicyResponse'
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+        '404':
+          description: Kunde oder Motor-Police nicht gefunden
+    put:
+      tags:
+        - motor-policies
+      summary: Motor-Police aktualisieren
+      description: Aktualisiert die Daten einer bestimmten Kfz-Versicherungspolice
+      operationId: updateMotorPolicy
+      parameters:
+        - name: customerId
+          in: path
+          description: ID des Kunden
+          required: true
+          schema:
+            type: integer
+        - name: policyId
+          in: path
+          description: ID der Motor-Police
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Daten für die Aktualisierung der Motor-Police
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MotorPolicyRequest'
+      responses:
+        '200':
+          description: Motor-Police erfolgreich aktualisiert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MotorPolicyResponse'
+        '400':
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+        '404':
+          description: Kunde oder Motor-Police nicht gefunden
+    delete:
+      tags:
+        - motor-policies
+      summary: Eine Motor-Police löschen
+      description: Löscht eine bestimmte Kfz-Versicherungspolice
+      operationId: deleteMotorPolicy
+      parameters:
+        - name: customerId
+          in: path
+          description: ID des Kunden
+          required: true
+          schema:
+            type: integer
+        - name: policyId
+          in: path
+          description: ID der Motor-Police
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Motor-Police erfolgreich gelöscht
+        '401':
+          description: Nicht authentifiziert
+        '403':
+          description: Nicht autorisiert
+        '404':
+          description: Kunde oder Motor-Police nicht gefunden
+
+components:
+  schemas:
+    CustomerRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - dateOfBirth
+      properties:
+        firstName:
+          type: string
+          maxLength: 50
+          description: Vorname des Kunden
+        lastName:
+          type: string
+          maxLength: 50
+          description: Nachname des Kunden
+        dateOfBirth:
+          type: string
+          format: date
+          description: Geburtsdatum des Kunden (ISO 8601 Format)
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          description: E-Mail-Adresse des Kunden
+        phone:
+          type: string
+          maxLength: 20
+          description: Telefonnummer des Kunden
+        address:
+          $ref: '#/components/schemas/Address'
+
+    CustomerResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Eindeutige ID des Kunden (Kundennummer)
+        firstName:
+          type: string
+          description: Vorname des Kunden
+        lastName:
+          type: string
+          description: Nachname des Kunden
+        dateOfBirth:
+          type: string
+          format: date
+          description: Geburtsdatum des Kunden (ISO 8601 Format)
+        email:
+          type: string
+          format: email
+          description: E-Mail-Adresse des Kunden
+        phone:
+          type: string
+          description: Telefonnummer des Kunden
+        address:
+          $ref: '#/components/schemas/Address'
+        createdAt:
+          type: string
+          format: date-time
+          description: Zeitpunkt der Erstellung des Kundendatensatzes
+        updatedAt:
+          type: string
+          format: date-time
+          description: Zeitpunkt der letzten Aktualisierung des Kundendatensatzes
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: Link zum Kundendatensatz
+            policies:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: Link zu den Policen des Kunden
+            motorPolicies:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: Link zu den Kfz-Versicherungspolicen des Kunden
+
+    CustomerPagedResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerResponse'
+        page:
+          type: integer
+          description: Aktuelle Seitennummer
+        size:
+          type: integer
+          description: Größe der Seite
+        totalElements:
+          type: integer
+          description: Gesamtanzahl der Elemente
+        totalPages:
+          type: integer
+          description: Gesamtanzahl der Seiten
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+            prev:
+              type: object
+              properties:
+                href:
+                  type: string
+            first:
+              type: object
+              properties:
+                href:
+                  type: string
+            last:
+              type: object
+              properties:
+                href:
+                  type: string
+
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+          maxLength: 100
+          description: Straße und Hausnummer
+        city:
+          type: string
+          maxLength: 50
+          description: Stadt
+        state:
+          type: string
+          maxLength: 50
+          description: Bundesland/Region
+        postalCode:
+          type: string
+          maxLength: 10
+          description: Postleitzahl
+        country:
+          type: string
+          maxLength: 50
+          description: Land
+
+    PolicyResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Eindeutige ID der Police (Policennummer)
+        customerId:
+          type: integer
+          description: ID des Kunden
+        issueDate:
+          type: string
+          format: date
+          description: Ausstellungsdatum
+        expiryDate:
+          type: string
+          format: date
+          description: Ablaufdatum
+        policyType:
+          type: string
+          description: Typ der Police (z.B. "M" für Motor)
+        lastChanged:
+          type: string
+          format: date-time
+          description: Zeitpunkt der letzten Änderung
+        brokerId:
+          type: integer
+          description: ID des Maklers
+        brokerReference:
+          type: string
+          description: Referenz des Maklers
+        payment:
+          type: integer
+          description: Zahlungsbetrag
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: Link zur Police
+            customer:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: Link zum Kunden
+
+    PolicyPagedResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyResponse'
+        page:
+          type: integer
+          description: Aktuelle Seitennummer
+        size:
+          type: integer
+          description: Größe der Seite
+        totalElements:
+          type: integer
+          description: Gesamtanzahl der Elemente
+        totalPages:
+          type: integer
+          description: Gesamtanzahl der Seiten
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+            prev:
+              type: object
+              properties:
+                href:
+                  type: string
+            first:
+              type: object
+              properties:
+                href:
+                  type: string
+            last:
+              type: object
+              properties:
+                href:
+                  type: string
+
+    MotorPolicyRequest:
+      type: object
+      required:
+        - issueDate
+        - expiryDate
+        - make
+        - model
+        - value
+        - registrationNumber
+        - color
+        - cc
+        - manufacturedYear
+        - premium
+        - accidents
+      properties:
+        issueDate:
+          type: string
+          format: date
+          description: Ausstellungsdatum (ISO 8601 Format)
+        expiryDate:
+          type: string
+          format: date
+          description: Ablaufdatum (ISO 8601 Format)
+        brokerId:
+          type: integer
+          description: ID des Maklers
+        brokerReference:
+          type: string
+          maxLength: 10
+          description: Referenz des Maklers
+        payment:
+          type: integer
+          description: Zahlungsbetrag
+        make:
+          type: string
+          maxLength: 15
+          description: Fahrzeugmarke
+        model:
+          type: string
+          maxLength: 15
+          description: Fahrzeugmodell
+        value:
+          type: integer
+          minimum: 1
+          maximum: 999999
+          description: Fahrzeugwert
+        registrationNumber:
+          type: string
+          maxLength: 7
+          description: Kennzeichen
+        color:
+          type: string
+          maxLength: 8
+          description: Fahrzeugfarbe
+        cc:
+          type: integer
+          minimum: 1
+          maximum: 9999
+          description: Hubraum
+        manufacturedYear:
+          type: string
+          maxLength: 10
+          description: Herstellungsjahr/Datum
+        premium:
+          type: integer
+          minimum: 1
+          maximum: 999999
+          description: Versicherungsprämie
+        accidents:
+          type: integer
+          minimum: 0
+          maximum: 999999
+          description: Anzahl Unfälle
+
+    MotorPolicyResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Eindeutige ID der Police (Policennummer)
+        customerId:
+          type: integer
+          description: ID des Kunden
+        issueDate:
+          type: string
+          format: date
+          description: Ausstellungsdatum
+        expiryDate:
+          type: string
+          format: date
+          description: Ablaufdatum
+        lastChanged:
+          type: string
+          format: date-time
+          description: Zeitpunkt der letzten Änderung
+        brokerId:
+          type: integer
+          description: ID des Maklers
+        brokerReference:
+          type: string
+          description: Referenz des Maklers
+        payment:
+          type: integer
+          description: Zahlungsbetrag
+        make:
+          type: string
+          description: Fahrzeugmarke
+        model:
+          type: string
+          description: Fahrzeugmodell
+        value:
+          type: integer
+          description: Fahrzeugwert
+        registrationNumber:
+          type: string
+          description: Kennzeichen
+        color:
+          type: string
+          description: Fahrzeugfarbe
+        cc:
+          type: integer
+          description: Hubraum
+        manufacturedYear:
+          type: string
+          description: Herstellungsjahr/Datum
+        premium:
+          type: integer
+          description: Versicherungsprämie
+        accidents:
+          type: integer
+          description: Anzahl Unfälle
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: Link zur Motor-Police
+            customer:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: Link zum Kunden
+
+    MotorPolicyPagedResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/MotorPolicyResponse'
+        page:
+          type: integer
+          description: Aktuelle Seitennummer
+        size:
+          type: integer
+          description: Größe der Seite
+        totalElements:
+          type: integer
+          description: Gesamtanzahl der Elemente
+        totalPages:
+          type: integer
+          description: Gesamtanzahl der Seiten
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+            prev:
+              type: object
+              properties:
+                href:
+                  type: string
+            first:
+              type: object
+              properties:
+                href:
+                  type: string
+            last:
+              type: object
+              properties:
+                href:
+                  type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Zeitpunkt des Fehlers
+        status:
+          type: integer
+          description: HTTP-Statuscode
+        error:
+          type: string
+          description: Fehlertyp
+        message:
+          type: string
+          description: Fehlermeldung
+        code:
+          type: string
+          description: Applikations-spezifischer Fehlercode
+        path:
+          type: string
+          description: Pfad, der den Fehler verursacht hat
+        details:
+          type: array
+          description: Detaillierte Informationen zu Validierungsfehlern
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Feld mit Validierungsfehler
+              message:
+                type: string
+                description: Fehlermeldung
+              rejectedValue:
+                type: string
+                description: Abgelehnter Wert
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT-basierte Authentifizierung
+
+security:
+  - bearerAuth: []
