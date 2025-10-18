@@ -21,7 +21,7 @@ The first modernization slice targets read-only customer inquiry. See `docs/slic
 1. Walk through the learning plan in `docs/learning-plan.md` to prepare the required Java, Spring, React, and Docker skills.
 2. Initialize the Spring Boot backend using Spring Initializr (Maven, Java 21, Web, Validation, Spring Data JPA, Flyway, PostgreSQL).
 3. Scaffold the React app with Vite + TypeScript (or CRA if preferred) and integrate axios/React Query for data fetching.
-4. Use `scripts/run-dev.sh` (or VS Code tasks) for local dev servers, and `docker compose up --build` for containerized runs once the Dockerfiles are wired up.
+4. Use `scripts/run-dev.sh` (or VS Code tasks) for local dev servers—the script boots the PostgreSQL container via Docker Compose and then launches Spring Boot + Vite. Use `docker compose up --build` when you want the full stack running inside containers.
 
 ## Next Milestones
 - Backfill customer schema in PostgreSQL using Flyway migrations.

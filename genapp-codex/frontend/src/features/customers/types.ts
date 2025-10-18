@@ -2,12 +2,12 @@ export interface CustomerDto {
   id: string;
   firstName: string;
   lastName: string;
-  addressLine1: string;
-  addressLine2?: string;
-  city: string;
-  stateProvince?: string;
-  postalCode?: string;
-  country?: string;
-  phoneNumber?: string;
-  email?: string;
+  dateOfBirth?: string | null;
+  houseName?: string | null;
+  houseNumber?: string | null;
+  postalCode?: string | null;
+  numPolicies?: number | null;
+  phoneMobile?: string | null;
+  phoneHome?: string | null;
+  email?: string | null;
 }

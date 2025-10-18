@@ -19,6 +19,7 @@ base/.DS_Store
 genapp-codex/**/target/
 genapp-codex/**/node_modules/
 genapp-codex/**/dist/
+genapp-codex/.m2/
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*

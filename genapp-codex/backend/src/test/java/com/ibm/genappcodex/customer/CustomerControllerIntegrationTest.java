@@ -19,7 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class CustomerControllerIntegrationTest {
 
     @Container
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
             .withDatabaseName("genapp")
             .withUsername("genapp")
             .withPassword("genapp");
@@ -46,5 +46,21 @@ class CustomerControllerIntegrationTest {
     void shouldReturnNotFoundWhenCustomerMissing() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/customers/9999999999"))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnListWhenSearching() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/customers")
+                        .param("q", "AND"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value("0000000001"));
+    }
+
+    @Test
+    void shouldReturnTopTwentyWhenQueryMissing() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/customers"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(10));
     }
 }

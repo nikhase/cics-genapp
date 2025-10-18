@@ -13,3 +13,9 @@ export async function getCustomer(customerId: string): Promise<CustomerDto> {
     throw error;
   }
 }
+
+export async function searchCustomers(query: string): Promise<CustomerDto[]> {
+  const params = query ? { q: query } : {};
+  const response = await apiClient.get<CustomerDto[]>('/api/customers', { params });
+  return response.data;
+}
