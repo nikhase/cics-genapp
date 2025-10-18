@@ -14,3 +14,20 @@ base/.DS_Store
 **/.structurizr.lock
 **/.structurizr.json
 **/workspace.json
+
+# Modernization build outputs
+genapp-codex/**/target/
+genapp-codex/**/node_modules/
+genapp-codex/**/dist/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing / coverage reports
+genapp-codex/**/coverage/
+*.lcov
+
+# IDE local state
+.idea/
+*.iml
