@@ -1,0 +1,1 @@
+-- Placeholder migration. Replace with actual customer schema derived from COBOL copybooks.

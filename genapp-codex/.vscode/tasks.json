@@ -1,0 +1,78 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Backend: Spring Boot",
+      "type": "shell",
+      "command": "mvn",
+      "args": ["spring-boot:run"],
+      "options": {
+        "cwd": "${workspaceFolder}/genapp-codex/backend"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": [
+          {
+            "regexp": ".*",
+            "file": 1,
+            "location": 2,
+            "message": 3
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*Started GenappCodexApplication.*",
+          "endsPattern": ".*Started GenappCodexApplication.*"
+        }
+      }
+    },
+    {
+      "label": "Frontend: React Dev Server",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dev", "--", "--host"],
+      "options": {
+        "cwd": "${workspaceFolder}/genapp-codex/frontend"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": [
+          {
+            "regexp": ".*",
+            "file": 1,
+            "location": 2,
+            "message": 3
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*VITE v.*",
+          "endsPattern": ".*ready in .*"
+        }
+      }
+    },
+    {
+      "label": "Docker Compose Up",
+      "type": "shell",
+      "command": "docker",
+      "args": ["compose", "up", "--build"],
+      "options": {
+        "cwd": "${workspaceFolder}/genapp-codex"
+      }
+    },
+    {
+      "label": "Docker Compose Down",
+      "type": "shell",
+      "command": "docker",
+      "args": ["compose", "down"],
+      "options": {
+        "cwd": "${workspaceFolder}/genapp-codex"
+      }
+    },
+    {
+      "label": "Dev: Backend + Frontend",
+      "type": "shell",
+      "command": "${workspaceFolder}/genapp-codex/scripts/run-dev.sh"
+    }
+  ]
+}

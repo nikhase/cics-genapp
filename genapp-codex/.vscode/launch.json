@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Debug Backend: GenappCodexApplication",
+      "request": "launch",
+      "mainClass": "com.ibm.genappcodex.GenappCodexApplication",
+      "projectName": "genapp-codex",
+      "vmArgs": "-Dspring.profiles.active=dev"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Debug Frontend: React",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/genapp-codex/frontend"
+    }
+  ]
+}
