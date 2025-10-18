@@ -24,11 +24,12 @@ The first modernization slice targets read-only customer inquiry. See `docs/slic
 4. Use `scripts/run-dev.sh` (or VS Code tasks) for local dev servers—the script boots the PostgreSQL container via Docker Compose and then launches Spring Boot + Vite. Use `docker compose up --build` when you want the full stack running inside containers.
 
 ### Resetting the Local Database
-If you previously ran the stack with PostgreSQL 16, remove the old volume before starting the dev script so Flyway can apply migrations against PostgreSQL 15:
+If you previously ran the stack with PostgreSQL 16 or 15, remove the old volume before starting the dev script so Flyway can apply migrations against PostgreSQL 14:
 
 ```bash
 docker compose -f genapp-codex/docker-compose.yml down
 docker volume rm genapp-codex_db_data
+docker compose -f genapp-codex/docker-compose.yml pull db
 ```
 
 Afterwards rerun `./genapp-codex/scripts/run-dev.sh`; the script recreates the volume and loads the seed data automatically.

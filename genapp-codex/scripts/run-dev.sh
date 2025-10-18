@@ -24,16 +24,6 @@ cleanup() {
 
 start_db() {
   echo "[info] Ensuring postgres data volume is compatible..."
-  if docker volume inspect genapp-codex_db_data >/dev/null 2>&1; then
-    local pg_version
-    pg_version=$(docker compose -f "$COMPOSE_FILE" run --rm db postgres --version 2>/dev/null | awk '{print $3}' || true)
-    if [[ "$pg_version" == 16.* ]]; then
-      echo "[info] Removing old postgres 16 volume to avoid incompatibility."
-      docker compose -f "$COMPOSE_FILE" down >/dev/null 2>&1 || true
-      docker volume rm genapp-codex_db_data >/dev/null 2>&1 || true
-    fi
-  fi
-
   if ! command -v docker >/dev/null 2>&1; then
     echo "Docker is required to run the local PostgreSQL container." >&2
     exit 1
@@ -41,6 +31,16 @@ start_db() {
   if ! docker compose version >/dev/null 2>&1; then
     echo "\"docker compose\" CLI not available. Update Docker Desktop/CLI." >&2
     exit 1
+  fi
+
+  if docker volume inspect genapp-codex_db_data >/dev/null 2>&1; then
+    local volume_version
+    volume_version=$(docker run --rm -v genapp-codex_db_data:/var/lib/postgresql/data postgres:14 cat /var/lib/postgresql/data/PG_VERSION 2>/dev/null || echo "unknown")
+    if [[ "$volume_version" != "unknown" && "$volume_version" != 14* ]]; then
+      echo "[info] Found incompatible postgres volume version $volume_version. Removing volume."
+      docker compose -f "$COMPOSE_FILE" down >/dev/null 2>&1 || true
+      docker volume rm genapp-codex_db_data >/dev/null 2>&1 || true
+    fi
   fi
 
   local running_container

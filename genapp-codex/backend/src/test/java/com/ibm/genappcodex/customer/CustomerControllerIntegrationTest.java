@@ -19,7 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class CustomerControllerIntegrationTest {
 
     @Container
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
+    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:14-alpine")
             .withDatabaseName("genapp")
             .withUsername("genapp")
             .withPassword("genapp");
