@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (replaces VSAM + Db2)
+  postgres:
+    image: postgres:16-alpine
+    container_name: genapp-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-genapp}
+      POSTGRES_USER: ${DB_USER:-genapp_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-genapp_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      # Persist database data across container restarts
+      - postgres_data:/var/lib/postgresql/data
+      # Optional: Initialize database with custom scripts
+      # - ./backend/src/main/resources/db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-genapp_user} -d ${DB_NAME:-genapp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - genapp-network
+    restart: unless-stopped
+
+  # Spring Boot Backend (replaces CICS region + COBOL programs)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: genapp-backend
+    environment:
+      # Database Configuration
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-genapp}
+      DB_USER: ${DB_USER:-genapp_user}
+      DB_PASSWORD: ${DB_PASSWORD:-genapp_password}
+      # Spring Boot
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-docker}
+      JAVA_OPTS: "-Xmx512m -Xms256m"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Optional: Mount source code for development (hot reload)
+      # - ./backend/src:/app/src
+      # - ./backend/pom.xml:/app/pom.xml
+      - backend_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - genapp-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # React Frontend (replaces 3270 BMS screens)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: genapp-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:8080/api
+      NODE_ENV: ${NODE_ENV:-development}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      # Optional: Mount source code for development (hot reload)
+      # - ./frontend/src:/app/src
+      # - ./frontend/public:/app/public
+      - frontend_logs:/app/logs
+    networks:
+      - genapp-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_logs:
+    driver: local
+  frontend_logs:
+    driver: local
+
+networks:
+  genapp-network:
+    driver: bridge
