@@ -13,3 +13,4 @@ base/.DS_Store
 **/.structurizr/
 **/.structurizr.lock
 **/.structurizr.json
+**/workspace.json
