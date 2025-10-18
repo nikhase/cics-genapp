@@ -1,3 +1,15 @@
 base/src/.DS_Store
 base/.DS_Store
 .DS_Store
+
+# Claude Code temporary files
+.claude/.DS_Store
+.claude/temp/
+
+# Log files
+*.log
+
+# Structurizr runtime files (generated during workspace viewing)
+**/.structurizr/
+**/.structurizr.lock
+**/.structurizr.json
