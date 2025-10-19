@@ -39,7 +39,33 @@ Detailed week-by-week breakdown:
 
 ---
 
-### 3. 🏗️ **ARCHITECTURE.md** - Deep Dive (This is Long!)
+### 3. 📋 **REQUIREMENTS_README.md** - Complete Requirements Documentation
+Master index for comprehensive requirements validation with stakeholders:
+- **Part 1**: Executive Summary & Overview
+  - Project goals, business drivers, scope (IN & OUT)
+  - Stakeholder groups & responsibilities
+  - Timeline (2-week sprint), success criteria, assumptions, risks
+
+- **Part 2**: Functional Requirements (3 levels)
+  - Level 1: Business Capabilities
+  - Level 2: User Stories (12 stories)
+  - Level 3: Acceptance Criteria (20 scenarios, Given/When/Then format)
+
+- **Part 3**: COBOL Feature Mapping & Non-Functional Requirements
+  - Feature mapping (KEEP/IMPROVE/ADD/REMOVE from COBOL)
+  - Performance targets (<50ms p90, 500+ req/sec)
+  - Security, reliability, maintainability, scalability
+
+- **Part 4**: Stakeholder Validation & Sign-Off
+  - Checklists for all 4 stakeholder groups
+  - Sign-off templates for formal approval
+  - Approval workflow (4-step process)
+
+👉 **Best for**: Stakeholder review, domain experts, sign-offs, ensuring correctness before implementation
+
+---
+
+### 4. 🏗️ **ARCHITECTURE.md** - Deep Dive (This is Long!)
 Comprehensive architecture documentation:
 - **High-level comparison**: COBOL vs Spring Boot with diagrams
 - **Package structure**: All 8 Java files explained
@@ -59,7 +85,7 @@ Comprehensive architecture documentation:
 
 ---
 
-### 4. 📦 **WHY_DTO.md** - Data Transfer Objects Explained
+### 5. 📦 **WHY_DTO.md** - Data Transfer Objects Explained
 Comprehensive guide to DTOs:
 - What is a DTO?
 - DTO vs Entity vs Database table
@@ -74,7 +100,7 @@ Comprehensive guide to DTOs:
 
 ---
 
-### 5. ⏳ **TODO.md** - Progress Tracking
+### 6. ⏳ **TODO.md** - Progress Tracking
 Current status and what's next:
 - **Completed**: Week 1 foundation (100% ✅)
   - Backend API, Database, Customer endpoints
@@ -135,6 +161,13 @@ Current status and what's next:
 2. Read **ROADMAP.md** → "Week 2: Days 10-14"
 3. See: Policy domain (sealed classes), React frontend
 
+#### ✅ **Review requirements before implementation**
+1. Start: **REQUIREMENTS_README.md** (master index)
+2. Read: **REQUIREMENTS_01_EXECUTIVE_SUMMARY.md** (goals & scope)
+3. Review: **REQUIREMENTS_02_FUNCTIONAL_REQUIREMENTS.md** (user stories & acceptance criteria)
+4. Study: **REQUIREMENTS_03_COBOL_MAPPING_AND_NFR.md** (COBOL features, performance targets)
+5. Sign-Off: **REQUIREMENTS_04_STAKEHOLDER_VALIDATION.md** (complete your checklist)
+
 #### ✅ **Troubleshoot Docker**
 1. Read **README.md** → "Troubleshooting" section
 2. Run: `docker compose logs backend`
@@ -158,7 +191,13 @@ genapp-claude/
 │   ├── README.md                      ← Getting started & quick reference
 │   ├── ROADMAP.md                     ← 2-week sprint plan
 │   ├── ARCHITECTURE.md                ← Deep technical dive
-│   └── TODO.md                        ← Progress tracking
+│   ├── TODO.md                        ← Progress tracking
+│   ├── REQUIREMENTS_README.md          ← Requirements master index
+│   ├── REQUIREMENTS_01_EXECUTIVE_SUMMARY.md
+│   ├── REQUIREMENTS_02_FUNCTIONAL_REQUIREMENTS.md
+│   ├── REQUIREMENTS_03_COBOL_MAPPING_AND_NFR.md
+│   ├── REQUIREMENTS_04_STAKEHOLDER_VALIDATION.md
+│   └── WHY_DTO.md                     ← DTO explanation
 │
 ├── backend/                           ← Spring Boot application
 │   ├── src/main/java/com/genapp/
