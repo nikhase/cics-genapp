@@ -15,11 +15,19 @@ base/.DS_Store
 **/.structurizr.json
 **/workspace.json
 
-# Modernization build outputs
+# Modernization build outputs (genapp-codex)
 genapp-codex/**/target/
 genapp-codex/**/node_modules/
 genapp-codex/**/dist/
 genapp-codex/.m2/
+
+# Modernization build outputs (genapp-claude)
+genapp-claude/**/target/
+genapp-claude/**/node_modules/
+genapp-claude/**/dist/
+genapp-claude/.m2/
+
+# Node.js debug logs
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
