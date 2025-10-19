@@ -510,13 +510,13 @@ This section details performance, security, reliability, and maintainability tar
 
 ## 🔗 Cross-References
 
-- **REQUIREMENTS_PART1.md** - Executive Summary
-- **REQUIREMENTS_PART2.md** - Functional Requirements
-- **REQUIREMENTS_PART4.md** - Stakeholder Validation
+- **REQUIREMENTS_01_EXECUTIVE_SUMMARY.md** - Executive Summary
+- **REQUIREMENTS_02_FUNCTIONAL_REQUIREMENTS.md** - Functional Requirements
+- **REQUIREMENTS_04_STAKEHOLDER_VALIDATION.md** - Stakeholder Validation
 - **ARCHITECTURE.md** - Technical implementation details
 
 ---
 
 **END OF PART 3**
 
-➡️ **NEXT**: See REQUIREMENTS_PART4.md for Stakeholder Validation & Sign-Off
+➡️ **NEXT**: See REQUIREMENTS_04_STAKEHOLDER_VALIDATION.md for Stakeholder Validation & Sign-Off

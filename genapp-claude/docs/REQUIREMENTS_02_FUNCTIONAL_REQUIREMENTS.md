@@ -600,12 +600,12 @@ This part covers **Functional Requirements** at three levels:
 
 ## 🔗 Cross-References
 
-- **REQUIREMENTS_PART1.md** - Executive Summary
-- **REQUIREMENTS_PART3.md** - COBOL Mapping & Non-Functional Requirements
-- **REQUIREMENTS_PART4.md** - Stakeholder Validation
+- **REQUIREMENTS_01_EXECUTIVE_SUMMARY.md** - Executive Summary
+- **REQUIREMENTS_03_COBOL_MAPPING_AND_NFR.md** - COBOL Mapping & Non-Functional Requirements
+- **REQUIREMENTS_04_STAKEHOLDER_VALIDATION.md** - Stakeholder Validation
 
 ---
 
 **END OF PART 2**
 
-➡️ **NEXT**: See REQUIREMENTS_PART3.md for COBOL Mapping & Non-Functional Requirements
+➡️ **NEXT**: See REQUIREMENTS_03_COBOL_MAPPING_AND_NFR.md for COBOL Mapping & Non-Functional Requirements

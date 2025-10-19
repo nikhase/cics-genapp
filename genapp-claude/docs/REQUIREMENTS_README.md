@@ -19,7 +19,7 @@ Complete **Functional and Non-Functional Requirements** document for the GenApp 
 ## 📚 Document Structure (4 Parts, 2,047 Lines)
 
 ### 📖 Part 1: Executive Summary & Overview (12KB)
-**File**: `REQUIREMENTS_PART1.md`
+**File**: `REQUIREMENTS_01_EXECUTIVE_SUMMARY.md`
 
 **Contents**:
 - Project goals & business drivers
@@ -36,7 +36,7 @@ Complete **Functional and Non-Functional Requirements** document for the GenApp 
 ---
 
 ### 👥 Part 2: Functional Requirements (15KB)
-**File**: `REQUIREMENTS_PART2.md`
+**File**: `REQUIREMENTS_02_FUNCTIONAL_REQUIREMENTS.md`
 
 **Contents**:
 - **Level 1**: Business Capabilities
@@ -66,7 +66,7 @@ Complete **Functional and Non-Functional Requirements** document for the GenApp 
 ---
 
 ### 🔄 Part 3: COBOL Mapping & Non-Functional Requirements (18KB)
-**File**: `REQUIREMENTS_PART3.md`
+**File**: `REQUIREMENTS_03_COBOL_MAPPING_AND_NFR.md`
 
 **Contents**:
 - **COBOL Feature Mapping**:
@@ -89,7 +89,7 @@ Complete **Functional and Non-Functional Requirements** document for the GenApp 
 ---
 
 ### ✅ Part 4: Stakeholder Validation & Sign-Off (15KB)
-**File**: `REQUIREMENTS_PART4.md`
+**File**: `REQUIREMENTS_04_STAKEHOLDER_VALIDATION.md`
 
 **Contents**:
 - **Stakeholder Checklists** (for each group):
@@ -283,10 +283,10 @@ Use this to track approvals:
 
 **This Document**:
 - `REQUIREMENTS_README.md` - This file (master index)
-- `REQUIREMENTS_PART1.md` - Executive Summary
-- `REQUIREMENTS_PART2.md` - Functional Requirements
-- `REQUIREMENTS_PART3.md` - COBOL Mapping & NFRs
-- `REQUIREMENTS_PART4.md` - Stakeholder Validation
+- `REQUIREMENTS_01_EXECUTIVE_SUMMARY.md` - Executive Summary
+- `REQUIREMENTS_02_FUNCTIONAL_REQUIREMENTS.md` - Functional Requirements
+- `REQUIREMENTS_03_COBOL_MAPPING_AND_NFR.md` - COBOL Mapping & NFRs
+- `REQUIREMENTS_04_STAKEHOLDER_VALIDATION.md` - Stakeholder Validation
 
 ---
 

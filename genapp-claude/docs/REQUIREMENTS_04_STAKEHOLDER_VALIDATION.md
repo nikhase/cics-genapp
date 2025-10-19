@@ -39,7 +39,7 @@ This section contains stakeholder review checklists and sign-off templates.
 #### Checklist for Business/Product Owners
 
 **REQUIREMENTS UNDERSTANDING**
-- [ ] I have read REQUIREMENTS_PART1.md (Executive Summary)
+- [ ] I have read REQUIREMENTS_01_EXECUTIVE_SUMMARY.md (Executive Summary)
 - [ ] I understand the scope (what's IN and OUT)
 - [ ] I understand the timeline (2-week sprint)
 - [ ] I understand the deliverables (API + Frontend + Tests)
@@ -116,7 +116,7 @@ Contact Email: ______________________
 #### Checklist for Domain Experts (Insurance)
 
 **DOMAIN KNOWLEDGE**
-- [ ] I have read REQUIREMENTS_PART2.md (Functional Requirements)
+- [ ] I have read REQUIREMENTS_02_FUNCTIONAL_REQUIREMENTS.md (Functional Requirements)
 - [ ] I understand all 4 policy types:
   - [ ] Motor Policy (vehicle insurance)
   - [ ] House Policy (property insurance)
@@ -150,7 +150,7 @@ Contact Email: ______________________
 - [ ] Data validation is appropriate
 
 **COMPARISON WITH COBOL**
-- [ ] I have reviewed REQUIREMENTS_PART3.md (COBOL Mapping)
+- [ ] I have reviewed REQUIREMENTS_03_COBOL_MAPPING_AND_NFR.md (COBOL Mapping)
 - [ ] Feature mappings to COBOL are accurate
 - [ ] No critical COBOL features are missed
 - [ ] Modern improvements are acceptable
@@ -202,7 +202,7 @@ Contact Email: ______________________
 #### Checklist for COBOL Developers
 
 **UNDERSTANDING OF EXISTING SYSTEM**
-- [ ] I have reviewed REQUIREMENTS_PART3.md (COBOL Mapping)
+- [ ] I have reviewed REQUIREMENTS_03_COBOL_MAPPING_AND_NFR.md (COBOL Mapping)
 - [ ] I understand the COBOL programs being replaced:
   - [ ] Customer management (lgacus01, lgicus01, lgucus01)
   - [ ] Policy management (lgapol01, lgipol01, lgupol01, lgdpol01)
@@ -289,8 +289,8 @@ Contact Email: ______________________
 
 **ARCHITECTURE REVIEW**
 - [ ] I have read ARCHITECTURE.md (technical design)
-- [ ] I have reviewed REQUIREMENTS_PART1.md (goals)
-- [ ] I have reviewed REQUIREMENTS_PART3.md (non-functional requirements)
+- [ ] I have reviewed REQUIREMENTS_01_EXECUTIVE_SUMMARY.md (goals)
+- [ ] I have reviewed REQUIREMENTS_03_COBOL_MAPPING_AND_NFR.md (non-functional requirements)
 - [ ] Architecture decisions are justified and documented
 
 **PERFORMANCE REQUIREMENTS**
@@ -466,9 +466,9 @@ For questions about specific requirements:
 
 ## 📚 Cross-References
 
-- **REQUIREMENTS_PART1.md** - Executive Summary
-- **REQUIREMENTS_PART2.md** - Functional Requirements
-- **REQUIREMENTS_PART3.md** - COBOL Mapping & NFRs
+- **REQUIREMENTS_01_EXECUTIVE_SUMMARY.md** - Executive Summary
+- **REQUIREMENTS_02_FUNCTIONAL_REQUIREMENTS.md** - Functional Requirements
+- **REQUIREMENTS_03_COBOL_MAPPING_AND_NFR.md** - COBOL Mapping & NFRs
 - **ARCHITECTURE.md** - Technical implementation
 - **README.md** - Getting started guide
 

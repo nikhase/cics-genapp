@@ -416,4 +416,4 @@ GenApp is a **legacy insurance application** (COBOL/CICS/VSAM) built for IBM mai
 
 **END OF PART 1**
 
-➡️ **NEXT**: See REQUIREMENTS_PART2.md for Functional Requirements (Business Capabilities, User Stories, Acceptance Criteria)
+➡️ **NEXT**: See REQUIREMENTS_02_FUNCTIONAL_REQUIREMENTS.md for Functional Requirements (Business Capabilities, User Stories, Acceptance Criteria)
