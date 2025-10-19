@@ -3,8 +3,8 @@ package com.genapp.service;
 import com.genapp.dto.CustomerDTO;
 import com.genapp.model.Customer;
 import com.genapp.repository.CustomerRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,11 +45,18 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional
-@RequiredArgsConstructor
-@Slf4j
 public class CustomerService {
 
+    private static final Logger log = LoggerFactory.getLogger(CustomerService.class);
+
     private final CustomerRepository customerRepository;
+
+    /**
+     * Constructor for dependency injection
+     */
+    public CustomerService(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
 
     /**
      * Create a new customer
@@ -129,6 +136,24 @@ public class CustomerService {
                     log.warn("Customer not found with ID: {}", customerId);
                     return new IllegalArgumentException("Customer not found with ID: " + customerId);
                 });
+    }
+
+    /**
+     * Verify customer exists by ID (for validation purposes)
+     *
+     * Used by policy creation to ensure customer exists before creating a policy.
+     * Throws exception if customer not found.
+     *
+     * @param customerId customer ID to verify
+     * @throws IllegalArgumentException if customer not found
+     */
+    public void getCustomerById(Long customerId) {
+        log.debug("Verifying customer exists with ID: {}", customerId);
+
+        if (!customerRepository.existsById(customerId)) {
+            log.warn("Customer not found with ID: {}", customerId);
+            throw new IllegalArgumentException("Customer not found with ID: " + customerId);
+        }
     }
 
     /**

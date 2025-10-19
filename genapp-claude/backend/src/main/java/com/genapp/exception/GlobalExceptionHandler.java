@@ -1,6 +1,7 @@
 package com.genapp.exception;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -49,8 +50,9 @@ import java.util.Map;
  * @since Java 21, Spring Boot 3.2
  */
 @ControllerAdvice
-@Slf4j
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
      * Handle validation errors (400 Bad Request)
@@ -139,6 +141,36 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle policy not found errors (404 Not Found)
+     *
+     * Triggered when policy is not found in database
+     *
+     * Old COBOL equivalent:
+     *   EXEC CICS READ FILE('KSDSPOLY')
+     *       NOTFND
+     *           SET POLICY-NOT-FOUND-FLAG TO TRUE
+     *   END-EXEC.
+     *
+     * @param ex exception with error message
+     * @return ResponseEntity with 404 status and error message
+     */
+    @ExceptionHandler(PolicyNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ErrorResponse> handlePolicyNotFoundException(
+            PolicyNotFoundException ex) {
+        log.warn("Policy not found: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                null,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     /**

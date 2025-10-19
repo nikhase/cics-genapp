@@ -1,0 +1,7 @@
+com/genapp/dto/CustomerDTO.class
+com/genapp/model/MotorPolicy.class
+com/genapp/model/Customer.class
+com/genapp/service/CustomerService.class
+com/genapp/repository/CustomerRepository.class
+com/genapp/controller/CustomerController.class
+com/genapp/model/Policy.class
