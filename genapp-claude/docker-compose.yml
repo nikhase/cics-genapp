@@ -68,31 +68,32 @@ services:
         max-file: "3"
 
   # React Frontend (replaces 3270 BMS screens)
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: genapp-frontend
-    environment:
-      REACT_APP_API_URL: http://localhost:8080/api
-      NODE_ENV: ${NODE_ENV:-development}
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    volumes:
-      # Optional: Mount source code for development (hot reload)
-      # - ./frontend/src:/app/src
-      # - ./frontend/public:/app/public
-      - frontend_logs:/app/logs
-    networks:
-      - genapp-network
-    restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+  # NOTE: Commented out until frontend is implemented (Week 2, Days 12-13)
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: genapp-frontend
+  #   environment:
+  #     REACT_APP_API_URL: http://localhost:8080/api
+  #     NODE_ENV: ${NODE_ENV:-development}
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   volumes:
+  #     # Optional: Mount source code for development (hot reload)
+  #     # - ./frontend/src:/app/src
+  #     # - ./frontend/public:/app/public
+  #     - frontend_logs:/app/logs
+  #   networks:
+  #     - genapp-network
+  #   restart: unless-stopped
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
 
 volumes:
   postgres_data:

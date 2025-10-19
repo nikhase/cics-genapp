@@ -126,22 +126,19 @@ public class GlobalExceptionHandler {
      * @param ex exception with error message
      * @return ResponseEntity with 409 status and error message
      */
-    @ExceptionHandler(value = {})
+    @ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<ErrorResponse> handleConflictException(Exception ex) {
-        if (ex.getMessage() != null && ex.getMessage().contains("already exists")) {
-            log.warn("Conflict: {}", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleConflictException(IllegalStateException ex) {
+        log.warn("Conflict: {}", ex.getMessage());
 
-            ErrorResponse errorResponse = new ErrorResponse(
-                    HttpStatus.CONFLICT.value(),
-                    ex.getMessage(),
-                    null,
-                    LocalDateTime.now()
-            );
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                null,
+                LocalDateTime.now()
+        );
 
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-        }
-        return handleGeneralException(ex);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
     /**
