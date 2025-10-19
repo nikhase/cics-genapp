@@ -214,7 +214,7 @@ class PolicyServiceTest {
                 "456 Oak Ave",
                 "SINGLE_FAMILY",
                 1995,
-                2000,
+                new BigDecimal("2000.00"),
                 new BigDecimal("400000.00"),
                 new BigDecimal("400000.00"), // deductible = replacement cost (invalid)
                 3, 2, false, true
@@ -353,11 +353,13 @@ class PolicyServiceTest {
         when(policyRepository.findById(1L)).thenReturn(Optional.of(motorPolicy));
 
         // When: getting policy by ID
-        PolicyDTO result = policyService.getPolicyById(1L);
+        Object result = policyService.getPolicyById(1L);
 
         // Then: policy is retrieved successfully
         assertNotNull(result);
-        assertEquals("MOT-2025-001", result.policyNumber());
+        assertTrue(result instanceof MotorPolicyDTO);
+        MotorPolicyDTO motorDTO = (MotorPolicyDTO) result;
+        assertEquals("MOT-2025-001", motorDTO.policyNumber());
         verify(policyRepository).findById(1L);
     }
 
@@ -387,7 +389,7 @@ class PolicyServiceTest {
         doNothing().when(customerService).getCustomerById(1L);
 
         // When: getting all policies for customer
-        List<PolicyDTO> result = policyService.getPoliciesByCustomerId(1L);
+        List<?> result = policyService.getPoliciesByCustomerId(1L);
 
         // Then: all policies are retrieved
         assertEquals(3, result.size());

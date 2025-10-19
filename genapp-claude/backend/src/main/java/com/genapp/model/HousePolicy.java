@@ -212,7 +212,8 @@ public final class HousePolicy extends Policy {
         }
 
         // Square footage validation
-        if (squareFootage < 100 || squareFootage > 1_000_000) {
+        if (squareFootage.compareTo(BigDecimal.valueOf(100)) < 0 ||
+            squareFootage.compareTo(BigDecimal.valueOf(1_000_000)) > 0) {
             throw new IllegalArgumentException("Square footage must be between 100 and 1,000,000");
         }
 

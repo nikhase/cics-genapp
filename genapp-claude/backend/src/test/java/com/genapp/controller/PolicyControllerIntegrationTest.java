@@ -193,7 +193,7 @@ class PolicyControllerIntegrationTest {
                 "456 Oak Ave",
                 "SINGLE_FAMILY",
                 1995,
-                2000,
+                new BigDecimal("2000.00"),
                 new BigDecimal("400000.00"),
                 new BigDecimal("1000.00"),
                 3, 2, false, true
@@ -342,7 +342,7 @@ class PolicyControllerIntegrationTest {
                 null, testCustomer.getCustomerId(), "HSE-2025-001",
                 LocalDate.of(2025, 10, 19), LocalDate.of(2026, 10, 19),
                 new BigDecimal("800.00"), "ACTIVE", "HOUSE",
-                "456 Oak Ave", "SINGLE_FAMILY", 1995, 2000,
+                "456 Oak Ave", "SINGLE_FAMILY", 1995, new BigDecimal("2000.00"),
                 new BigDecimal("400000.00"), new BigDecimal("1000.00"),
                 3, 2, false, true
         );

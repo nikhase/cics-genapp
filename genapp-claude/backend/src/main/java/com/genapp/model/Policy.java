@@ -46,6 +46,7 @@ import java.util.Objects;
 })
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "policy_type", discriminatorType = DiscriminatorType.STRING)
+@org.hibernate.annotations.Proxy(lazy = false)  // Required for sealed classes - prevents proxy creation
 public abstract sealed class Policy permits MotorPolicy, HousePolicy, EndowmentPolicy, CommercialPolicy {
 
     /**
