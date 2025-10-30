@@ -4,233 +4,227 @@ workspace "CICS GenApp" "Enterprise COBOL application for IBM CICS Transaction S
         # ======================================
         # EXTERNAL SYSTEMS & USERS
         # ======================================
-        businessUser = person "Business User" "Insurance agent or customer service representative using 3270 terminal" "External"
+        insuranceAgent = person "Insurance Agent" "Creates policies, manages customer records via 3270 terminal" {
+            tags "Person,External"
+        }
+        customerService = person "Customer Service Rep" "Inquires and updates policies and customer info" {
+            tags "Person,External"
+        }
+        sysAdmin = person "System Administrator" "Maintains CICS region, monitors transactions, manages coupling facility" {
+            tags "Person,External"
+        }
+
+        # ======================================
+        # EXTERNAL SYSTEMS
+        # ======================================
+        cicsMon = softwareSystem "CICS Monitoring" "Real-time monitoring and performance tracking tools" {
+            tags "SoftwareSystem,External"
+        }
+        batchScheduler = softwareSystem "Batch Job Scheduler" "Submits JCL jobs for builds, maintenance, and data loads" {
+            tags "SoftwareSystem,External"
+        }
+        externalPolicy = softwareSystem "External Policy Feed" "Optional integration for policy data from partner systems" {
+            tags "SoftwareSystem,External"
+        }
 
         # ======================================
         # MAINFRAME SYSTEMS
         # ======================================
-        zos = softwareSystem "z/OS Mainframe" "IBM operating system hosting CICS and applications" "External" {
-            db2 = container "Db2 Database" "Primary ACID-compliant data store for customers and policies" "Database - Db2 for z/OS" {
-                customerTable = component "CUSTOMER Table" "Stores customer master records" "Db2 Table"
-                policyTable = component "POLICY Table" "Policy header records with type and customer references" "Db2 Table"
-                motorTable = component "MOTOR Table" "Motor insurance policy details" "Db2 Table"
-                endowmentTable = component "ENDOWMENT Table" "Endowment insurance policy details" "Db2 Table"
-                houseTable = component "HOUSE Table" "House insurance policy details" "Db2 Table"
-                commercialTable = component "COMMERCIAL Table" "Commercial property insurance policy details" "Db2 Table"
+        zos = softwareSystem "z/OS Mainframe" "IBM operating system hosting CICS, Db2, and VSAM subsystems" {
+            tags "SoftwareSystem,External,Mainframe"
+            db2 = container "Db2 Database" "Primary ACID-compliant data store for customers and policies" {
+                tags "Database"
+                customerTable = component "CUSTOMER Table" "Stores customer master records" {
+                    tags "Db2Table"
+                }
+                policyTable = component "POLICY Table" "Policy header records with type and customer references" {
+                    tags "Db2Table"
+                }
+                motorTable = component "MOTOR Table" "Motor insurance policy details" {
+                    tags "Db2Table"
+                }
+                endowmentTable = component "ENDOWMENT Table" "Endowment insurance policy details" {
+                    tags "Db2Table"
+                }
+                houseTable = component "HOUSE Table" "House insurance policy details" {
+                    tags "Db2Table"
+                }
+                commercialTable = component "COMMERCIAL Table" "Commercial property insurance policy details" {
+                    tags "Db2Table"
+                }
             }
 
-            vsam = container "VSAM Files" "Secondary file-based storage for shadow records and legacy compatibility" "File System - VSAM" {
-                ksdscust = component "KSDSCUST" "Customer KSDS file (key=first 10 chars)" "VSAM KSDS File"
-                ksdspoly = component "KSDSPOLY" "Policy KSDS file (key=Type+CustomerID+PolicyID)" "VSAM KSDS File"
+            vsam = container "VSAM Files" "Secondary file-based storage for shadow records and legacy compatibility" {
+                tags "FileSystem"
+                ksdscust = component "KSDSCUST" "Customer KSDS file (key=first 10 chars)" {
+                    tags "VsamFile"
+                }
+                ksdspoly = component "KSDSPOLY" "Policy KSDS file (key=Type+CustomerID+PolicyID)" {
+                    tags "VsamFile"
+                }
             }
 
             # ======================================
             # CICS GENAPP APPLICATION CONTAINER
             # ======================================
-            cicApp = container "CICS GenApp Application" "Enterprise COBOL application with transaction processing, business logic, and data layers" "CICS Component" {
+            cicApp = container "CICS GenApp Application" "3-tier enterprise COBOL application: Presentation layer (3270 UI) → Business Logic layer (rules & 2PC) → Data layer (Db2 + VSAM shadow)" {
+                tags "CicsComponent"
                 # ======================================
-                # PRESENTATION LAYER (3270 UI)
+                # PRESENTATION LAYER (3270 Terminal Interface)
                 # ======================================
-                bmsMap = component "ssmap.bms" "BMS screen map definitions for 3270 terminal" "BMS Screen Map"
-                ssc1Prog = component "LGTESTC1" "Customer management transaction entry point (SSC1)" "COBOL Program"
-                ssp1Prog = component "LGTESTP1" "Motor insurance policy transaction (SSP1)" "COBOL Program"
-                ssp2Prog = component "LGTESTP2" "Endowment insurance policy transaction (SSP2)" "COBOL Program"
-                ssp3Prog = component "LGTESTP3" "House insurance policy transaction (SSP3)" "COBOL Program"
-                ssp4Prog = component "LGTESTP4" "Commercial property policy transaction (SSP4)" "COBOL Program"
+                bmsMap = component "ssmap.bms" "3270 BMS screen map definitions" {
+                    tags "BmsMap"
+                }
+                presentationGroup = component "Transaction Handlers" "5 transaction programs (SSC1 for customers, SSP1-P4 for policy types)" {
+                    tags "CobolProgram,Presentation"
+                }
 
                 # ======================================
                 # BUSINESS LOGIC LAYER
                 # ======================================
-                cusAddBiz = component "LGACUS01" "Customer addition business logic" "COBOL Program"
-                cusInqBiz = component "LGICUS01" "Customer inquiry business logic" "COBOL Program"
-                cusUpdBiz = component "LGUCUS01" "Customer update business logic" "COBOL Program"
-                polAddBiz = component "LGAPOL01" "Policy addition business logic and two-phase commit" "COBOL Program"
-                polInqBiz = component "LGIPOL01" "Policy inquiry business logic" "COBOL Program"
-                polUpdBiz = component "LGUPOL01" "Policy update business logic" "COBOL Program"
-                polDelBiz = component "LGDPOL01" "Policy deletion business logic" "COBOL Program"
-                setupUtil = component "LGSETUP" "Application initialization and counter setup" "COBOL Utility"
-                stsqUtil = component "LGSTSQ" "Temporary storage queue writer for control data" "COBOL Utility"
-                statUtil = component "LGASTAT1" "Transaction counter and statistics updater" "COBOL Utility"
-                webstUtil = component "LGWEBST5" "Counter to queue data copy utility" "COBOL Utility"
+                customerOpsGroup = component "Customer Operations" "Add/Inquire/Update customer master records with validation" {
+                    tags "CobolProgram,BusinessLogic"
+                }
+                motorPolicyGroup = component "Motor Policy Handler" "Motor insurance policy CRUD operations (Type M)" {
+                    tags "CobolProgram,BusinessLogic"
+                }
+                endowmentPolicyGroup = component "Endowment Policy Handler" "Endowment insurance policy CRUD operations (Type E)" {
+                    tags "CobolProgram,BusinessLogic"
+                }
+                housePolicyGroup = component "House Policy Handler" "House insurance policy CRUD operations (Type H)" {
+                    tags "CobolProgram,BusinessLogic"
+                }
+                commercialPolicyGroup = component "Commercial Policy Handler" "Commercial insurance policy CRUD operations (Type C)" {
+                    tags "CobolProgram,BusinessLogic"
+                }
 
                 # ======================================
-                # DATA MANAGEMENT LAYER - Db2
+                # DATA MANAGEMENT LAYER - Db2 Access
                 # ======================================
-                cusAddDb = component "LGACDB01" "Customer addition to Db2" "COBOL + SQL"
-                cusInqDb = component "LGICDB01" "Customer inquiry from Db2" "COBOL + SQL"
-                cusUpdDb = component "LGUCDB01" "Customer update in Db2" "COBOL + SQL"
-                polAddDb = component "LGAPDB01" "Policy addition to Db2" "COBOL + SQL"
-                polInqDb = component "LGIPDB01" "Policy inquiry from Db2" "COBOL + SQL"
-                polUpdDb = component "LGUPDB01" "Policy update in Db2" "COBOL + SQL"
-                polDelDb = component "LGDPDB01" "Policy deletion from Db2" "COBOL + SQL"
+                db2AccessGroup = component "Db2 Data Access Layer" "COBOL+SQL programs for customer and policy CRUD with SQL execution" {
+                    tags "CobolSql,DataAccess"
+                }
 
                 # ======================================
-                # DATA MANAGEMENT LAYER - VSAM
+                # DATA MANAGEMENT LAYER - VSAM Access
                 # ======================================
-                cusAddVs = component "LGACVS01" "Customer addition to VSAM (shadow)" "COBOL + CICS File I/O"
-                cusInqVs = component "LGICVS01" "Customer inquiry from VSAM" "COBOL + CICS File I/O"
-                cusUpdVs = component "LGUCVS01" "Customer update in VSAM" "COBOL + CICS File I/O"
-                polAddVs = component "LGAPVS01" "Policy addition to VSAM (shadow)" "COBOL + CICS File I/O"
-                polInqVs = component "LGIPVS01" "Policy inquiry from VSAM" "COBOL + CICS File I/O"
-                polUpdVs = component "LGUPVS01" "Policy update in VSAM" "COBOL + CICS File I/O"
-                polDelVs = component "LGDPVS01" "Policy deletion from VSAM" "COBOL + CICS File I/O"
+                vsamAccessGroup = component "VSAM Data Access Layer" "COBOL+CICS programs for shadow storage with KSDS file I/O" {
+                    tags "CobolVsam,DataAccess"
+                }
 
                 # ======================================
                 # SHARED DATA STRUCTURES (COPYBOOKS)
                 # ======================================
-                commareaBook = component "lgcmarea.cpy" "Primary 32KB+ COMMAREA structure for all programs" "COBOL Copybook"
-                policyBook = component "lgpolicy.cpy" "Policy structures with REDEFINES for 4 policy types" "COBOL Copybook"
-                inputBooks = component "soai*.cpy" "Policy-specific input format definitions" "COBOL Copybook"
-                outputBooks = component "soav*.cpy" "Policy-specific output format definitions" "COBOL Copybook"
-                lookupBooks = component "pollook*.cpy" "Policy lookup and reference structures" "COBOL Copybook"
+                commareaBook = component "lgcmarea.cpy" "Primary 32KB+ COMMAREA shared by all programs" {
+                    tags "Copybook"
+                }
+                policyBook = component "lgpolicy.cpy" "Polymorphic policy structures (REDEFINES for 4 types)" {
+                    tags "Copybook"
+                }
+                copybooks = component "soai*.cpy, soav*.cpy, pollook*.cpy" "Type-specific input/output and lookup structures" {
+                    tags "Copybook"
+                }
 
                 # ======================================
-                # OPTIONAL COMPONENTS (Coupling Facility)
+                # INFRASTRUCTURE & UTILITIES
                 # ======================================
-                namedCounter = component "Named Counter Server" "Distributed unique ID generation (pool: GENA)" "CICS Named Counter"
-                tsqControl = component "GENACNTL Queue" "Control data and counter range tracking" "Temporary Storage Queue"
-                tsqErrors = component "GENAERRS Queue" "Error logging for Db2 and VSAM failures" "Temporary Storage Queue"
+                statUtil = component "Statistics & Counters" "LGASTAT1, LGSETUP, LGWEBST5 - transaction counters and monitoring" {
+                    tags "Utility,Infrastructure"
+                }
+                errorQueue = component "Error Logging (GENAERRS)" "Temporary storage queue for transaction error logging" {
+                    tags "Tsq,Infrastructure"
+                }
+
+                # ======================================
+                # OPTIONAL COUPLING FACILITY (Parallel Sysplex)
+                # ======================================
+                namedCounter = component "Named Counter Server" "Optional distributed unique ID generation (pool: GENA)" {
+                    tags "Counter,Infrastructure"
+                }
+                controlQueue = component "Control Queue (GENACNTL)" "Optional control data and counter range tracking" {
+                    tags "Tsq,Infrastructure"
+                }
 
                 # ======================================
                 # LAYER INTERACTIONS (EXEC CICS LINK)
                 # ======================================
-                # Presentation self-interactions
-                ssc1Prog -> ssc1Prog "input validation, COMMAREA setup"
-                ssp1Prog -> ssp1Prog "input validation, COMMAREA setup"
-                ssp2Prog -> ssp2Prog "input validation, COMMAREA setup"
-                ssp3Prog -> ssp3Prog "input validation, COMMAREA setup"
-                ssp4Prog -> ssp4Prog "input validation, COMMAREA setup"
-
                 # Presentation -> Business Logic
-                ssc1Prog -> cusAddBiz "EXEC CICS LINK"
-                ssc1Prog -> cusInqBiz "EXEC CICS LINK"
-                ssc1Prog -> cusUpdBiz "EXEC CICS LINK"
-                ssp1Prog -> polAddBiz "EXEC CICS LINK"
-                ssp1Prog -> polInqBiz "EXEC CICS LINK"
-                ssp1Prog -> polUpdBiz "EXEC CICS LINK"
-                ssp1Prog -> polDelBiz "EXEC CICS LINK"
-                ssp2Prog -> polAddBiz "EXEC CICS LINK"
-                ssp2Prog -> polInqBiz "EXEC CICS LINK"
-                ssp2Prog -> polUpdBiz "EXEC CICS LINK"
-                ssp2Prog -> polDelBiz "EXEC CICS LINK"
-                ssp3Prog -> polAddBiz "EXEC CICS LINK"
-                ssp3Prog -> polInqBiz "EXEC CICS LINK"
-                ssp3Prog -> polUpdBiz "EXEC CICS LINK"
-                ssp3Prog -> polDelBiz "EXEC CICS LINK"
-                ssp4Prog -> polAddBiz "EXEC CICS LINK"
-                ssp4Prog -> polInqBiz "EXEC CICS LINK"
-                ssp4Prog -> polUpdBiz "EXEC CICS LINK"
-                ssp4Prog -> polDelBiz "EXEC CICS LINK"
+                presentationGroup -> customerOpsGroup "EXEC CICS LINK (SSC1)"
+                presentationGroup -> motorPolicyGroup "EXEC CICS LINK (SSP1)"
+                presentationGroup -> endowmentPolicyGroup "EXEC CICS LINK (SSP2)"
+                presentationGroup -> housePolicyGroup "EXEC CICS LINK (SSP3)"
+                presentationGroup -> commercialPolicyGroup "EXEC CICS LINK (SSP4)"
 
-                # Business Logic self-interactions and checks
-                cusAddBiz -> cusAddBiz "duplicate check, ID generation"
-                cusInqBiz -> cusInqBiz "data validation"
-                cusUpdBiz -> cusUpdBiz "data validation"
-                polAddBiz -> polAddBiz "duplicate check, ID generation, 2PC orchestration"
-                polInqBiz -> polInqBiz "data validation"
-                polUpdBiz -> polUpdBiz "data validation, 2PC orchestration"
-                polDelBiz -> polDelBiz "validation"
+                # Business Logic -> Data Access Layers
+                customerOpsGroup -> db2AccessGroup "EXEC CICS LINK (add/inquire/update)"
+                customerOpsGroup -> vsamAccessGroup "EXEC CICS LINK (Phase 2 of 2PC, shadow sync)"
+                motorPolicyGroup -> db2AccessGroup "EXEC CICS LINK (add/inquire/update/delete, Motor type)"
+                motorPolicyGroup -> vsamAccessGroup "EXEC CICS LINK (Phase 2 of 2PC)"
+                endowmentPolicyGroup -> db2AccessGroup "EXEC CICS LINK (add/inquire/update/delete, Endowment type)"
+                endowmentPolicyGroup -> vsamAccessGroup "EXEC CICS LINK (Phase 2 of 2PC)"
+                housePolicyGroup -> db2AccessGroup "EXEC CICS LINK (add/inquire/update/delete, House type)"
+                housePolicyGroup -> vsamAccessGroup "EXEC CICS LINK (Phase 2 of 2PC)"
+                commercialPolicyGroup -> db2AccessGroup "EXEC CICS LINK (add/inquire/update/delete, Commercial type)"
+                commercialPolicyGroup -> vsamAccessGroup "EXEC CICS LINK (Phase 2 of 2PC)"
 
-                # Business Logic -> Data Layers
-                cusAddBiz -> cusAddDb "EXEC CICS LINK"
-                cusInqBiz -> cusInqDb "EXEC CICS LINK"
-                cusUpdBiz -> cusUpdDb "EXEC CICS LINK"
-                polAddBiz -> polAddDb "EXEC CICS LINK (Phase 1)"
-                polInqBiz -> polInqDb "EXEC CICS LINK"
-                polUpdBiz -> polUpdDb "EXEC CICS LINK (Phase 1)"
-                polDelBiz -> polDelDb "EXEC CICS LINK"
+                # Data Access Layers -> Storage
+                db2AccessGroup -> customerTable "EXEC SQL (INSERT/SELECT/UPDATE)"
+                db2AccessGroup -> policyTable "EXEC SQL (INSERT/SELECT/UPDATE/DELETE)"
+                db2AccessGroup -> motorTable "EXEC SQL (conditional on Type=M)"
+                db2AccessGroup -> endowmentTable "EXEC SQL (conditional on Type=E)"
+                db2AccessGroup -> houseTable "EXEC SQL (conditional on Type=H)"
+                db2AccessGroup -> commercialTable "EXEC SQL (conditional on Type=C)"
+                vsamAccessGroup -> ksdscust "EXEC CICS FILE I/O (customer shadow)"
+                vsamAccessGroup -> ksdspoly "EXEC CICS FILE I/O (policy shadow)"
 
-                # Business Logic -> VSAM (Phase 2 of 2PC)
-                cusAddBiz -> cusAddVs "EXEC CICS LINK (if Db2 ok)"
-                cusUpdBiz -> cusUpdVs "EXEC CICS LINK (if Db2 ok)"
-                polAddBiz -> polAddVs "EXEC CICS LINK (Phase 2, best-effort)"
-                polUpdBiz -> polUpdVs "EXEC CICS LINK (Phase 2, best-effort)"
-                polDelBiz -> polDelVs "EXEC CICS LINK"
+                # All Business Logic uses shared copybooks
+                customerOpsGroup -> commareaBook "uses"
+                customerOpsGroup -> copybooks "uses"
+                motorPolicyGroup -> commareaBook "uses"
+                motorPolicyGroup -> policyBook "uses"
+                motorPolicyGroup -> copybooks "uses"
+                endowmentPolicyGroup -> commareaBook "uses"
+                endowmentPolicyGroup -> policyBook "uses"
+                endowmentPolicyGroup -> copybooks "uses"
+                housePolicyGroup -> commareaBook "uses"
+                housePolicyGroup -> policyBook "uses"
+                housePolicyGroup -> copybooks "uses"
+                commercialPolicyGroup -> commareaBook "uses"
+                commercialPolicyGroup -> policyBook "uses"
+                commercialPolicyGroup -> copybooks "uses"
 
-                # Data Access Layer self-interactions
-                cusAddDb -> cusAddDb "SQL preparation"
-                cusInqDb -> cusInqDb "SQL preparation"
-                cusUpdDb -> cusUpdDb "SQL preparation"
-                polAddDb -> polAddDb "SQL preparation"
-                polInqDb -> polInqDb "SQL preparation"
-                polUpdDb -> polUpdDb "SQL preparation"
-                polDelDb -> polDelDb "SQL preparation"
+                # Infrastructure interactions
+                customerOpsGroup -> statUtil "updates counters"
+                motorPolicyGroup -> statUtil "updates counters"
+                endowmentPolicyGroup -> statUtil "updates counters"
+                housePolicyGroup -> statUtil "updates counters"
+                commercialPolicyGroup -> statUtil "updates counters"
+                customerOpsGroup -> errorQueue "logs failures"
+                motorPolicyGroup -> errorQueue "logs failures"
+                endowmentPolicyGroup -> errorQueue "logs failures"
+                housePolicyGroup -> errorQueue "logs failures"
+                commercialPolicyGroup -> errorQueue "logs failures"
 
-                cusAddVs -> cusAddVs "record preparation"
-                cusInqVs -> cusInqVs "record preparation"
-                cusUpdVs -> cusUpdVs "record preparation"
-                polAddVs -> polAddVs "record preparation"
-                polInqVs -> polInqVs "record preparation"
-                polUpdVs -> polUpdVs "record preparation"
-                polDelVs -> polDelVs "record preparation"
-
-                # Data Layers -> External Storage
-                cusAddDb -> customerTable "EXEC SQL INSERT"
-                cusInqDb -> customerTable "EXEC SQL SELECT"
-                cusUpdDb -> customerTable "EXEC SQL UPDATE"
-                polAddDb -> policyTable "EXEC SQL INSERT"
-                polInqDb -> policyTable "EXEC SQL SELECT"
-                polUpdDb -> policyTable "EXEC SQL UPDATE"
-                polDelDb -> policyTable "EXEC SQL DELETE"
-
-                cusAddVs -> ksdscust "EXEC CICS WRITE FILE"
-                cusInqVs -> ksdscust "EXEC CICS READ FILE"
-                cusUpdVs -> ksdscust "EXEC CICS WRITE FILE"
-                polAddVs -> ksdspoly "EXEC CICS WRITE FILE"
-                polInqVs -> ksdspoly "EXEC CICS READ FILE"
-                polUpdVs -> ksdspoly "EXEC CICS WRITE FILE"
-                polDelVs -> ksdspoly "EXEC CICS DELETE FILE"
-
-                # Data Layers -> Shared Structures
-                cusAddBiz -> commareaBook "uses"
-                cusInqBiz -> commareaBook "uses"
-                cusUpdBiz -> commareaBook "uses"
-                polAddBiz -> commareaBook "uses"
-                polAddBiz -> policyBook "uses"
-                polInqBiz -> commareaBook "uses"
-                polInqBiz -> policyBook "uses"
-                polUpdBiz -> commareaBook "uses"
-                polUpdBiz -> policyBook "uses"
-                polDelBiz -> commareaBook "uses"
-                polDelBiz -> policyBook "uses"
-
-                # Business Logic -> Utilities
-                cusAddBiz -> statUtil "calls to update transaction counter"
-                cusInqBiz -> statUtil "calls to update transaction counter"
-                cusUpdBiz -> statUtil "calls to update transaction counter"
-                polAddBiz -> statUtil "calls to update transaction counter"
-                polInqBiz -> statUtil "calls to update transaction counter"
-                polUpdBiz -> statUtil "calls to update transaction counter"
-                polDelBiz -> statUtil "calls to update transaction counter"
-
-                # Utilities interactions
-                setupUtil -> namedCounter "initializes"
-                statUtil -> tsqControl "updates"
-                polAddBiz -> tsqControl "updates"
+                # Optional coupling facility
+                statUtil -> namedCounter "uses for distributed IDs"
+                statUtil -> controlQueue "updates counter ranges"
             }
         }
 
         # ======================================
-        # EXTERNAL RELATIONSHIPS
+        # EXTERNAL USER RELATIONSHIPS
         # ======================================
-        businessUser -> cicApp "Uses 3270 protocol"
+        insuranceAgent -> cicApp "Uses 3270 terminal (SSC1, SSP1-P4)"
+        customerService -> cicApp "Uses 3270 terminal (SSC1, SSP1-P4)"
+        sysAdmin -> cicsMon "Monitors CICS region health and performance"
+        sysAdmin -> zos "Manages z/OS system"
 
-        # Policy-specific table relationships
-        polAddDb -> motorTable "EXEC SQL INSERT (if type=M)"
-        polInqDb -> motorTable "EXEC SQL SELECT (if type=M)"
-        polUpdDb -> motorTable "EXEC SQL UPDATE (if type=M)"
-
-        polAddDb -> endowmentTable "EXEC SQL INSERT (if type=E)"
-        polInqDb -> endowmentTable "EXEC SQL SELECT (if type=E)"
-        polUpdDb -> endowmentTable "EXEC SQL UPDATE (if type=E)"
-
-        polAddDb -> houseTable "EXEC SQL INSERT (if type=H)"
-        polInqDb -> houseTable "EXEC SQL SELECT (if type=H)"
-        polUpdDb -> houseTable "EXEC SQL UPDATE (if type=H)"
-
-        polAddDb -> commercialTable "EXEC SQL INSERT (if type=C)"
-        polInqDb -> commercialTable "EXEC SQL SELECT (if type=C)"
-        polUpdDb -> commercialTable "EXEC SQL UPDATE (if type=C)"
+        # ======================================
+        # EXTERNAL SYSTEM INTEGRATIONS
+        # ======================================
+        cicsMon -> cicApp "Real-time monitoring via CICS APIs"
+        batchScheduler -> zos "Submits JCL build/maintenance jobs"
+        externalPolicy -> cicApp "Optional policy data integration (future enhancement)"
     }
 
     views {
@@ -238,35 +232,34 @@ workspace "CICS GenApp" "Enterprise COBOL application for IBM CICS Transaction S
         # SYSTEM CONTEXT VIEW
         # ======================================
         systemContext "zos" {
-            title "System Context: CICS GenApp"
-            description "High-level view showing external systems and users"
-            include businessUser zos
+            title "System Context: Enterprise Insurance Transaction Processing"
+            description "External actors, systems, and integrations for CICS GenApp. Shows insurance agents and customer service reps as primary users, with optional CICS monitoring and batch job scheduling for operations."
+            include insuranceAgent customerService sysAdmin cicsMon batchScheduler zos
             autoLayout lr
         }
 
         # ======================================
-        # CONTAINER VIEW (Overview)
+        # CONTAINER VIEW (Architectural Layers)
         # ======================================
         container "zos" {
-            title "Container View: CICS GenApp on z/OS"
-            description "All major subsystems within z/OS: Database, VSAM, and CICS application"
-            include db2 vsam cicApp
-            include businessUser
+            title "Container View: 3-Tier Architecture on z/OS"
+            description "CICS GenApp implements a monolithic 3-tier architecture with dual-storage consistency. Presentation layer handles 3270 terminal UI → Business Logic layer orchestrates rules and 2PC → Data layer manages Db2 (primary) and VSAM (shadow) storage."
+            include cicApp db2 vsam
+            include insuranceAgent customerService
             autoLayout tb
         }
 
         # ======================================
-        # APPLICATION COMPONENTS
+        # APPLICATION COMPONENTS (FUNCTIONAL GROUPS)
         # ======================================
         component "cicApp" {
-            title "Component View: CICS GenApp Application"
-            description "All application components: Presentation, Business Logic, Data Access, and Support layers"
-            include ssc1Prog ssp1Prog ssp2Prog ssp3Prog ssp4Prog bmsMap
-            include cusAddBiz cusInqBiz cusUpdBiz polAddBiz polInqBiz polUpdBiz polDelBiz setupUtil stsqUtil statUtil webstUtil
-            include cusAddDb cusInqDb cusUpdDb polAddDb polInqDb polUpdDb polDelDb
-            include cusAddVs cusInqVs cusUpdVs polAddVs polInqVs polUpdVs polDelVs
-            include commareaBook policyBook inputBooks outputBooks lookupBooks
-            include namedCounter tsqControl tsqErrors
+            title "Component View: CICS GenApp Functional Architecture"
+            description "Organized by 3 layers and 5 functional domains. Presentation → 5 Transaction Handlers. Business Logic → Customer Operations + 4 Policy Type Handlers (polymorphic). Data Access → Db2 SQL layer + VSAM shadow layer. Infrastructure → Statistics/Monitoring + Error Logging + Optional Coupling Facility."
+            include bmsMap presentationGroup
+            include customerOpsGroup motorPolicyGroup endowmentPolicyGroup housePolicyGroup commercialPolicyGroup
+            include db2AccessGroup vsamAccessGroup
+            include commareaBook policyBook copybooks
+            include statUtil errorQueue namedCounter controlQueue
             autoLayout tb
         }
 
@@ -274,8 +267,8 @@ workspace "CICS GenApp" "Enterprise COBOL application for IBM CICS Transaction S
         # DATA LAYER COMPONENTS (Db2)
         # ======================================
         component "db2" {
-            title "Component View: Db2 Database"
-            description "All Db2 tables for customer and policy data"
+            title "Component View: Db2 Primary Storage"
+            description "6 tables: CUSTOMER (master) + POLICY (header) + 4 type-specific tables. Primary ACID-compliant data store."
             include customerTable policyTable motorTable endowmentTable houseTable commercialTable
             autoLayout tb
         }
@@ -284,34 +277,61 @@ workspace "CICS GenApp" "Enterprise COBOL application for IBM CICS Transaction S
         # DATA LAYER COMPONENTS (VSAM)
         # ======================================
         component "vsam" {
-            title "Component View: VSAM Files"
-            description "VSAM KSDS files for customer and policy shadow storage"
+            title "Component View: VSAM Shadow Storage"
+            description "2 KSDS files for customer and policy records. Maintains denormalized shadow copies synchronized via 2PC for legacy compatibility and disaster recovery."
             include ksdscust ksdspoly
             autoLayout tb
         }
 
         # ======================================
-        # SEQUENCE DIAGRAM (Customer Add Flow)
+        # SEQUENCE DIAGRAM: TWO-PHASE COMMIT PATTERN
         # ======================================
-        dynamic "cicApp" "CustomerAddFlow" {
-            title "Sequence Diagram: Customer Addition Transaction"
-            description "Two-phase commit flow: Db2 (primary) then VSAM (shadow)"
+        dynamic "cicApp" "TwoPhaseCommitFlow" {
+            title "Transaction Flow: Two-Phase Commit (Db2 Primary → VSAM Shadow)"
+            description "Demonstrates the 2PC pattern: Phase 1 commits to Db2 (ACID), Phase 2 asynchronously syncs to VSAM. Errors logged to GENAERRS queue for operator review."
 
-            ssc1Prog -> ssc1Prog "1. Validate input, create COMMAREA"
-            ssc1Prog -> cusAddBiz "2. EXEC CICS LINK PROGRAM('LGACUS01')"
-            cusAddBiz -> cusAddBiz "3. Check duplicates, obtain next customer ID"
-            cusAddBiz -> cusAddDb "4. EXEC CICS LINK PROGRAM('LGACDB01')"
-            cusAddDb -> customerTable "5. EXEC SQL INSERT INTO CUSTOMER"
-            customerTable -> cusAddDb "6. Success SQLCODE=0"
-            cusAddDb -> cusAddBiz "7. Return with status OK"
-            cusAddBiz -> cusAddBiz "8. Evaluate response"
-            cusAddBiz -> cusAddVs "9. EXEC CICS LINK PROGRAM('LGACVS01')"
-            cusAddVs -> ksdscust "10. EXEC CICS WRITE FILE('KSDSCUST')"
-            ksdscust -> cusAddVs "11. Success"
-            cusAddVs -> cusAddBiz "12. Return status"
-            cusAddBiz -> statUtil "13. Update transaction counter"
-            cusAddBiz -> ssc1Prog "14. Return control"
-            ssc1Prog -> ssc1Prog "15. Format response screen"
+            presentationGroup -> customerOpsGroup "1. EXEC CICS LINK with COMMAREA (SSC1)"
+            customerOpsGroup -> db2AccessGroup "2. Phase 1: EXEC CICS LINK to Db2"
+            db2AccessGroup -> customerTable "3. EXEC SQL INSERT INTO CUSTOMER"
+            customerTable -> db2AccessGroup "4. Success SQLCODE=0"
+            db2AccessGroup -> customerOpsGroup "5. Return OK status (Phase 1 committed)"
+            customerOpsGroup -> vsamAccessGroup "6. Phase 2: EXEC CICS LINK to VSAM (best-effort shadow sync)"
+            vsamAccessGroup -> ksdscust "7. EXEC CICS WRITE FILE('KSDSCUST')"
+            ksdscust -> vsamAccessGroup "8. File I/O result (success or error)"
+            vsamAccessGroup -> customerOpsGroup "9. Return Phase 2 status"
+            customerOpsGroup -> statUtil "10. Update transaction counters"
+            customerOpsGroup -> errorQueue "11. Log any Phase 2 failures to GENAERRS"
+            customerOpsGroup -> presentationGroup "12. Return to presentation layer with result"
+
+            autoLayout tb
+        }
+
+        # ======================================
+        # SEQUENCE DIAGRAM: POLYMORPHIC POLICY TYPES
+        # ======================================
+        dynamic "cicApp" "PolicyPolymorphismFlow" {
+            title "Transaction Flow: Polymorphic Policy Handling (Type Dispatch)"
+            description "Shows how policy transactions (SSP1-P4) dispatch to type-specific handlers. Each handler routes to appropriate policy type table (Motor/Endowment/House/Commercial) using shared COMMAREA with type-specific REDEFINES structures."
+
+            presentationGroup -> motorPolicyGroup "1. SSP1 EXEC CICS LINK (Motor policy, Type=M)"
+            motorPolicyGroup -> db2AccessGroup "2. EXEC CICS LINK to Db2 data access"
+            db2AccessGroup -> motorTable "3. EXEC SQL INSERT/SELECT MOTOR table"
+            motorTable -> db2AccessGroup "4. Return motor policy records"
+            db2AccessGroup -> motorPolicyGroup "5. Return with Db2 results"
+            motorPolicyGroup -> vsamAccessGroup "6. EXEC CICS LINK for shadow sync"
+            vsamAccessGroup -> ksdspoly "7. EXEC CICS WRITE FILE('KSDSPOLY') with Type=M key"
+
+            presentationGroup -> endowmentPolicyGroup "8. SSP2 EXEC CICS LINK (Endowment policy, Type=E)"
+            endowmentPolicyGroup -> db2AccessGroup "9. EXEC CICS LINK to Db2 data access"
+            db2AccessGroup -> endowmentTable "10. EXEC SQL INSERT/SELECT ENDOWMENT table"
+
+            presentationGroup -> housePolicyGroup "11. SSP3 EXEC CICS LINK (House policy, Type=H)"
+            housePolicyGroup -> db2AccessGroup "12. EXEC CICS LINK to Db2 data access"
+            db2AccessGroup -> houseTable "13. EXEC SQL INSERT/SELECT HOUSE table"
+
+            presentationGroup -> commercialPolicyGroup "14. SSP4 EXEC CICS LINK (Commercial policy, Type=C)"
+            commercialPolicyGroup -> db2AccessGroup "15. EXEC CICS LINK to Db2 data access"
+            db2AccessGroup -> commercialTable "16. EXEC SQL INSERT/SELECT COMMERCIAL table"
 
             autoLayout tb
         }
@@ -320,82 +340,109 @@ workspace "CICS GenApp" "Enterprise COBOL application for IBM CICS Transaction S
         # STYLES & COLORS
         # ======================================
         styles {
-            element "Software System" {
-                background #1473BA
-                color #ffffff
-            }
+            # External users and systems
             element "External" {
-                background #999999
-                color #ffffff
+                background "#B0B0B0"
+                color "#1B1B1B"
             }
-            element "Person" {
-                background #08A542
-                color #ffffff
-                fontSize 22
-                shape Person
+
+            element "Mainframe" {
+                background "#1473BA"
+                color "#ffffff"
             }
+
+            # Presentation layer - Green
+            element "Presentation" {
+                background "#1E8449"
+                color "#ffffff"
+            }
+
+            element "BmsMap" {
+                background "#27AE60"
+                color "#ffffff"
+            }
+
+            # Business logic layer - Blue shades
+            element "BusinessLogic" {
+                background "#0066CC"
+                color "#ffffff"
+            }
+
+            # Data access layer - Dark blues
+            element "DataAccess" {
+                background "#004C7A"
+                color "#ffffff"
+            }
+
+            element "CobolSql" {
+                background "#0052A3"
+                color "#ffffff"
+            }
+
+            element "CobolVsam" {
+                background "#003D7A"
+                color "#ffffff"
+            }
+
+            # Data structures - Purple
+            element "Copybook" {
+                background "#6600CC"
+                color "#ffffff"
+            }
+
+            # Infrastructure - Browns and greys
+            element "Utility" {
+                background "#003D82"
+                color "#ffffff"
+            }
+
+            element "Infrastructure" {
+                background "#5D4E37"
+                color "#ffffff"
+            }
+
+            element "Counter" {
+                background "#8B6F47"
+                color "#ffffff"
+            }
+
+            element "Tsq" {
+                background "#704214"
+                color "#ffffff"
+            }
+
+            # Storage - Orange/Red
             element "Database" {
                 shape Cylinder
-                background #FF6B35
-                color #ffffff
+                background "#FF6B35"
+                color "#ffffff"
             }
-            element "File System" {
+
+            element "Db2Table" {
+                background "#DD4444"
+                color "#ffffff"
+            }
+
+            element "FileSystem" {
                 shape Folder
-                background #FF9F1C
-                color #ffffff
+                background "#FF9F1C"
+                color "#ffffff"
             }
-            element "COBOL Program" {
-                background #0066CC
-                color #ffffff
-                icon https://www.plantuml.com/img/favicon.png
+
+            element "VsamFile" {
+                background "#EE9944"
+                color "#ffffff"
             }
-            element "COBOL Copybook" {
-                background #6600CC
-                color #ffffff
-                shape Box
+
+            # CICS component
+            element "CicsComponent" {
+                background "#1F7F7F"
+                color "#ffffff"
             }
-            element "COBOL Utility" {
-                background #003D82
-                color #ffffff
-            }
-            element "COBOL + SQL" {
-                background #0052A3
-                color #ffffff
-            }
-            element "COBOL + CICS File I/O" {
-                background #004C7A
-                color #ffffff
-            }
-            element "BMS Screen Map" {
-                background #339933
-                color #ffffff
-            }
-            element "CICS Component" {
-                background #1F7F7F
-                color #ffffff
-            }
-            element "Coupling Facility" {
-                background #AA5500
-                color #ffffff
-            }
-            element "CICS Named Counter" {
-                background #885500
-                color #ffffff
-            }
-            element "Temporary Storage Queue" {
-                background #775500
-                color #ffffff
-            }
-            element "Db2 Table" {
-                background #DD4444
-                color #ffffff
-            }
-            element "VSAM KSDS File" {
-                background #EE9944
-                color #ffffff
-            }
+
+            # Relationships
             relationship "uses" {
-                routing Direct
+                color "#666666"
             }
         }
     }
