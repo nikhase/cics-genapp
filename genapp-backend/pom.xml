@@ -49,6 +49,12 @@
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
+    <!-- Spring Security OAuth2 Resource Server for OIDC -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+    </dependency>
+
     <!-- Spring Cloud Gateway -->
     <dependency>
       <groupId>org.springframework.cloud</groupId>
@@ -78,6 +84,13 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-logging</artifactId>
+    </dependency>
+
+    <!-- Logstash Logback Encoder for structured JSON logging -->
+    <dependency>
+      <groupId>net.logstash.logback</groupId>
+      <artifactId>logstash-logback-encoder</artifactId>
+      <version>7.4</version>
     </dependency>
 
     <!-- Test Dependencies -->

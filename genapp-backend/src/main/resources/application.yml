@@ -5,10 +5,14 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
         format_sql: false
         use_sql_comments: false
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
   datasource:
     hikari:
       maximum-pool-size: 10
@@ -123,4 +127,5 @@ logging:
   level:
     root: WARN
     com.example.cicsgenapp: INFO
-  format: json
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!-- Import Spring Boot default configuration -->
+  <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+
+  <!-- Define properties -->
+  <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}/}spring.log}"/>
+  <property name="LOG_FILE_MAX_SIZE" value="10MB"/>
+  <property name="LOG_FILE_MAX_HISTORY" value="10"/>
+
+  <!-- Console appender for all environments -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+      <charset>utf8</charset>
+    </encoder>
+  </appender>
+
+  <!-- JSON File appender for structured logging -->
+  <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_FILE}</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}/}spring-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+      <maxFileSize>${LOG_FILE_MAX_SIZE}</maxFileSize>
+      <maxHistory>${LOG_FILE_MAX_HISTORY}</maxHistory>
+    </rollingPolicy>
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <!-- Custom JSON fields -->
+      <customFields>{"service":"cics-genapp-backend","environment":"${SPRING_PROFILES_ACTIVE:unknown}"}</customFields>
+      <!-- Include MDC fields (traceId, userId, etc.) -->
+      <includeMdcKeyName>true</includeMdcKeyName>
+      <!-- Include caller info for debugging -->
+      <includeCallerInfo>true</includeCallerInfo>
+      <!-- Include stack trace on error -->
+      <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+        <maxDepthPerThrowable>30</maxDepthPerThrowable>
+        <maxLength>2048</maxLength>
+        <shortenedClassNameLength>20</shortenedClassNameLength>
+        <rootCauseFirst>true</rootCauseFirst>
+      </throwableConverter>
+    </encoder>
+  </appender>
+
+  <!-- Development profile: Console output with DEBUG level -->
+  <springProfile name="dev">
+    <logger name="com.example.cicsgenapp" level="DEBUG"/>
+    <logger name="org.springframework.security" level="DEBUG"/>
+    <logger name="org.springframework.web" level="DEBUG"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+    <root level="INFO">
+      <appender-ref ref="CONSOLE"/>
+    </root>
+  </springProfile>
+
+  <!-- Test profile: Console output with INFO level, minimal logging -->
+  <springProfile name="test">
+    <logger name="com.example.cicsgenapp" level="DEBUG"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <root level="INFO">
+      <appender-ref ref="CONSOLE"/>
+    </root>
+  </springProfile>
+
+  <!-- Production profile: JSON file output with WARN level -->
+  <springProfile name="prod">
+    <logger name="com.example.cicsgenapp" level="INFO"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <root level="WARN">
+      <appender-ref ref="FILE_JSON"/>
+    </root>
+  </springProfile>
+
+  <!-- Default profile (when no profile is active) -->
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+
+</configuration>
