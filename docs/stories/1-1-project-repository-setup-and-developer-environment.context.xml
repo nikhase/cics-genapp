@@ -1,0 +1,154 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.1</storyId>
+    <title>Project Repository Setup and Developer Environment</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-01</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-1-project-repository-setup-and-developer-environment.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Development Team Lead</asA>
+    <iWant>establish a standardized GitHub repository structure with build tooling configuration</iWant>
+    <soThat>all developers have a consistent starting point and can quickly run local builds</soThat>
+    <tasks>
+      - Create genapp-backend/ subfolder and initial folder structure (AC: #1)
+      - Configure Maven pom.xml with Spring Boot 3.3+ (AC: #2)
+      - Configure .gitignore in genapp-backend/ (AC: #3)
+      - Write comprehensive README.md in genapp-backend/ (AC: #4)
+      - Configure Git workflow and protection rules (AC: #6)
+      - Configure Checkstyle and SpotBugs for code quality in genapp-backend/ (AC: #7)
+      - Configure pre-commit hooks (AC: #8)
+      - Verify local build and run (AC: #5)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">genapp-backend/ subfolder created with clear folder structure (src/, tests/, config/, helm/)</criterion>
+    <criterion id="2">Maven pom.xml configured in genapp-backend/ with Spring Boot 3.3+ LTS, all required dependencies (Spring Web, Data JPA, Security, Cloud Gateway, Actuator, etc.)</criterion>
+    <criterion id="3">.gitignore configured in genapp-backend/ for Maven/IntelliJ/VS Code/Docker artifacts</criterion>
+    <criterion id="4">README.md created in genapp-backend/ with developer setup instructions (Java 17+, Maven 3.8+, Docker, PostgreSQL, mvn clean install)</criterion>
+    <criterion id="5">Local development can run from genapp-backend/: mvn clean install && mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"</criterion>
+    <criterion id="6">Git workflow documentation updated in root repository (branch naming: feature/*, bugfix/*, main is protected, PR process)</criterion>
+    <criterion id="7">Java code style configuration (Google Style Guide via Checkstyle, SpotBugs) integrated into genapp-backend/ build</criterion>
+    <criterion id="8">Pre-commit hooks configured to prevent unformatted code commits in genapp-backend/</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/index.md</path>
+        <title>Documentation Index</title>
+        <section>Project Documentation Hub</section>
+        <snippet>Navigation hub for all auto-generated documentation and architecture references</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture</path>
+        <title>Architecture Documentation</title>
+        <section>System Architecture</section>
+        <snippet>3-tier layered architecture with PRESENTATION, BUSINESS LOGIC, and DATA MANAGEMENT layers</snippet>
+      </doc>
+      <doc>
+        <path>base/Building.md</path>
+        <title>Legacy Build Documentation</title>
+        <section>Original Build Process</section>
+        <snippet>Reference for understanding legacy build patterns and customization requirements</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Instructions</title>
+        <section>Development Workflow</section>
+        <snippet>Development workflow, code organization, and COBOL-specific considerations for modernization</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>genapp-backend</path>
+        <kind>directory</kind>
+        <symbol>Project Root</symbol>
+        <reason>This story creates the genapp-backend/ directory structure - primary deliverable</reason>
+      </artifact>
+      <artifact>
+        <path>.github/workflows</path>
+        <kind>directory</kind>
+        <symbol>CI/CD Configuration</symbol>
+        <reason>Root-level CI/CD pipelines will orchestrate genapp-backend builds</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="maven">
+        <package name="spring-boot-starter-web" version="3.3+" />
+        <package name="spring-boot-starter-data-jpa" version="3.3+" />
+        <package name="spring-boot-starter-security" version="3.3+" />
+        <package name="spring-cloud-starter-gateway" version="2023.0.0+" />
+        <package name="spring-boot-starter-actuator" version="3.3+" />
+        <package name="spring-boot-starter-test" version="3.3+" />
+        <package name="testcontainers" version="1.17+" />
+        <package name="maven-checkstyle-plugin" version="3.2+" />
+        <package name="spotbugs-maven-plugin" version="4.7+" />
+      </ecosystem>
+      <ecosystem name="build-tools">
+        <item>Java 17+ LTS</item>
+        <item>Maven 3.8+</item>
+        <item>Docker (for local development)</item>
+        <item>Git (version control)</item>
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Repository uses GitHub with branch protection rules on main</constraint>
+    <constraint>Java 17+ LTS required for Spring Boot 3.3+ compatibility</constraint>
+    <constraint>Maven 3.8+ required for security improvements and dependency resolution</constraint>
+    <constraint>Project structure must support monorepo with multiple subfolders (genapp-backend, genapp-frontend, base/)</constraint>
+    <constraint>Code style follows Google Java Style Guide via Checkstyle integration</constraint>
+    <constraint>Pre-commit hooks must prevent unformatted code from being committed</constraint>
+    <constraint>Local build must complete with: mvn clean install && mvn spring-boot:run</constraint>
+    <constraint>All configuration files (.gitignore, pom.xml, README.md) must be in genapp-backend/ root</constraint>
+    <constraint>Build process must include code quality checks (Checkstyle, SpotBugs)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Maven Build Execution</name>
+      <kind>CLI Command</kind>
+      <signature>mvn clean install &amp;&amp; mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"</signature>
+      <path>genapp-backend/pom.xml</path>
+    </interface>
+    <interface>
+      <name>Development Profile</name>
+      <kind>Spring Boot Configuration</kind>
+      <signature>spring.profiles.active=dev</signature>
+      <path>genapp-backend/src/main/resources/application-dev.yml</path>
+    </interface>
+    <interface>
+      <name>Git Workflow</name>
+      <kind>Git Configuration</kind>
+      <signature>Branch naming: feature/*, bugfix/*, hotfix/*; main branch protected; PR required for merge</signature>
+      <path>WORKFLOW.md</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests use JUnit 5 with Mockito for mocking. Integration tests use TestContainers for database testing. API tests use MockMvc for controller testing. Minimum 80% code coverage target. All tests must pass before code can be committed (enforced via pre-commit hooks).
+    </standards>
+    <locations>
+      <location>genapp-backend/src/test/java/**/*.java</location>
+      <location>genapp-backend/src/test/resources/**</location>
+    </locations>
+    <ideas>
+      <idea acId="1">Verify genapp-backend/ directory structure matches specification: src/, tests/, config/, helm/ subdirectories exist</idea>
+      <idea acId="2">Unit test Maven pom.xml parsing and Spring Boot configuration; verify all dependencies present with correct versions</idea>
+      <idea acId="2">Integration test: mvn clean install succeeds with all plugins executing</idea>
+      <idea acId="3">Verify .gitignore patterns correctly exclude Maven, IDE, Docker, and OS artifacts</idea>
+      <idea acId="4">Verify README.md contains all required sections: project overview, prerequisites, setup steps, development profiles, troubleshooting</idea>
+      <idea acId="5">Integration test: mvn spring-boot:run with dev profile starts application on port 8080 and responds to health check</idea>
+      <idea acId="6">Verify WORKFLOW.md documents branch naming conventions, PR process, and protection rules</idea>
+      <idea acId="7">Unit test: Checkstyle and SpotBugs plugins execute during build and fail on violations</idea>
+      <idea acId="8">Verify pre-commit hook script exists, is executable, and correctly intercepts unformatted commits</idea>
+    </ideas>
+  </tests>
+</story-context>
