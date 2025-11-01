@@ -1,0 +1,44 @@
+# Maven
+target/
+.m2/
+*.jar
+*.war
+*.zip
+*.tar
+*.tar.gz
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+*.class
+*.classpath
+*.project
+.settings/
+bin/
+out/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Docker
+Dockerfile
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+*~
+.env.local
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+__pycache__/

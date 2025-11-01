@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgresql:
+    image: postgres:14-alpine
+    container_name: cics-genapp-postgres
+    environment:
+      POSTGRES_USER: genapp
+      POSTGRES_PASSWORD: genapp123
+      POSTGRES_DB: cicsgenapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U genapp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
