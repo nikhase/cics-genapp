@@ -1,0 +1,101 @@
+# Sprint Status - CICS GenApp Cloud Modernization
+# generated: 2025-11-01
+# project: cics-genapp-bmad
+# project_key: cics-genapp-bmad
+# tracking_system: file-system
+# story_location: "{project-root}/docs/stories"
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic exists in epic file but not contexted
+#   - contexted: Epic tech context created (required before drafting stories)
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder
+#   - ready-for-dev: Draft approved and story context created
+#   - in-progress: Developer actively working on implementation
+#   - review: Under SM review (via code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epics should be 'contexted' before stories can be 'drafted'
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically drafts next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', SM reviews, then Dev moves to 'done'
+
+generated: 2025-11-01
+project: cics-genapp-bmad
+project_key: cics-genapp-bmad
+tracking_system: file-system
+story_location: "{project-root}/docs/stories"
+
+development_status:
+  # EPIC 1: Cloud Foundation & Deployment Infrastructure
+  epic-1: backlog
+  1-1-project-repository-setup-and-developer-environment: backlog
+  1-2-spring-boot-starter-project-with-core-configuration: backlog
+  1-3-postgresql-database-connectivity-and-schema-management: backlog
+  1-4-spring-cloud-gateway-and-strangler-pattern-routing: backlog
+  1-5-oidc-authentication-with-zitadel-integration: backlog
+  1-6-unleash-feature-toggles-for-traffic-management: backlog
+  1-7-structured-logging-and-observability-setup: backlog
+  1-8-containerization-with-docker-and-multi-stage-builds: backlog
+  1-9-ci-cd-pipeline-with-github-actions: backlog
+  1-10-debezium-cdc-setup-for-postgresql-to-db2-synchronization: backlog
+  1-11-kubernetes-and-helm-charts-for-cloud-deployment: backlog
+  1-12-observability-stack-elk-prometheus-jaeger-grafana: backlog
+  epic-1-retrospective: optional
+
+  # EPIC 2: Customer Service API & Spring Boot Backend
+  epic-2: backlog
+  2-1-customer-domain-model-and-postgresql-schema: backlog
+  2-2-customer-create-api-post-api-v1-customers: backlog
+  2-3-customer-read-api-get-api-v1-customers-id: backlog
+  2-4-customer-search-list-api-get-api-v1-customers: backlog
+  2-5-customer-update-api-put-api-v1-customers-id: backlog
+  2-6-customer-soft-delete-api-delete-api-v1-customers-id: backlog
+  2-7-input-validation-and-error-handling-framework: backlog
+  2-8-api-documentation-openapi-swagger-and-audit-logging: backlog
+  epic-2-retrospective: optional
+
+  # EPIC 3: React Frontend - Authentication & Core UI
+  epic-3: backlog
+  3-1-react-project-setup-with-vite-and-material-design: backlog
+  3-2-login-page-and-zitadel-oidc-authentication: backlog
+  3-3-dashboard-page-with-navigation-and-quick-actions: backlog
+  3-4-customer-search-and-list-page: backlog
+  3-5-customer-detail-and-edit-page: backlog
+  3-6-customer-create-page-with-form-wizard: backlog
+  3-7-form-components-and-validation-ui-library: backlog
+  3-8-api-integration-and-client-service-layer: backlog
+  epic-3-retrospective: optional
+
+  # EPIC 4: Parallel Run Validation Framework
+  epic-4: backlog
+  4-1-debezium-cdc-implementation-for-postgresql-to-db2-sync: backlog
+  4-2-data-comparison-and-validation-service: backlog
+  4-3-parallel-run-validation-dashboard-ui: backlog
+  4-4-circuit-breaker-and-failover-pattern-for-legacy-system: backlog
+  4-5-feature-toggle-management-ui-and-advanced-routing: backlog
+  epic-4-retrospective: optional
+
+  # EPIC 5: Policy Management API & React UI
+  epic-5: backlog
+  5-1-policy-domain-model-and-postgresql-schema-4-types: backlog
+  5-2-policy-create-api-post-api-v1-policies: backlog
+  5-3-policy-type-specific-validation: backlog
+  5-4-policy-read-search-apis: backlog
+  5-5-policy-update-and-status-change-apis: backlog
+  5-6-policy-soft-delete-api: backlog
+  5-7-policy-detail-and-edit-page-react: backlog
+  5-8-policy-create-wizard-react-type-specific-forms: backlog
+  5-9-policy-to-customer-linking-ui-integration: backlog
+  5-10-policy-management-audit-logging-and-openapi-documentation: backlog
+  epic-5-retrospective: optional
