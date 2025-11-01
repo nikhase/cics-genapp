@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="cics-genapp:1-3:context" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>3</storyId>
+    <title>PostgreSQL Database Connectivity and Schema Management</title>
+    <storyKey>1-3-postgresql-database-connectivity-and-schema-management</storyKey>
+    <status>drafted</status>
+    <generatedAt>2025-11-01T16:00:00Z</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-3-postgresql-database-connectivity-and-schema-management.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Database Administrator</asA>
+    <iWant>the Spring Boot application to connect to PostgreSQL with connection pooling and schema versioning</iWant>
+    <soThat>the application can reliably store and retrieve data with proper migrations</soThat>
+    <tasks>
+      <task id="1" title="Add PostgreSQL JDBC driver and Flyway to pom.xml" acs="1, 4">
+        <description>Add PostgreSQL JDBC driver (42.x) and Flyway migration tool dependencies</description>
+      </task>
+      <task id="2" title="Configure PostgreSQL connection pool in application.yml" acs="2, 6">
+        <description>Setup HikariCP with environment-specific connection strings (dev/test/prod)</description>
+      </task>
+      <task id="3" title="Configure Flyway migrations directory structure" acs="4">
+        <description>Create migration directories and configure Flyway in application.yml</description>
+      </task>
+      <task id="4" title="Create initial database schema migration script" acs="5">
+        <description>Create V1__initial_schema.sql with CUSTOMER, POLICY, AUDIT_LOG, FEATURE_TOGGLE tables</description>
+      </task>
+      <task id="5" title="Configure JPA entity mapping for PostgreSQL" acs="3">
+        <description>Verify JPA dialect and Hibernate DDL-auto settings per profile</description>
+      </task>
+      <task id="6" title="Test PostgreSQL connection in dev and test environments" acs="6, 7, 8">
+        <description>Verify connection pool, Flyway migration execution, health endpoint</description>
+      </task>
+      <task id="7" title="Update Docker Compose for PostgreSQL service" acs="9">
+        <description>Verify Docker Compose PostgreSQL 16-alpine service is correctly configured</description>
+      </task>
+      <task id="8" title="Document database setup and migration process" acs="6, 9">
+        <description>Update README with PostgreSQL connection setup and troubleshooting</description>
+      </task>
+      <task id="9" title="Comprehensive testing of database connectivity" acs="1-9">
+        <description>Unit tests, integration tests, TestContainers validation</description>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">PostgreSQL JDBC driver configured in Spring Boot (latest version, 15+ compatibility)</criterion>
+    <criterion id="2">Connection pool configured (HikariCP: 10 min, 20 max connections, 30s timeout)</criterion>
+    <criterion id="3">Spring Data JPA configured with PostgreSQL dialect</criterion>
+    <criterion id="4">Flyway migration tool integrated for schema versioning (V1__initial_schema.sql, etc.)</criterion>
+    <criterion id="5">Initial schema migration script created (CUSTOMER, POLICY, AUDIT_LOG, FEATURE_TOGGLE tables with indexes)</criterion>
+    <criterion id="6">Environment-specific PostgreSQL connection strings configured (dev uses local, test uses testcontainer, prod uses managed DB)</criterion>
+    <criterion id="7">Connection health check working via Spring Actuator: GET /actuator/health/db returns {"status":"UP","details":{"database":"PostgreSQL"}}</criterion>
+    <criterion id="8">Database connection tested with successful query execution (SELECT 1)</criterion>
+    <criterion id="9">Docker Compose includes PostgreSQL service for local development</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc id="epics-1-3">
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown - Cloud Foundation &amp; Deployment Infrastructure</title>
+        <section>Story 1.3: PostgreSQL Database Connectivity and Schema Management (lines 85-105)</section>
+        <snippet>Acceptance criteria for database connectivity, connection pooling, Flyway migration setup, and environment-specific configuration sourced from epics.md</snippet>
+      </doc>
+      <doc id="prd-nfr004">
+        <path>docs/PRD.md</path>
+        <title>Product Requirements - Non-Functional Requirements</title>
+        <section>NFR004: Scalability &amp; Cloud-Readiness (lines 97-103)</section>
+        <snippet>Connection pooling (HikariCP), database connection pooling for concurrent load, stateless service design requirements</snippet>
+      </doc>
+      <doc id="prd-nfr005">
+        <path>docs/PRD.md</path>
+        <title>Product Requirements - NFR005: Maintainability &amp; DevOps</title>
+        <section>NFR005: Maintainability &amp; DevOps (lines 105-111)</section>
+        <snippet>Automated testing requirements (TestContainers), CI/CD pipeline, infrastructure-as-code guidance</snippet>
+      </doc>
+      <doc id="data-models">
+        <path>docs/data-models.md</path>
+        <title>Data Models Documentation</title>
+        <section>CUSTOMER, POLICY, AUDIT_LOG Table Schemas</section>
+        <snippet>Details on table structures, column definitions, indexes, and relationships to guide schema creation in V1__initial_schema.sql</snippet>
+      </doc>
+      <doc id="architecture">
+        <path>docs/architecture.md</path>
+        <title>Target Architecture for Cloud Modernization</title>
+        <section>Spring Boot 3.3+ Architecture, PostgreSQL 16+ Database Layer</section>
+        <snippet>Layered architecture patterns, data persistence layer design, PostgreSQL dialect configuration, HikariCP pooling patterns</snippet>
+      </doc>
+      <doc id="development-guide">
+        <path>docs/development-guide.md</path>
+        <title>Development and Testing Guide</title>
+        <section>Database Testing with TestContainers, Integration Test Patterns</section>
+        <snippet>Testing standards for database connectivity, TestContainers usage for PostgreSQL, integration test configuration</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact id="pom.xml">
+        <path>genapp-backend/pom.xml</path>
+        <kind>Maven configuration</kind>
+        <symbol>postgresql, spring-data-jpa, testcontainers</symbol>
+        <lines>1-180</lines>
+        <reason>Primary artifact: Add Flyway dependency (not yet present), verify PostgreSQL JDBC driver version 42.x, Spring Data JPA, TestContainers PostgreSQL for test profile</reason>
+      </artifact>
+      <artifact id="application.yml">
+        <path>genapp-backend/src/main/resources/application.yml</path>
+        <kind>Spring Boot configuration</kind>
+        <symbol>spring.jpa, spring.datasource.hikari, spring.profiles</symbol>
+        <lines>1-80+</lines>
+        <reason>Primary artifact: Configure PostgreSQL dialect (already present), HikariCP pool settings (already present), Flyway settings (to add), environment-specific profiles (dev/test/prod)</reason>
+      </artifact>
+      <artifact id="docker-compose.yml">
+        <path>genapp-backend/docker-compose.yml</path>
+        <kind>Docker Compose service configuration</kind>
+        <symbol>postgresql service, healthcheck</symbol>
+        <lines>1-23</lines>
+        <reason>Primary artifact: Verify PostgreSQL 16-alpine service, environment variables (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB), volume persistence, port mapping, health check</reason>
+      </artifact>
+      <artifact id="GlobalExceptionHandler">
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/exception/GlobalExceptionHandler.java</path>
+        <kind>Spring controller advice</kind>
+        <symbol>@ControllerAdvice, error response format</symbol>
+        <lines>N/A</lines>
+        <reason>Reference pattern: Exception handling for database errors (connection failures, constraint violations); extend error handling for database-specific exceptions</reason>
+      </artifact>
+      <artifact id="SecurityConfig">
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/config/SecurityConfig.java</path>
+        <kind>Spring Security configuration</kind>
+        <symbol>@Configuration, DataSource bean</symbol>
+        <lines>N/A</lines>
+        <reason>Reference: Spring configuration pattern; may need to add DataSource bean configuration if not auto-configured</reason>
+      </artifact>
+      <artifact id="test-context">
+        <path>genapp-backend/src/test/java/com/example/cicsgenapp/CicsGenAppApplicationTests.java</path>
+        <kind>Integration test</kind>
+        <symbol>@SpringBootTest, @ActiveProfiles("test")</symbol>
+        <lines>N/A</lines>
+        <reason>Reference pattern: Integration test structure using @SpringBootTest; use as template for database connectivity tests</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <maven>
+        <dependency>
+          <name>Spring Boot Starter Data JPA</name>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-data-jpa</artifactId>
+          <version>3.3.4</version>
+          <status>PRESENT</status>
+          <reason>Required for Hibernate/JPA entity mapping and repository pattern</reason>
+        </dependency>
+        <dependency>
+          <name>PostgreSQL JDBC Driver</name>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>42.7.x (managed by Spring Boot 3.3.4)</version>
+          <status>PRESENT</status>
+          <reason>PostgreSQL database connectivity via JDBC</reason>
+        </dependency>
+        <dependency>
+          <name>Flyway Core</name>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-core</artifactId>
+          <version>9.x (compatible with Spring Boot 3.3.4)</version>
+          <status>MISSING - MUST ADD</status>
+          <reason>Schema versioning and database migration management; required for AC #4</reason>
+        </dependency>
+        <dependency>
+          <name>TestContainers Core</name>
+          <groupId>org.testcontainers</groupId>
+          <artifactId>testcontainers</artifactId>
+          <version>1.17.6</version>
+          <status>PRESENT</status>
+          <reason>Ephemeral PostgreSQL container for integration testing (test profile)</reason>
+        </dependency>
+        <dependency>
+          <name>TestContainers PostgreSQL Module</name>
+          <groupId>org.testcontainers</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>1.17.6</version>
+          <status>PRESENT</status>
+          <reason>PostgreSQL-specific TestContainers functionality for test profile</reason>
+        </dependency>
+        <dependency>
+          <name>H2 Database (test-only)</name>
+          <groupId>com.h2database</groupId>
+          <artifactId>h2</artifactId>
+          <version>Managed by Spring Boot 3.3.4</version>
+          <status>PRESENT</status>
+          <reason>In-memory database option for test profile (alternative to TestContainers PostgreSQL)</reason>
+        </dependency>
+        <dependency>
+          <name>Spring Boot Starter Actuator</name>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-actuator</artifactId>
+          <version>3.3.4</version>
+          <status>PRESENT</status>
+          <reason>Health endpoint for database connectivity checks (AC #7)</reason>
+        </dependency>
+      </maven>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="jdbc-driver">
+      <name>PostgreSQL JDBC Driver Version</name>
+      <kind>dependency</kind>
+      <description>Must use PostgreSQL JDBC driver version 42.7.x or compatible with Spring Boot 3.3.4</description>
+      <source>docs/epics.md#Story-1.3</source>
+    </constraint>
+    <constraint id="pool-sizing">
+      <name>HikariCP Connection Pool Sizing</name>
+      <kind>configuration</kind>
+      <description>Dev: minimum-idle: 10, maximum-pool-size: 20, connection-timeout: 30s; Prod: minimum-idle: 5, maximum-pool-size: 20; Test: use TestContainers defaults</description>
+      <source>docs/epics.md#Story-1.3 AC#2</source>
+    </constraint>
+    <constraint id="dialect">
+      <name>Hibernate PostgreSQL Dialect</name>
+      <kind>configuration</kind>
+      <description>spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect (already configured in Story 1.2)</description>
+      <source>docs/epics.md#Story-1.3 AC#3</source>
+    </constraint>
+    <constraint id="ddl-auto">
+      <name>DDL Auto Strategy per Profile</name>
+      <kind>configuration</kind>
+      <description>Dev: create-drop, Test: create-drop, Prod: validate (Flyway manages schema)</description>
+      <source>docs/epics.md Task 5 subtasks</source>
+    </constraint>
+    <constraint id="flyway-locations">
+      <name>Flyway Migration Locations</name>
+      <kind>configuration</kind>
+      <description>Main migrations: classpath:db/migration/; Test migrations: separate test directory; Naming: V{number}__{description}.sql</description>
+      <source>docs/epics.md#Story-1.3 AC#4</source>
+    </constraint>
+    <constraint id="schema-tables">
+      <name>Initial Schema Tables</name>
+      <kind>database</kind>
+      <description>V1__initial_schema.sql MUST create: CUSTOMER, POLICY, AUDIT_LOG, FEATURE_TOGGLE tables with documented indexes and foreign keys</description>
+      <source>docs/epics.md#Story-1.3 AC#5, docs/data-models.md</source>
+    </constraint>
+    <constraint id="health-endpoint">
+      <name>Actuator Health Endpoint Database Component</name>
+      <kind>configuration</kind>
+      <description>GET /actuator/health/db must return database component health with PostgreSQL dialect confirmation</description>
+      <source>docs/epics.md#Story-1.3 AC#7</source>
+    </constraint>
+    <constraint id="docker-compose">
+      <name>Docker Compose PostgreSQL Service</name>
+      <kind>deployment</kind>
+      <description>PostgreSQL 16-alpine service with proper environment variables, volume persistence, and health checks</description>
+      <source>docs/epics.md#Story-1.3 AC#9</source>
+    </constraint>
+    <constraint id="layer-pattern">
+      <name>Layered Architecture Pattern</name>
+      <kind>architecture</kind>
+      <description>Follow Spring layered architecture: configuration → data access layer (JPA repositories) → business logic → REST controllers; do not mix concerns</description>
+      <source>docs/architecture.md</source>
+    </constraint>
+    <constraint id="testcontainers-pattern">
+      <name>TestContainers Pattern for Integration Tests</name>
+      <kind>testing</kind>
+      <description>Use @Testcontainers annotation and PostgreSQL container for integration tests; do not use H2 for database-specific testing</description>
+      <source>docs/development-guide.md</source>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface id="datasource">
+      <name>DataSource Bean</name>
+      <kind>Spring Bean</kind>
+      <signature>@Bean public DataSource dataSource() { return new HikariDataSource(hikariConfig()); }</signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/config/DatabaseConfig.java</path>
+      <description>Spring-managed JDBC DataSource with HikariCP pooling; auto-configured via spring.datasource properties if using standard configuration</description>
+    </interface>
+    <interface id="jpa-repository">
+      <name>JPA Repository Pattern</name>
+      <kind>Spring Data Interface</kind>
+      <signature>public interface EntityRepository extends JpaRepository&lt;Entity, UUID&gt; { ... }</signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/repository/</path>
+      <description>Spring Data JPA repositories for entity persistence; implemented in subsequent stories (Story 2.1 for Customer, Story 5.1 for Policy)</description>
+    </interface>
+    <interface id="actuator-health-db">
+      <name>Actuator Health Endpoint - Database Component</name>
+      <kind>REST Endpoint</kind>
+      <signature>GET /actuator/health/db</signature>
+      <path>Auto-configured by Spring Boot Actuator</path>
+      <description>Returns health status of database connection; auto-configured when DataSource is present</description>
+    </interface>
+    <interface id="flyway-migration">
+      <name>Flyway Migration</name>
+      <kind>Database Migration</kind>
+      <signature>V{version}__{description}.sql executed on application startup</signature>
+      <path>genapp-backend/src/main/resources/db/migration/V1__initial_schema.sql</path>
+      <description>SQL-based schema versioning; Flyway executes on startup if enabled in configuration</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Database connectivity testing in Spring Boot 3.3 follows these standards: (1) Use @SpringBootTest with @ActiveProfiles("test") for integration tests, (2) Use @Testcontainers and PostgreSQL container for database-specific testing, (3) Use H2 in-memory database as alternative for fast unit tests, (4) Test profile should use TestContainers PostgreSQL or H2 to avoid external dependencies, (5) All tests should verify DataSource bean creation, HikariCP pool initialization, Flyway migration execution, and health endpoint responses, (6) Integration tests should be placed in src/test/java with package structure matching src/main/java, (7) Use JUnit 5 (Jupiter) with Mockito for mocking non-database components.
+    </standards>
+
+    <locations>
+      <location path="genapp-backend/src/test/java/com/example/cicsgenapp/" description="Integration tests for application context and profiles"/>
+      <location path="genapp-backend/src/test/java/com/example/cicsgenapp/repository/" description="JPA repository tests (deferred to Story 2.1)"/>
+      <location path="genapp-backend/src/test/java/com/example/cicsgenapp/config/" description="Configuration tests for DataSource, JPA, Flyway"/>
+      <location path="genapp-backend/src/test/resources/" description="Test configuration files (application-test.yml) and SQL fixtures"/>
+      <location path="genapp-backend/src/test/resources/db/migration/" description="TestContainers/test-specific database initialization scripts"/>
+    </locations>
+
+    <ideas>
+      <idea acId="1" title="PostgreSQL JDBC Driver Configuration Test">
+        <description>Verify PostgreSQL JDBC driver is loaded and registered; test DataSource bean creation with correct PostgreSQL dialect</description>
+        <approach>Unit test: instantiate DataSource, verify org.postgresql.Driver is registered; Integration test: @SpringBootTest with PostgreSQL TestContainer</approach>
+        <effort>Low</effort>
+      </idea>
+      <idea acId="2" title="HikariCP Connection Pool Initialization Test">
+        <description>Verify HikariCP pool is initialized with correct sizing (min/max connections, timeout)</description>
+        <approach>Integration test: Inject HikariDataSource bean, verify getMaximumPoolSize(), getMinimumIdle(), getConnectionTimeout() match configuration</approach>
+        <effort>Low</effort>
+      </idea>
+      <idea acId="3" title="Spring Data JPA PostgreSQL Dialect Test">
+        <description>Verify JPA is configured with PostgreSQL dialect and Hibernate mapping works</description>
+        <approach>Integration test: Load ApplicationContext, verify EntityManagerFactory uses PostgreSQL dialect; test basic entity CRUD operations</approach>
+        <effort>Low</effort>
+      </idea>
+      <idea acId="4,5" title="Flyway Migration Execution Test">
+        <description>Verify Flyway executes V1__initial_schema.sql on application startup; verify schema tables are created</description>
+        <approach>Integration test: Start application with Flyway enabled, query information_schema to verify CUSTOMER, POLICY, AUDIT_LOG, FEATURE_TOGGLE tables exist</approach>
+        <effort>Medium</effort>
+      </idea>
+      <idea acId="6" title="Environment-Specific Connection Strings Test">
+        <description>Verify dev/test/prod profiles load correct database connection strings</description>
+        <approach>Unit test: @ActiveProfiles("dev"/"test"/"prod") load correct application-{profile}.yml; verify connection URL, username, pool sizing</approach>
+        <effort>Low</effort>
+      </idea>
+      <idea acId="7" title="Health Endpoint Database Component Test">
+        <description>Verify /actuator/health/db returns UP status with PostgreSQL database details</description>
+        <approach>Integration test: Make HTTP GET request to /actuator/health/db, verify response structure and database component status</approach>
+        <effort>Low</effort>
+      </idea>
+      <idea acId="8" title="Database Connection Query Execution Test">
+        <description>Verify connection pool can execute queries (SELECT 1) successfully</description>
+        <approach>Integration test: Obtain JDBC connection from DataSource, execute test query, verify no exceptions</approach>
+        <effort>Low</effort>
+      </idea>
+      <idea acId="9" title="Docker Compose PostgreSQL Service Integration Test">
+        <description>Verify Docker Compose PostgreSQL service is accessible and functional</description>
+        <approach>Integration test (optional): docker-compose up, wait for health check, run application with dev profile, verify connection succeeds</approach>
+        <effort>Medium</effort>
+      </idea>
+      <idea acId="4" title="Schema Creation Validation Test">
+        <description>Verify V1__initial_schema.sql creates tables with correct structure: columns, data types, indexes, constraints</description>
+        <approach>Integration test: After Flyway migration, query information_schema.columns to verify table structure matches specification</approach>
+        <effort>Medium</effort>
+      </idea>
+    </ideas>
+  </tests>
+</story-context>
