@@ -1,6 +1,6 @@
 # Story 1.1: Project Repository Setup and Developer Environment
 
-Status: review
+Status: done
 
 ## Story
 
