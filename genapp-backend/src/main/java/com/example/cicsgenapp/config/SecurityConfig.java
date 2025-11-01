@@ -40,20 +40,16 @@ public class SecurityConfig {
    */
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.cors()
-        .and()
-        .csrf()
-        .disable()
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
-        .authorizeRequests()
-        .antMatchers("/actuator/health", "/actuator/health/live", "/actuator/health/ready")
-        .permitAll()
-        .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
-        .permitAll()
-        .anyRequest()
-        .permitAll(); // Temporary: allow all requests for development
+    http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(authz -> authz
+            .requestMatchers("/actuator/health", "/actuator/health/live", "/actuator/health/ready")
+            .permitAll()
+            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+            .permitAll()
+            .anyRequest()
+            .permitAll()); // Temporary: allow all requests for development
 
     return http.build();
   }

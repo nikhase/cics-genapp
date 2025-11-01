@@ -27,10 +27,10 @@ CICS GenApp Cloud Modernization adopts a **platform-agnostic, cloud-native archi
 | Component                   | Decision                     | Version     | Rationale                                                        | Affects Epics |
 | --------------------------- | ---------------------------- | ----------- | ---------------------------------------------------------------- | ------------- |
 | **Backend Framework**       | Spring Boot                  | 3.3+ LTS    | Modern, OIDC support, team ready, fast time-to-market            | 1, 2, 4, 5    |
-| **Language**                | Java                         | 17+         | Spring Boot 3.3+ requirement; team experienced                   | 1, 2, 4, 5    |
+| **Language**                | Java                         | 21 LTS      | Spring Boot 3.3+ requirement; Java 21 LTS for long-term support  | 1, 2, 4, 5    |
 | **Frontend Framework**      | React                        | 18.x        | SPA, team experienced, large ecosystem                           | 1, 3, 4, 5    |
 | **Frontend Build Tool**     | Vite                         | 5.x         | 5x faster builds than Create React App                           | 3             |
-| **Primary Database**        | PostgreSQL                   | 15+         | Modern, open-source, excellent Spring Boot integration           | 1, 2, 5       |
+| **Primary Database**        | PostgreSQL                   | 16 LTS      | Modern, open-source, excellent Spring Boot integration; 16 LTS   | 1, 2, 5       |
 | **Legacy Database**         | Db2 (via CDC)                | existing    | Async sync via Debezium, not primary                             | 1, 4, 5       |
 | **API Gateway**             | Spring Cloud Gateway         | 4.x         | Embedded in Spring Boot, native feature toggle support           | 1, 4          |
 | **Feature Toggles**         | Unleash                      | 5.x         | Self-hosted, open-source, platform-agnostic                      | 1, 4          |
@@ -501,7 +501,7 @@ class CustomerApiPactTest {
 **Spring Boot:**
 
 ```dockerfile
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY target/*.jar app.jar
 EXPOSE 8080

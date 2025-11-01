@@ -2,6 +2,7 @@ package com.example.cicsgenapp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Integration tests for the CICS GenApp Application.
@@ -10,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  * functionality works as expected.
  */
 @SpringBootTest
+@ActiveProfiles("test")
 class CicsGenAppApplicationTests {
 
   /**

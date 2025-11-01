@@ -15,13 +15,13 @@ CICS GenApp Backend is a Spring Boot 3.3+ REST API designed to gradually replace
 
 ## Technology Stack
 
-- **Language:** Java 17+ LTS
+- **Language:** Java 21 LTS
 - **Framework:** Spring Boot 3.3+ LTS
 - **API:** Spring Web (REST)
 - **Data Access:** Spring Data JPA
 - **Security:** Spring Security + OIDC (Zitadel)
 - **Gateway:** Spring Cloud Gateway
-- **Database:** PostgreSQL 14+
+- **Database:** PostgreSQL 16 LTS
 - **Build Tool:** Maven 3.8+
 - **Container:** Docker
 - **Orchestration:** Kubernetes (Helm charts included)
@@ -30,9 +30,10 @@ CICS GenApp Backend is a Spring Boot 3.3+ REST API designed to gradually replace
 
 Before you begin, ensure you have the following installed:
 
-- **Java 17+** (LTS recommended)
-  - Download from [Oracle](https://www.oracle.com/java/technologies/downloads/) or use [OpenJDK](https://jdk.java.net/)
-  - Verify: `java -version`
+- **Java 21 LTS** (Required)
+  - Download from [Oracle](https://www.oracle.com/java/technologies/downloads/) or use [Eclipse Temurin](https://adoptium.net/)
+  - Verify: `java -version` (should show 21.x.x)
+  - Java 21 LTS provides long-term support and is required for Spring Boot 3.3+ compatibility
 
 - **Maven 3.8+**
   - Download from [Maven Official](https://maven.apache.org/download.cgi)
@@ -46,9 +47,9 @@ Before you begin, ensure you have the following installed:
   - Download from [Git Official](https://git-scm.com/)
   - Verify: `git --version`
 
-- **PostgreSQL 14+** (via Docker or local installation)
-  - Database server for application data
-  - We recommend using Docker for consistency
+- **PostgreSQL 16 LTS** (via Docker or local installation)
+  - Database server for application data - PostgreSQL 16 LTS provides long-term support
+  - We recommend using Docker for consistency: `docker compose up`
 
 ## Local Setup Steps
 
