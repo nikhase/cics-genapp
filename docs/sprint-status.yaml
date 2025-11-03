@@ -56,7 +56,7 @@ development_status:
   # EPIC 2: Customer Service API & Spring Boot Backend
   epic-2: backlog
   2-1-customer-domain-model-and-postgresql-schema: review
-  2-2-customer-create-api-post-api-v1-customers: ready-for-dev
+  2-2-customer-create-api-post-api-v1-customers: review
   2-3-customer-read-api-get-api-v1-customers-id: ready-for-dev
   2-4-customer-search-list-api-get-api-v1-customers: ready-for-dev
   2-5-customer-update-api-put-api-v1-customers-id: ready-for-dev
