@@ -74,6 +74,12 @@
       <scope>runtime</scope>
     </dependency>
 
+    <!-- Flyway for Database Schema Versioning -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+
     <!-- Validation -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
