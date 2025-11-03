@@ -155,7 +155,7 @@ Story 1.1 created an exemplary foundation with:
 ### Constraints & Requirements
 
 - **Java 21 LTS:** Required (upgraded in Story 1.1)
-- **Spring Boot 3.3.4 LTS:** Stable foundation for long-term support
+- **Spring Boot 3.4+ LTS:** Latest stable foundation for long-term support
 - **PostgreSQL 16 LTS:** Primary database (test uses H2 in-memory)
 - **Port 8080:** Standard Spring Boot port
 - **Connection Pool:** HikariCP managed by Spring Boot (configured via properties)

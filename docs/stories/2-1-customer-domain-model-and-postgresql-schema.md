@@ -131,7 +131,7 @@ This story establishes the Customer domain model, the first vertical slice of Ep
 ### Constraints & Requirements
 
 - **Java 17 LTS**: Required (from Story 1.1)
-- **Spring Boot 3.3.4 LTS**: Already established (Story 1.2)
+- **Spring Boot 3.4+ LTS**: Already established (Story 1.2)
 - **Spring Data JPA**: Latest stable
 - **PostgreSQL 15+**: Established in Story 1.3
 - **Flyway**: For schema versioning

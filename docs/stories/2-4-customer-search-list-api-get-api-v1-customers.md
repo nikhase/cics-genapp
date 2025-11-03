@@ -172,7 +172,7 @@ Story 2.4 implements the LIST/SEARCH operation for customer management, completi
 ### Constraints & Requirements
 
 - **Java 17 LTS**: Required (from Story 1.1)
-- **Spring Boot 3.3.4 LTS**: Established (Story 1.2)
+- **Spring Boot 3.4+ LTS**: Established (Story 1.2)
 - **PostgreSQL 15+**: Database (Story 1.3)
 - **Response time**: < 500ms for large datasets (1M+ customers) (AC #5)
 - **Max result limit**: 100 items per request (AC #8)

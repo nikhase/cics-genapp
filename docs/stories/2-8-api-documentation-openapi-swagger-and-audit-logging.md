@@ -10,7 +10,7 @@ So that I know how to call the APIs and compliance has a record of all operation
 
 ## Acceptance Criteria
 
-1. OpenAPI 3.0 specification generated via SpringDoc-OpenAPI (springdoc-openapi-starter-webmvc-ui)
+1. OpenAPI 3.0 specification generated via SpringDoc-OpenAPI (springdoc-openapi-starter-webmvc-ui v2.x)
 2. Swagger UI available at /api/docs (interactive API explorer)
 3. Documentation includes for each endpoint:
    - All endpoints (POST, GET, PUT, DELETE)
@@ -42,7 +42,7 @@ So that I know how to call the APIs and compliance has a record of all operation
 ## Tasks / Subtasks
 
 - [ ] Task 1: Configure SpringDoc-OpenAPI dependency and Swagger UI (AC: #1, #2)
-  - [ ] Add dependency to pom.xml: `springdoc-openapi-starter-webmvc-ui:2.x.x`
+  - [ ] Add dependency to pom.xml: `springdoc-openapi-starter-webmvc-ui:2.x.x` (generates OpenAPI 3.0 spec)
   - [ ] Add SpringDoc OpenAPI configuration class: `src/main/java/com/example/cicsgenapp/config/OpenApiConfig.java`
   - [ ] Configure @OpenAPIDefinition:
     - info: title="CICS GenApp Customer API", version="1.0.0", description="Customer management REST API"

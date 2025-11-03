@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-CICS GenApp Cloud Modernization adopts a **platform-agnostic, cloud-native architecture** using Spring Boot 3.3+ (Java 17+) for the backend and React 18 with Vite for the frontend. The system implements a **strangler pattern** with Spring Cloud Gateway for gradual traffic migration from legacy COBOL/CICS to modern services. PostgreSQL serves as the primary database, with Change Data Capture (CDC) via Debezium HTTP sink ensuring eventual consistency with legacy Db2 during the 12-month transition. Authentication is delegated to Zitadel (OIDC), eliminating password management complexity. The entire stack is containerized with Docker and orchestrated via Kubernetes, ensuring portability across any cloud provider or on-premises environment.
+CICS GenApp Cloud Modernization adopts a **platform-agnostic, cloud-native architecture** using Spring Boot 3.4+ LTS (Java 21 LTS) for the backend and React 18 with Vite for the frontend. The system implements a **strangler pattern** with Spring Cloud Gateway for gradual traffic migration from legacy COBOL/CICS to modern services. PostgreSQL serves as the primary database, with Change Data Capture (CDC) via Debezium HTTP sink ensuring eventual consistency with legacy Db2 during the 12-month transition. Authentication is delegated to Zitadel (OIDC), eliminating password management complexity. The entire stack is containerized with Docker and orchestrated via Kubernetes, ensuring portability across any cloud provider or on-premises environment.
 
 **Key Architectural Principles:**
 
@@ -26,8 +26,8 @@ CICS GenApp Cloud Modernization adopts a **platform-agnostic, cloud-native archi
 
 | Component                   | Decision                     | Version     | Rationale                                                        | Affects Epics |
 | --------------------------- | ---------------------------- | ----------- | ---------------------------------------------------------------- | ------------- |
-| **Backend Framework**       | Spring Boot                  | 3.3+ LTS    | Modern, OIDC support, team ready, fast time-to-market            | 1, 2, 4, 5    |
-| **Language**                | Java                         | 21 LTS      | Spring Boot 3.3+ requirement; Java 21 LTS for long-term support  | 1, 2, 4, 5    |
+| **Backend Framework**       | Spring Boot                  | 3.4+ LTS    | Modern, OIDC support, team ready, fast time-to-market            | 1, 2, 4, 5    |
+| **Language**                | Java                         | 21 LTS      | Spring Boot 3.4+ requirement; Java 21 LTS for long-term support  | 1, 2, 4, 5    |
 | **Frontend Framework**      | React                        | 18.x        | SPA, team experienced, large ecosystem                           | 1, 3, 4, 5    |
 | **Frontend Build Tool**     | Vite                         | 5.x         | 5x faster builds than Create React App                           | 3             |
 | **Primary Database**        | PostgreSQL                   | 16 LTS      | Modern, open-source, excellent Spring Boot integration; 16 LTS   | 1, 2, 5       |
@@ -43,7 +43,7 @@ CICS GenApp Cloud Modernization adopts a **platform-agnostic, cloud-native archi
 | **Log Aggregation**         | ELK Stack                    | 8.x         | ElasticSearch + Logstash + Kibana, open-source                   | 1, 6          |
 | **Metrics**                 | Prometheus + Grafana         | Latest      | Time-series metrics, self-hosted, industry standard              | 1, 6          |
 | **Distributed Tracing**     | Jaeger                       | 1.x         | Request flow tracing across services                             | 1, 6          |
-| **API Documentation**       | SpringDoc-OpenAPI            | 2.x         | Auto-generates OpenAPI 3.0 spec                                  | 2, 5          |
+| **API Documentation**       | SpringDoc-OpenAPI            | 2.x         | Auto-generates OpenAPI 3.0 spec (best Spring Boot support)       | 2, 5          |
 | **Contract Testing**        | Pact                         | 12.x        | Consumer-driven API contracts                                    | 1, 2, 5       |
 | **Unit Testing (Backend)**  | JUnit 5 + Mockito            | Latest      | Spring Boot standard, 80%+ coverage                              | All           |
 | **Unit Testing (Frontend)** | Jest + React Testing Library | Latest      | Industry standard for React                                      | 3             |

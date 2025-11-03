@@ -159,7 +159,7 @@ Story 2.5 implements the UPDATE operation for customer management, completing CR
 ### Constraints & Requirements
 
 - **Java 17 LTS**: Required (from Story 1.1)
-- **Spring Boot 3.3.4 LTS**: Established (Story 1.2)
+- **Spring Boot 3.4+ LTS**: Established (Story 1.2)
 - **PostgreSQL 15+**: Database (Story 1.3)
 - **Email uniqueness**: Enforced at DB level
 - **Optimistic Locking**: Version field required for concurrent safety

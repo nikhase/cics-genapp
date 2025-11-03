@@ -25,7 +25,7 @@ Each epic includes:
 - Stories within epics are vertically sliced and sequentially ordered
 - No forward dependencies - each story builds only on previous work
 
-**Architecture Note:** All epics align with the target architecture documented in [target-architecture.md](./new/target-architecture.md), including Spring Boot 3.3+, React 18, PostgreSQL 15+, OIDC/Zitadel authentication, Debezium CDC, Unleash feature toggles, Docker/Kubernetes/Helm, and observability stack (ELK, Prometheus, Jaeger).
+**Architecture Note:** All epics align with the target architecture documented in [target-architecture.md](./new/target-architecture.md), including Spring Boot 3.4+ LTS, Java 21 LTS, React 18, PostgreSQL 16 LTS, OIDC/Zitadel authentication, Debezium CDC, Unleash feature toggles, Docker/Kubernetes/Helm, and observability stack (ELK, Prometheus, Jaeger).
 
 ---
 
@@ -48,9 +48,9 @@ Establish the complete cloud-native foundation and deployment infrastructure nee
 **Acceptance Criteria:**
 
 1. GitHub repository created with clear folder structure (src/, tests/, docs/, config/, helm/)
-2. Maven pom.xml configured with Spring Boot 3.3+ LTS, all required dependencies (Spring Web, Data JPA, Security, Cloud Gateway, Actuator, etc.)
+2. Maven pom.xml configured with Spring Boot 3.4+ LTS, all required dependencies (Spring Web, Data JPA, Security, Cloud Gateway, Actuator, etc.)
 3. .gitignore configured for Maven/IntelliJ/VS Code/Docker artifacts
-4. README.md with developer setup instructions (Java 17+, Maven 3.8+, Docker, PostgreSQL, Git clone, mvn clean install)
+4. README.md with developer setup instructions (Java 21 LTS, Maven 3.8+, Docker, PostgreSQL 16 LTS, Git clone, mvn clean install)
 5. Local development can run: `mvn clean install && mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"`
 6. Git workflow documentation (branch naming: feature/*, bugfix/*, main is protected, PR process)
 7. Java code style configuration (Google Style Guide via Checkstyle, SpotBugs) integrated into build
@@ -63,7 +63,7 @@ Establish the complete cloud-native foundation and deployment infrastructure nee
 ### Story 1.2: Spring Boot Starter Project with Core Configuration
 
 **As a** Backend Developer,
-**I want** a working Spring Boot 3.3+ application with core Spring configuration (profiles, properties, bean definitions),
+**I want** a working Spring Boot 3.4+ LTS application with core Spring configuration (profiles, properties, bean definitions),
 **So that** I can add business logic without worrying about framework setup.
 
 **Acceptance Criteria:**
@@ -249,7 +249,7 @@ Establish the complete cloud-native foundation and deployment infrastructure nee
    - Manual trigger via workflow_dispatch
 3. Pipeline stages:
    - **Checkout:** Clone repository
-   - **Setup Java:** Install Java 17 and Maven
+   - **Setup Java:** Install Java 21 LTS and Maven
    - **Build:** mvn clean install (compiles, runs unit tests)
    - **Test:** Unit tests (with coverage report), integration tests (using TestContainers for PostgreSQL)
    - **Code Quality:** SonarQube scan or static analysis
@@ -681,7 +681,7 @@ Implement the complete customer management functionality in Spring Boot, exposin
 
 **Acceptance Criteria:**
 
-1. OpenAPI 3.0 specification generated via SpringDoc-OpenAPI (springdoc-openapi-starter-webmvc-ui)
+1. OpenAPI 3.0 specification generated via SpringDoc-OpenAPI (springdoc-openapi-starter-webmvc-ui v2.x)
 2. Swagger UI available at /api/docs (interactive API explorer)
 3. Documentation includes for each endpoint:
    - All endpoints (POST, GET, PUT, DELETE)
