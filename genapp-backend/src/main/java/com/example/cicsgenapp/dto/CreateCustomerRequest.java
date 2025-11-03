@@ -1,6 +1,7 @@
 package com.example.cicsgenapp.dto;
 
 import com.example.cicsgenapp.validator.ValidAge;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -15,44 +16,56 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * <p>Accepts POST request body with customer information. Includes validation annotations
  * to enforce field constraints before processing.
  */
+@Schema(
+    title = "Create Customer Request",
+    description = "Request body for creating a new customer. All required fields must be provided.")
 public class CreateCustomerRequest {
 
   @NotNull(message = "First name is required")
   @Size(min = 1, max = 100, message = "First name must be between 1 and 100 characters")
   @JsonProperty("firstName")
+  @Schema(description = "Customer first name (required, 1-100 characters)", example = "Jane")
   private String firstName;
 
   @NotNull(message = "Last name is required")
   @Size(min = 1, max = 100, message = "Last name must be between 1 and 100 characters")
   @JsonProperty("lastName")
+  @Schema(description = "Customer last name (required, 1-100 characters)", example = "Smith")
   private String lastName;
 
   @PastOrPresent(message = "Date of birth must be in the past or today")
   @ValidAge(message = "Customer must be at least 18 years old")
   @JsonProperty("dateOfBirth")
+  @Schema(description = "Customer date of birth (optional, must be at least 18 years old)", example = "1990-05-15")
   private LocalDate dateOfBirth;
 
   @NotNull(message = "Email is required")
   @Email(message = "Email must be a valid email address")
   @JsonProperty("email")
+  @Schema(description = "Customer email address (required, must be unique and valid email format)", format = "email", example = "jane.smith@example.com")
   private String email;
 
   @Pattern(
       regexp = "^\\+?[1-9]\\d{1,14}$|^$",
       message = "Phone number must be in valid international format (E.164) or empty")
   @JsonProperty("phone")
+  @Schema(description = "Customer phone number in E.164 format (optional)", example = "+1-555-123-4567")
   private String phone;
 
   @JsonProperty("address")
+  @Schema(description = "Street address (optional)", example = "123 Main Street")
   private String address;
 
   @JsonProperty("city")
+  @Schema(description = "City name (optional)", example = "Springfield")
   private String city;
 
   @JsonProperty("state")
+  @Schema(description = "State or province code (optional)", example = "IL")
   private String state;
 
   @JsonProperty("zipCode")
+  @Schema(description = "Postal code (optional)", example = "62701")
   private String zipCode;
 
   /**

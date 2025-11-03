@@ -1,6 +1,7 @@
 package com.example.cicsgenapp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,12 +14,17 @@ import java.util.Map;
  *
  * @param <T> the type of response data
  */
+@Schema(
+    title = "API Response",
+    description = "Standard API response wrapper containing data and metadata for all endpoints")
 public class ApiResponse<T> {
 
   @JsonProperty("data")
+  @Schema(description = "Response payload (varies by endpoint)")
   private T data;
 
   @JsonProperty("metadata")
+  @Schema(description = "Response metadata including timestamp, version, and operation details")
   private Map<String, Object> metadata;
 
   /**

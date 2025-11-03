@@ -3,6 +3,7 @@ package com.example.cicsgenapp.dto;
 import com.example.cicsgenapp.entity.Customer;
 import com.example.cicsgenapp.entity.Status;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,51 +14,69 @@ import java.util.UUID;
  * <p>Returned in API responses to clients. Maps from Customer JPA entity, excluding sensitive
  * internal fields.
  */
+@Schema(
+    title = "Customer Response",
+    description = "Customer data returned by API, including all customer details and audit fields")
 public class CustomerResponse {
 
   @JsonProperty("customerId")
+  @Schema(description = "Unique customer identifier (UUID)", example = "550e8400-e29b-41d4-a716-446655440000")
   private UUID customerId;
 
   @JsonProperty("firstName")
+  @Schema(description = "Customer first name", example = "Jane")
   private String firstName;
 
   @JsonProperty("lastName")
+  @Schema(description = "Customer last name", example = "Smith")
   private String lastName;
 
   @JsonProperty("dateOfBirth")
+  @Schema(description = "Customer date of birth", example = "1990-05-15")
   private LocalDate dateOfBirth;
 
   @JsonProperty("email")
+  @Schema(description = "Customer email address", format = "email", example = "jane.smith@example.com")
   private String email;
 
   @JsonProperty("phone")
+  @Schema(description = "Customer phone number", example = "+1-555-123-4567")
   private String phone;
 
   @JsonProperty("address")
+  @Schema(description = "Street address", example = "123 Main Street")
   private String address;
 
   @JsonProperty("city")
+  @Schema(description = "City name", example = "Springfield")
   private String city;
 
   @JsonProperty("state")
+  @Schema(description = "State or province code", example = "IL")
   private String state;
 
   @JsonProperty("zipCode")
+  @Schema(description = "Postal code", example = "62701")
   private String zipCode;
 
   @JsonProperty("status")
+  @Schema(description = "Customer status (ACTIVE or INACTIVE)", example = "ACTIVE")
   private Status status;
 
   @JsonProperty("createdAt")
+  @Schema(description = "Timestamp when customer record was created", example = "2025-11-01T10:30:00")
   private LocalDateTime createdAt;
 
   @JsonProperty("updatedAt")
+  @Schema(description = "Timestamp when customer record was last updated", example = "2025-11-03T14:45:00")
   private LocalDateTime updatedAt;
 
   @JsonProperty("createdBy")
+  @Schema(description = "User ID who created the customer record", example = "user@example.com")
   private String createdBy;
 
   @JsonProperty("updatedBy")
+  @Schema(description = "User ID who last updated the customer record", example = "user@example.com")
   private String updatedBy;
 
   /**

@@ -62,7 +62,7 @@ development_status:
   2-5-customer-update-api-put-api-v1-customers-id: in-review  # Dev: Story 2.5 implementation complete - ready for code review
   2-6-customer-soft-delete-api-delete-api-v1-customers-id: review  # Dev: Story 2.6 implementation complete 2025-11-03 - ready for code review
   2-7-input-validation-and-error-handling-framework: review
-  2-8-api-documentation-openapi-swagger-and-audit-logging: ready-for-dev
+  2-8-api-documentation-openapi-swagger-and-audit-logging: review
   epic-2-retrospective: optional
 
   # EPIC 3: React Frontend - Authentication & Core UI
