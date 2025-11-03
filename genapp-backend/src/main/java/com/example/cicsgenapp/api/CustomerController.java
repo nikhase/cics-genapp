@@ -3,6 +3,7 @@ package com.example.cicsgenapp.api;
 import com.example.cicsgenapp.dto.ApiResponse;
 import com.example.cicsgenapp.dto.CreateCustomerRequest;
 import com.example.cicsgenapp.dto.CustomerResponse;
+import com.example.cicsgenapp.dto.DeleteCustomerRequest;
 import com.example.cicsgenapp.dto.PagedResponse;
 import com.example.cicsgenapp.dto.SearchCriteria;
 import com.example.cicsgenapp.dto.UpdateCustomerRequest;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -401,6 +403,89 @@ public class CustomerController {
 
     } catch (Exception ex) {
       logger.error("Error updating customer {}: {}", customerId, ex.getMessage(), ex);
+      throw ex; // Let GlobalExceptionHandler handle it
+    }
+  }
+
+  /**
+   * Soft-deletes an existing customer record (marks as INACTIVE).
+   *
+   * <p>DELETE /api/v1/customers/{customerId} endpoint for soft-deleting customers. Marks the customer
+   * as INACTIVE while preserving all data in the database for audit and compliance purposes.
+   * This is not a hard delete - the customer record remains queryable. The operation is idempotent:
+   * deleting an already-inactive customer returns 200 OK without error.
+   *
+   * <p>Requires COMPLIANCE_OFFICER or ADMIN role for authorization (compliance-sensitive operation).
+   *
+   * @param customerId the customer ID (UUID) to soft-delete
+   * @param request optional delete request containing deletion reason
+   * @return ResponseEntity with 200 status and ApiResponse containing deleted customer (now INACTIVE)
+   *
+   * @throws ResourceNotFoundException if customer not found (returns 404)
+   */
+  @DeleteMapping("/{customerId}")
+  @PreAuthorize("hasAnyRole('COMPLIANCE_OFFICER', 'ADMIN')")
+  @Operation(
+      summary = "Soft-delete customer (mark as inactive)",
+      description = "Marks an existing customer as INACTIVE (soft delete). Does NOT hard-delete data. "
+          + "Customer record remains in database for audit/compliance purposes. "
+          + "Operation is idempotent - deleting an already-inactive customer succeeds with 200 OK.",
+      security = @SecurityRequirement(name = "bearer-jwt")
+  )
+  @ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "Customer deleted successfully (soft delete)",
+          content = @Content(schema = @Schema(implementation = ApiResponse.class))
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "400",
+          description = "Bad Request - invalid customer ID format or request validation failed"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "404",
+          description = "Not Found - customer with specified ID does not exist"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "403",
+          description = "Forbidden - insufficient permissions (requires COMPLIANCE_OFFICER or ADMIN)"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "500",
+          description = "Internal server error"
+      )
+  })
+  public ResponseEntity<ApiResponse<CustomerResponse>> deleteCustomer(
+      @PathVariable UUID customerId,
+      @RequestBody(required = false) DeleteCustomerRequest request) {
+
+    logger.info("DELETE /api/v1/customers/{} - Soft-deleting customer", customerId);
+
+    try {
+      // Extract reason from request if provided
+      String reason = (request != null) ? request.getReason() : null;
+
+      // Business logic delegated to service
+      CustomerResponse response = customerService.deleteCustomer(customerId, reason);
+
+      // Build metadata
+      Map<String, Object> metadata = new HashMap<>();
+      metadata.put("timestamp", LocalDateTime.now());
+      metadata.put("version", "v1");
+      metadata.put("operation", "DELETE");
+      metadata.put("deletionType", "SOFT_DELETE");
+
+      // Create response envelope
+      ApiResponse<CustomerResponse> apiResponse = new ApiResponse<>(response, metadata);
+
+      logger.info("Customer soft-deleted successfully: {}", customerId);
+
+      return ResponseEntity
+          .status(HttpStatus.OK)
+          .body(apiResponse);
+
+    } catch (Exception ex) {
+      logger.error("Error deleting customer {}: {}", customerId, ex.getMessage(), ex);
       throw ex; // Let GlobalExceptionHandler handle it
     }
   }

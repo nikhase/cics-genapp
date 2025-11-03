@@ -90,6 +90,12 @@ public class Customer {
   @Column(name = "version")
   private Long version;
 
+  @Column(name = "deleted_at")
+  private LocalDateTime deletedAt;
+
+  @Column(name = "deletion_reason", length = 500)
+  private String deletionReason;
+
   /**
    * Default constructor for JPA.
    */
@@ -236,6 +242,22 @@ public class Customer {
     this.version = version;
   }
 
+  public LocalDateTime getDeletedAt() {
+    return deletedAt;
+  }
+
+  public void setDeletedAt(LocalDateTime deletedAt) {
+    this.deletedAt = deletedAt;
+  }
+
+  public String getDeletionReason() {
+    return deletionReason;
+  }
+
+  public void setDeletionReason(String deletionReason) {
+    this.deletionReason = deletionReason;
+  }
+
   // equals() and hashCode() based on UUID
 
   @Override
@@ -267,6 +289,7 @@ public class Customer {
         + ", status=" + status
         + ", createdAt=" + createdAt
         + ", updatedAt=" + updatedAt
+        + ", deletedAt=" + deletedAt
         + '}';
   }
 }

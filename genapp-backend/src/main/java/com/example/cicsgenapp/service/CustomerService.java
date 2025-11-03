@@ -345,4 +345,53 @@ public class CustomerService {
           "Customer was modified by another user. Please refresh and try again.", ex);
     }
   }
+
+  /**
+   * Soft-deletes a customer by marking status as INACTIVE and recording deletion details.
+   *
+   * <p>Soft-delete preserves all customer data and relationships in the database while marking
+   * the customer as inactive. This enables audit history retention and compliance requirements.
+   * The operation is idempotent - deleting an already-inactive customer succeeds without error.
+   *
+   * @param customerId the customer ID to soft-delete
+   * @param reason optional deletion reason (max 500 characters) for audit purposes
+   * @return CustomerResponse with updated customer data (now INACTIVE)
+   * @throws ResourceNotFoundException if customer is not found
+   */
+  @Transactional
+  public CustomerResponse deleteCustomer(UUID customerId, String reason) {
+    logger.debug("Soft-deleting customer with ID: {}", customerId);
+
+    // Retrieve existing customer
+    Customer customer = customerRepository.findById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Customer " + customerId + " not found"));
+
+    // Log the deletion reason
+    if (reason != null) {
+      logger.info("Deleting customer {} with reason: {}", customerId, reason);
+    } else {
+      logger.info("Deleting customer {} without explicit reason", customerId);
+    }
+
+    // Set status to INACTIVE (soft delete)
+    customer.setStatus(Status.INACTIVE);
+    customer.setDeletedAt(LocalDateTime.now());
+    customer.setDeletionReason(reason);
+
+    // Save updated customer
+    Customer savedCustomer = customerRepository.save(customer);
+    logger.info("Customer soft-deleted successfully: {}", customerId);
+
+    // Create audit entry with deletion details
+    auditService.createAuditEntry(
+        Operation.DELETE,
+        "CUSTOMER",
+        customerId,
+        savedCustomer,
+        "Customer soft-deleted: " + (reason != null ? reason : "no reason provided")
+    );
+
+    return CustomerResponse.from(savedCustomer);
+  }
 }

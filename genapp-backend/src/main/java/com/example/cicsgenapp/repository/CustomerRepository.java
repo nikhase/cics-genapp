@@ -91,11 +91,13 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
    *
    * <p>Searches are case-insensitive and use substring matching (LIKE %query%).
    * When query is null or empty, all customers are returned (subject to status filter).
+   * INACTIVE (soft-deleted) customers are excluded from default search results.
+   * To include soft-deleted customers, use searchCustomersIncludeDeleted() method.
    *
    * @param query the search query string (case-insensitive substring match)
-   * @param status optional status filter (null to include all statuses)
+   * @param status optional status filter (null includes all ACTIVE statuses)
    * @param pageable pagination and sorting information
-   * @return Page of customers matching the search criteria
+   * @return Page of customers matching the search criteria (INACTIVE customers excluded)
    */
   @Query("SELECT c FROM Customer c WHERE "
       + "(:query IS NULL OR :query = '' OR "
@@ -103,7 +105,8 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
       + "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
       + "LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) OR "
       + "LOWER(c.phone) LIKE LOWER(CONCAT('%', :query, '%'))) AND "
-      + "(:status IS NULL OR c.status = :status)")
+      + "(:status IS NULL OR c.status = :status) AND "
+      + "c.status = 'ACTIVE'")
   Page<Customer> searchCustomers(
       @Param("query") String query,
       @Param("status") Status status,
@@ -113,9 +116,11 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
   /**
    * Count customers matching search criteria.
    *
+   * <p>Excludes INACTIVE (soft-deleted) customers from count. Matches searchCustomers() behavior.
+   *
    * @param query the search query string
    * @param status optional status filter
-   * @return number of matching customers
+   * @return number of matching customers (INACTIVE customers excluded)
    */
   @Query("SELECT COUNT(c) FROM Customer c WHERE "
       + "(:query IS NULL OR :query = '' OR "
@@ -123,9 +128,34 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
       + "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
       + "LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) OR "
       + "LOWER(c.phone) LIKE LOWER(CONCAT('%', :query, '%'))) AND "
-      + "(:status IS NULL OR c.status = :status)")
+      + "(:status IS NULL OR c.status = :status) AND "
+      + "c.status = 'ACTIVE'")
   long countSearchResults(
       @Param("query") String query,
       @Param("status") Status status
+  );
+
+  /**
+   * Search customers including soft-deleted (INACTIVE) ones.
+   *
+   * <p>Same as searchCustomers() but includes INACTIVE customers.
+   * Used by compliance officers and admins to view all customer records.
+   *
+   * @param query the search query string (case-insensitive substring match)
+   * @param status optional status filter (null includes all statuses)
+   * @param pageable pagination and sorting information
+   * @return Page of customers matching the search criteria (includes INACTIVE)
+   */
+  @Query("SELECT c FROM Customer c WHERE "
+      + "(:query IS NULL OR :query = '' OR "
+      + "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
+      + "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
+      + "LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) OR "
+      + "LOWER(c.phone) LIKE LOWER(CONCAT('%', :query, '%'))) AND "
+      + "(:status IS NULL OR c.status = :status)")
+  Page<Customer> searchCustomersIncludeDeleted(
+      @Param("query") String query,
+      @Param("status") Status status,
+      Pageable pageable
   );
 }

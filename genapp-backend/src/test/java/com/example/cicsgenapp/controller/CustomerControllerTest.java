@@ -2,6 +2,7 @@ package com.example.cicsgenapp.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -10,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.cicsgenapp.api.CustomerController;
 import com.example.cicsgenapp.dto.CreateCustomerRequest;
+import com.example.cicsgenapp.dto.DeleteCustomerRequest;
 import com.example.cicsgenapp.dto.UpdateCustomerRequest;
 import com.example.cicsgenapp.entity.Customer;
 import com.example.cicsgenapp.entity.Status;
@@ -670,5 +672,200 @@ class CustomerControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
+  }
+
+  // ========================================
+  // DELETE /api/v1/customers/{id} Tests
+  // ========================================
+
+  @Test
+  @DisplayName("DELETE /api/v1/customers/{id} - Soft-delete customer successfully with valid ID")
+  @WithMockUser(roles = "COMPLIANCE_OFFICER")
+  void testDeleteCustomerSuccess() throws Exception {
+    // Given: existing ACTIVE customer
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("John", "Doe", "john@example.com");
+    customer.setCustomerId(customerId);
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setVersion(1L);
+
+    // Mock repository to return customer
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    // When/Then: DELETE returns 200 OK with INACTIVE status
+    mockMvc.perform(delete("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.customerId").value(customerId.toString()))
+        .andExpect(jsonPath("$.data.status").value("INACTIVE"))
+        .andExpect(jsonPath("$.metadata.operation").value("DELETE"))
+        .andExpect(jsonPath("$.metadata.deletionType").value("SOFT_DELETE"));
+  }
+
+  @Test
+  @DisplayName("DELETE /api/v1/customers/{id} - Soft-delete customer with deletion reason")
+  @WithMockUser(roles = "COMPLIANCE_OFFICER")
+  void testDeleteCustomerWithReason() throws Exception {
+    // Given: existing customer and deletion request with reason
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("Jane", "Smith", "jane@example.com");
+    customer.setCustomerId(customerId);
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setVersion(1L);
+
+    DeleteCustomerRequest deleteRequest = new DeleteCustomerRequest("Customer requested deletion");
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    // When/Then: DELETE returns 200 OK
+    mockMvc.perform(delete("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(deleteRequest)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.status").value("INACTIVE"));
+  }
+
+  @Test
+  @DisplayName("DELETE /api/v1/customers/{id} - Return 404 Not Found for non-existent customer")
+  @WithMockUser(roles = "COMPLIANCE_OFFICER")
+  void testDeleteCustomerNotFound() throws Exception {
+    // Given: non-existent customer ID
+    UUID customerId = UUID.randomUUID();
+    when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
+
+    // When/Then: DELETE returns 404
+    mockMvc.perform(delete("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @DisplayName("DELETE /api/v1/customers/{id} - Return 400 Bad Request for invalid UUID format")
+  @WithMockUser(roles = "COMPLIANCE_OFFICER")
+  void testDeleteCustomerInvalidUUID() throws Exception {
+    // Given: invalid UUID format
+    String invalidId = "not-a-uuid";
+
+    // When/Then: DELETE returns 400
+    mockMvc.perform(delete("/api/v1/customers/{customerId}", invalidId)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("DELETE /api/v1/customers/{id} - Return 403 Forbidden without COMPLIANCE_OFFICER role")
+  @WithMockUser(roles = "CUSTOMER_SERVICE_AGENT")
+  void testDeleteCustomerUnauthorized() throws Exception {
+    // Given: user without COMPLIANCE_OFFICER or ADMIN role
+    UUID customerId = UUID.randomUUID();
+
+    // When/Then: DELETE returns 403 Forbidden
+    mockMvc.perform(delete("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("DELETE /api/v1/customers/{id} - Return 401 Unauthorized without authentication")
+  void testDeleteCustomerNotAuthenticated() throws Exception {
+    // Given: unauthenticated request
+    UUID customerId = UUID.randomUUID();
+
+    // When/Then: DELETE returns 401 Unauthorized
+    mockMvc.perform(delete("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("DELETE /api/v1/customers/{id} - Verify soft-delete sets status to INACTIVE")
+  @WithMockUser(roles = "COMPLIANCE_OFFICER")
+  void testDeleteCustomerVerifyStatus() throws Exception {
+    // Given: ACTIVE customer
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("Test", "User", "test@example.com");
+    customer.setCustomerId(customerId);
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setVersion(1L);
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    // When/Then: Customer status changed to INACTIVE
+    mockMvc.perform(delete("/api/v1/customers/{customerId}", customerId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.status").value("INACTIVE"));
+  }
+
+  @Test
+  @DisplayName("DELETE /api/v1/customers/{id} - Verify response includes metadata with timestamp")
+  @WithMockUser(roles = "COMPLIANCE_OFFICER")
+  void testDeleteCustomerResponseMetadata() throws Exception {
+    // Given: existing customer
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("John", "Doe", "john@example.com");
+    customer.setCustomerId(customerId);
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setVersion(1L);
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    // When/Then: Response includes metadata
+    mockMvc.perform(delete("/api/v1/customers/{customerId}", customerId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.metadata.timestamp").exists())
+        .andExpect(jsonPath("$.metadata.version").value("v1"))
+        .andExpect(jsonPath("$.metadata.operation").value("DELETE"))
+        .andExpect(jsonPath("$.metadata.deletionType").value("SOFT_DELETE"));
+  }
+
+  @Test
+  @DisplayName("DELETE /api/v1/customers/{id} - Verify ADMIN role can also delete customers")
+  @WithMockUser(roles = "ADMIN")
+  void testDeleteCustomerWithAdminRole() throws Exception {
+    // Given: ADMIN user and existing customer
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("John", "Doe", "john@example.com");
+    customer.setCustomerId(customerId);
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setVersion(1L);
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    // When/Then: DELETE returns 200 OK
+    mockMvc.perform(delete("/api/v1/customers/{customerId}", customerId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.status").value("INACTIVE"));
+  }
+
+  @Test
+  @DisplayName("DELETE /api/v1/customers/{id} - Deletion reason field is optional")
+  @WithMockUser(roles = "COMPLIANCE_OFFICER")
+  void testDeleteCustomerReasonOptional() throws Exception {
+    // Given: existing customer with no deletion reason provided
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("John", "Doe", "john@example.com");
+    customer.setCustomerId(customerId);
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setVersion(1L);
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    // When/Then: DELETE succeeds without deletion reason
+    mockMvc.perform(delete("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.status").value("INACTIVE"));
   }
 }
