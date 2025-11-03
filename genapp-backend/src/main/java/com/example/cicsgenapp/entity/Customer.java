@@ -10,11 +10,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import com.example.cicsgenapp.validator.ValidAge;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -37,13 +40,17 @@ public class Customer {
   private UUID customerId;
 
   @NotNull(message = "First name is required")
+  @Size(min = 1, max = 100, message = "First name must be between 1 and 100 characters")
   @Column(name = "first_name", length = 100, nullable = false)
   private String firstName;
 
   @NotNull(message = "Last name is required")
+  @Size(min = 1, max = 100, message = "Last name must be between 1 and 100 characters")
   @Column(name = "last_name", length = 100, nullable = false)
   private String lastName;
 
+  @PastOrPresent(message = "Date of birth must be in the past or today")
+  @ValidAge(message = "Customer must be at least 18 years old")
   @Column(name = "date_of_birth")
   private LocalDate dateOfBirth;
 

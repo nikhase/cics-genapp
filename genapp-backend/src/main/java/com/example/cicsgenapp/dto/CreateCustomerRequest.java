@@ -1,8 +1,10 @@
 package com.example.cicsgenapp.dto;
 
+import com.example.cicsgenapp.validator.ValidAge;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,6 +27,8 @@ public class CreateCustomerRequest {
   @JsonProperty("lastName")
   private String lastName;
 
+  @PastOrPresent(message = "Date of birth must be in the past or today")
+  @ValidAge(message = "Customer must be at least 18 years old")
   @JsonProperty("dateOfBirth")
   private LocalDate dateOfBirth;
 
