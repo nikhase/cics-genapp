@@ -3,8 +3,12 @@ package com.example.cicsgenapp.api;
 import com.example.cicsgenapp.dto.ApiResponse;
 import com.example.cicsgenapp.dto.CreateCustomerRequest;
 import com.example.cicsgenapp.dto.CustomerResponse;
+import com.example.cicsgenapp.dto.PagedResponse;
+import com.example.cicsgenapp.dto.SearchCriteria;
+import com.example.cicsgenapp.entity.Status;
 import com.example.cicsgenapp.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -119,6 +124,121 @@ public class CustomerController {
 
     } catch (Exception ex) {
       logger.error("Error retrieving customer {}: {}", customerId, ex.getMessage(), ex);
+      throw ex; // Let GlobalExceptionHandler handle it
+    }
+  }
+
+  /**
+   * Searches for customers with pagination, filtering, and sorting.
+   *
+   * <p>GET /api/v1/customers endpoint for searching customers. Supports multi-field search
+   * (firstName, lastName, email, phone), status filtering, sorting, and pagination.
+   *
+   * <p>Query parameters:
+   * - query (optional): substring search across firstName, lastName, email, phone (case-insensitive)
+   * - status (optional): filter by ACTIVE or INACTIVE status
+   * - limit (optional, default 50, max 100): page size
+   * - offset (optional, default 0): pagination offset
+   * - sortBy (optional, default "lastName"): field to sort by
+   * - sortOrder (optional, default "ASC"): sort direction (ASC or DESC)
+   *
+   * @param query search query string (optional)
+   * @param status customer status filter (optional)
+   * @param limit page size (default 50, max 100)
+   * @param offset pagination offset (default 0)
+   * @param sortBy field to sort by (default lastName)
+   * @param sortOrder sort direction (default ASC)
+   * @return ResponseEntity with 200 status and paginated customer results
+   */
+  @GetMapping
+  @PreAuthorize("isAuthenticated()")
+  @Operation(
+      summary = "Search/list customers",
+      description = "Search for customers with multi-field search, filtering, sorting, and pagination. "
+          + "Returns paginated results with pagination metadata.",
+      security = @SecurityRequirement(name = "bearer-jwt")
+  )
+  @ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "Search results retrieved successfully",
+          content = @Content(schema = @Schema(implementation = ApiResponse.class))
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "400",
+          description = "Bad Request - invalid query parameters (e.g., negative offset, invalid sortOrder)"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "401",
+          description = "Unauthorized - authentication required"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "500",
+          description = "Internal server error"
+      )
+  })
+  public ResponseEntity<ApiResponse<PagedResponse<CustomerResponse>>> searchCustomers(
+      @RequestParam(required = false)
+      @Parameter(description = "Search query (searches firstName, lastName, email, phone)")
+      String query,
+
+      @RequestParam(required = false)
+      @Parameter(description = "Filter by customer status (ACTIVE, INACTIVE)")
+      Status status,
+
+      @RequestParam(defaultValue = "50")
+      @Parameter(description = "Page size (default 50, max 100)")
+      int limit,
+
+      @RequestParam(defaultValue = "0")
+      @Parameter(description = "Pagination offset (default 0)")
+      int offset,
+
+      @RequestParam(defaultValue = "lastName")
+      @Parameter(description = "Field to sort by (firstName, lastName, email, createdAt)")
+      String sortBy,
+
+      @RequestParam(defaultValue = "ASC")
+      @Parameter(description = "Sort direction (ASC or DESC)")
+      String sortOrder
+  ) {
+
+    logger.info(
+        "GET /api/v1/customers - Searching customers: query={}, status={}, limit={}, offset={}, sortBy={}, sortOrder={}",
+        query, status, limit, offset, sortBy, sortOrder
+    );
+
+    try {
+      // Build search criteria
+      SearchCriteria criteria = new SearchCriteria(query, status, limit, offset, sortBy, sortOrder);
+
+      // Call service to execute search
+      PagedResponse<CustomerResponse> response = customerService.searchCustomers(criteria);
+
+      // Build metadata
+      Map<String, Object> metadata = new HashMap<>();
+      metadata.put("timestamp", LocalDateTime.now());
+      metadata.put("version", "v1");
+      metadata.put("operation", "SEARCH");
+      metadata.put("resultCount", response.getData().size());
+
+      // Create response envelope
+      ApiResponse<PagedResponse<CustomerResponse>> apiResponse = new ApiResponse<>(response, metadata);
+
+      logger.info(
+          "Customer search completed: found {} results (limit={}, offset={}, total={})",
+          response.getData().size(),
+          limit,
+          offset,
+          response.getPagination().getTotal()
+      );
+
+      return ResponseEntity
+          .status(HttpStatus.OK)
+          .body(apiResponse);
+
+    } catch (Exception ex) {
+      logger.error("Error searching customers: {}", ex.getMessage(), ex);
       throw ex; // Let GlobalExceptionHandler handle it
     }
   }

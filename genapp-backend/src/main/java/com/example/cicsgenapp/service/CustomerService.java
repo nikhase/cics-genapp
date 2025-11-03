@@ -2,6 +2,8 @@ package com.example.cicsgenapp.service;
 
 import com.example.cicsgenapp.dto.CreateCustomerRequest;
 import com.example.cicsgenapp.dto.CustomerResponse;
+import com.example.cicsgenapp.dto.PagedResponse;
+import com.example.cicsgenapp.dto.SearchCriteria;
 import com.example.cicsgenapp.entity.Customer;
 import com.example.cicsgenapp.entity.Operation;
 import com.example.cicsgenapp.entity.Status;
@@ -9,10 +11,16 @@ import com.example.cicsgenapp.exception.CustomerAlreadyExistsException;
 import com.example.cicsgenapp.exception.ResourceNotFoundException;
 import com.example.cicsgenapp.repository.CustomerRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -161,5 +169,85 @@ public class CustomerService {
    */
   public boolean customerExistsByEmail(String email) {
     return customerRepository.existsByEmail(email);
+  }
+
+  /**
+   * Searches for customers based on provided search criteria with pagination and sorting.
+   *
+   * <p>Supports multi-field search (firstName, lastName, email, phone), optional status filtering,
+   * sorting, and pagination.
+   *
+   * @param criteria search criteria (query, status, pagination, sorting)
+   * @return PagedResponse with matched customers and pagination metadata
+   */
+  @Transactional(readOnly = true)
+  public PagedResponse<CustomerResponse> searchCustomers(SearchCriteria criteria) {
+    logger.debug("Searching customers with criteria: {}", criteria);
+
+    // Validate and normalize search criteria
+    int limit = criteria.getLimit();
+    int offset = criteria.getOffset();
+
+    // Enforce limits
+    if (limit > 100) {
+      limit = 100;
+    }
+    if (limit <= 0) {
+      limit = 50;
+    }
+    if (offset < 0) {
+      offset = 0;
+    }
+
+    // Build Sort object from sortBy and sortOrder
+    Sort.Direction direction = Sort.Direction.fromString(criteria.getSortOrder().toUpperCase());
+    Sort sort = Sort.by(direction, criteria.getSortBy());
+
+    // Create Pageable with offset and limit
+    Pageable pageable = PageRequest.of(offset / limit, limit, sort);
+
+    // Execute search
+    Page<Customer> customerPage = customerRepository.searchCustomers(
+        criteria.getQuery(),
+        criteria.getStatus(),
+        pageable
+    );
+
+    // Convert to response DTOs
+    List<CustomerResponse> responseList = customerPage.getContent()
+        .stream()
+        .map(CustomerResponse::from)
+        .collect(Collectors.toList());
+
+    // Create pagination info
+    PagedResponse.PaginationInfo pagination = PagedResponse.PaginationInfo.of(
+        limit,
+        offset,
+        customerPage.getTotalElements()
+    );
+
+    // Create and log response
+    PagedResponse<CustomerResponse> response = new PagedResponse<>(responseList, pagination);
+
+    logger.info(
+        "Customer search completed: found {} results (limit={}, offset={}, total={})",
+        responseList.size(),
+        limit,
+        offset,
+        customerPage.getTotalElements()
+    );
+
+    // Create audit entry for search operation
+    auditService.createAuditEntry(
+        Operation.SEARCH,
+        "CUSTOMER",
+        null,
+        criteria,
+        "Customer search performed: query=" + criteria.getQuery()
+            + ", status=" + criteria.getStatus()
+            + ", results=" + responseList.size()
+    );
+
+    return response;
   }
 }

@@ -6,8 +6,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -82,4 +85,47 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
    * @return true if customer exists with this phone, false otherwise
    */
   boolean existsByPhone(String phone);
+
+  /**
+   * Search customers by query string (matches firstName, lastName, email, phone) with optional status filter.
+   *
+   * <p>Searches are case-insensitive and use substring matching (LIKE %query%).
+   * When query is null or empty, all customers are returned (subject to status filter).
+   *
+   * @param query the search query string (case-insensitive substring match)
+   * @param status optional status filter (null to include all statuses)
+   * @param pageable pagination and sorting information
+   * @return Page of customers matching the search criteria
+   */
+  @Query("SELECT c FROM Customer c WHERE "
+      + "(:query IS NULL OR :query = '' OR "
+      + "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
+      + "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
+      + "LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) OR "
+      + "LOWER(c.phone) LIKE LOWER(CONCAT('%', :query, '%'))) AND "
+      + "(:status IS NULL OR c.status = :status)")
+  Page<Customer> searchCustomers(
+      @Param("query") String query,
+      @Param("status") Status status,
+      Pageable pageable
+  );
+
+  /**
+   * Count customers matching search criteria.
+   *
+   * @param query the search query string
+   * @param status optional status filter
+   * @return number of matching customers
+   */
+  @Query("SELECT COUNT(c) FROM Customer c WHERE "
+      + "(:query IS NULL OR :query = '' OR "
+      + "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
+      + "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
+      + "LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) OR "
+      + "LOWER(c.phone) LIKE LOWER(CONCAT('%', :query, '%'))) AND "
+      + "(:status IS NULL OR c.status = :status)")
+  long countSearchResults(
+      @Param("query") String query,
+      @Param("status") Status status
+  );
 }

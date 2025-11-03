@@ -10,7 +10,8 @@ public enum Operation {
   CREATE("Create"),
   READ("Read"),
   UPDATE("Update"),
-  DELETE("Delete");
+  DELETE("Delete"),
+  SEARCH("Search");
 
   private final String displayName;
 
