@@ -1,6 +1,6 @@
 # Story 1.4: Spring Cloud Gateway and Strangler Pattern Routing
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -243,7 +243,7 @@ Target: 80%+ test coverage for gateway routing logic
 
 ### Context Reference
 
-- docs/stories/1-4-spring-cloud-gateway-and-strangler-pattern-routing.context.xml
+- docs/stories/1-4-spring-cloud-gateway-and-strangler-pattern-routing.context.xml (Generated 2025-11-03 by story-context workflow)
 
 ### Agent Model Used
 
