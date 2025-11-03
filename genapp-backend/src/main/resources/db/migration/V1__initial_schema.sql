@@ -71,13 +71,13 @@ CREATE INDEX idx_policy_created_at ON policy(created_at);
 CREATE TABLE audit_log (
   audit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  user_id VARCHAR(255) NOT NULL,
-  operation VARCHAR(20) NOT NULL CHECK (operation IN ('CREATE', 'READ', 'UPDATE', 'DELETE')),
-  entity_type VARCHAR(50) NOT NULL,
-  entity_id UUID NOT NULL,
+  user_id VARCHAR(255),
+  operation VARCHAR(20) NOT NULL CHECK (operation IN ('CREATE', 'READ', 'UPDATE', 'DELETE', 'SEARCH')),
+  entity_type VARCHAR(100) NOT NULL,
+  entity_id UUID,
   changes JSONB,
   ip_address VARCHAR(45),
-  user_agent TEXT,
+  user_agent VARCHAR(500),
   trace_id VARCHAR(255)
 );
 

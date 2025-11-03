@@ -98,10 +98,15 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- Flyway for Database Schema Versioning -->
+    <!-- Flyway for Database Migrations (PostgreSQL 16 support) -->
     <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
     </dependency>
 
     <!-- Validation -->
@@ -181,6 +186,17 @@
         <version>${spring-cloud.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <!-- Override Boot's managed Flyway version to support PostgreSQL 16 -->
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-core</artifactId>
+        <version>11.15.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-database-postgresql</artifactId>
+        <version>11.15.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
