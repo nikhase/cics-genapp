@@ -193,14 +193,24 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
 
-      <!-- Maven Compiler Plugin -->
+      <!-- Maven Compiler Plugin with Toolchains -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>17</source>
-          <target>17</target>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
         </configuration>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <configuration>
+              <jdkToolchain>
+                <version>${java.version}</version>
+              </jdkToolchain>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- Maven JAR Plugin for FAT JAR -->
@@ -270,6 +280,9 @@
             <include>**/*Test.java</include>
             <include>**/*Tests.java</include>
           </includes>
+          <jdkToolchain>
+            <version>${java.version}</version>
+          </jdkToolchain>
         </configuration>
       </plugin>
 
