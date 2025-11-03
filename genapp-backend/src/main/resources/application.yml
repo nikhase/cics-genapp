@@ -49,6 +49,40 @@ management:
       prometheus:
         enabled: true
 
+# Gateway Configuration
+gateway:
+  legacy-endpoint: http://localhost:8081
+  service-endpoint: http://localhost:8080
+  timeout: 5000
+
+# CORS Configuration
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:3001
+  allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+  allowed-headers: Content-Type,Authorization,X-Trace-Id,X-Requested-With
+  exposed-headers: X-Trace-Id
+  max-age: 3600
+  allow-credentials: true
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      legacy-cobol-system:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 1
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 30000
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 5000
+        recordExceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+
 logging:
   level:
     root: INFO
@@ -82,10 +116,42 @@ spring:
 server:
   port: 8080
 
+# Development Gateway Configuration
+gateway:
+  legacy-endpoint: http://localhost:8081
+  service-endpoint: http://localhost:8080
+  timeout: 5000
+
+# Development CORS Configuration (lenient for testing)
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:3001,http://localhost:8080
+  allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+  allowed-headers: Content-Type,Authorization,X-Trace-Id,X-Requested-With
+  exposed-headers: X-Trace-Id
+  max-age: 3600
+  allow-credentials: true
+
+# Development Resilience4j Configuration (lenient for faster feedback)
+resilience4j:
+  circuitbreaker:
+    instances:
+      legacy-cobol-system:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 2
+        permittedNumberOfCallsInHalfOpenState: 1
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10000
+        failureRateThreshold: 40
+        slowCallRateThreshold: 40
+        slowCallDurationThreshold: 3000
+
 logging:
   level:
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    com.example.cicsgenapp.gateway: DEBUG
 
 ---
 
@@ -119,6 +185,36 @@ spring:
 server:
   port: 8080
 
+# Test Gateway Configuration (mock legacy service with TestContainers)
+gateway:
+  legacy-endpoint: http://test-legacy-service:8081
+  service-endpoint: http://localhost:8080
+  timeout: 5000
+
+# Test CORS Configuration (allow all for integration testing)
+cors:
+  allowed-origins: "*"
+  allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+  allowed-headers: Content-Type,Authorization,X-Trace-Id,X-Requested-With
+  exposed-headers: X-Trace-Id
+  max-age: 3600
+  allow-credentials: true
+
+# Test Resilience4j Configuration (disabled or very lenient for testing)
+resilience4j:
+  circuitbreaker:
+    instances:
+      legacy-cobol-system:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 1
+        permittedNumberOfCallsInHalfOpenState: 1
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 1000
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 5000
+
 ---
 
 # Production profile
@@ -147,6 +243,36 @@ server:
   compression:
     enabled: true
     min-response-size: 1024
+
+# Production Gateway Configuration (strict, secure)
+gateway:
+  legacy-endpoint: https://legacy-system.corporate.com
+  service-endpoint: http://localhost:8080
+  timeout: 5000
+
+# Production CORS Configuration (strict origin matching)
+cors:
+  allowed-origins: https://cicsgenapp.example.com
+  allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+  allowed-headers: Content-Type,Authorization,X-Trace-Id,X-Requested-With
+  exposed-headers: X-Trace-Id
+  max-age: 3600
+  allow-credentials: true
+
+# Production Resilience4j Configuration (strict thresholds)
+resilience4j:
+  circuitbreaker:
+    instances:
+      legacy-cobol-system:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 1
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 30000
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 5000
 
 logging:
   level:

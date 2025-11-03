@@ -61,6 +61,30 @@
       <artifactId>spring-cloud-starter-gateway</artifactId>
     </dependency>
 
+    <!-- Spring Cloud Circuit Breaker with Resilience4j -->
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+    </dependency>
+
+    <!-- Resilience4j Core -->
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-core</artifactId>
+    </dependency>
+
+    <!-- Resilience4j Circuit Breaker -->
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-circuitbreaker</artifactId>
+    </dependency>
+
+    <!-- Resilience4j Micrometer for Metrics -->
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-micrometer</artifactId>
+    </dependency>
+
     <!-- Spring Boot Actuator -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

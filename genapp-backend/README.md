@@ -239,6 +239,53 @@ genapp-backend/
 └── docker-compose.yml               # Docker Compose for local dev
 ```
 
+## API Gateway & Routing
+
+The application uses **Spring Cloud Gateway** to implement the strangler pattern, allowing gradual migration from legacy COBOL system to Spring Boot services.
+
+### Key Features
+
+- **Request Routing:** Routes requests to either new Spring Boot services or legacy COBOL system
+- **Circuit Breaker:** Resilience4j protection against cascading failures
+- **Correlation IDs:** X-Trace-Id header for distributed tracing and debugging
+- **CORS Management:** Configurable CORS policies per environment
+- **Structured Logging:** JSON-formatted logs with correlation IDs for ELK Stack integration
+
+### Gateway Documentation
+
+For comprehensive gateway configuration and troubleshooting:
+
+**See [`GATEWAY.md`](./GATEWAY.md)** - Contains:
+- Route definitions for all endpoints
+- Circuit breaker configuration and state transitions
+- CORS settings per environment
+- Trace ID propagation flow
+- Timeout handling
+- Adding new routes
+- Troubleshooting common issues
+
+### Quick Reference
+
+**Switch between Spring Boot and Legacy:**
+```bash
+# Feature toggles control routing (Story 1.6)
+# For now, all requests route to Spring Boot service
+```
+
+**Check Circuit Breaker State:**
+```bash
+curl http://localhost:8080/actuator/metrics/resilience4j.circuitbreaker.state
+```
+
+**Example: Request with Trace ID**
+```bash
+curl http://localhost:8080/api/v1/customers/123 \
+  -H "X-Trace-Id: my-trace-id-123"
+# Response includes: X-Trace-Id: my-trace-id-123
+```
+
+---
+
 ## API Endpoints
 
 Once the application is running, explore the API using Swagger/OpenAPI:
@@ -247,6 +294,7 @@ Once the application is running, explore the API using Swagger/OpenAPI:
 - **OpenAPI JSON:** `http://localhost:8080/v3/api-docs`
 - **Health Check:** `http://localhost:8080/actuator/health`
 - **Metrics:** `http://localhost:8080/actuator/metrics`
+- **Gateway Metrics:** `http://localhost:8080/actuator/metrics/resilience4j.circuitbreaker.state`
 
 ## Database Setup
 
