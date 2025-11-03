@@ -1,6 +1,7 @@
 package com.example.cicsgenapp.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpMethod;
  * - /api/v1/auth/* - Authentication API endpoints
  */
 @Configuration
+@ConditionalOnProperty(name = "spring.cloud.gateway.enabled", havingValue = "true")
 public class GatewayConfig {
 
   @Value("${gateway.legacy-endpoint:http://localhost:8081}")

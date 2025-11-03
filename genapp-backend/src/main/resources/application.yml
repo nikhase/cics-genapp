@@ -92,6 +92,11 @@ spring:
   config:
     activate:
       on-profile: dev
+  cloud:
+    gateway:
+      enabled: false
+    compatibility-verifier:
+      enabled: false
   jpa:
     hibernate:
       ddl-auto: create-drop
