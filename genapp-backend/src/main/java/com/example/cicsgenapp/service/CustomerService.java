@@ -6,6 +6,7 @@ import com.example.cicsgenapp.entity.Customer;
 import com.example.cicsgenapp.entity.Operation;
 import com.example.cicsgenapp.entity.Status;
 import com.example.cicsgenapp.exception.CustomerAlreadyExistsException;
+import com.example.cicsgenapp.exception.ResourceNotFoundException;
 import com.example.cicsgenapp.repository.CustomerRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -95,6 +96,37 @@ public class CustomerService {
 
     // Return response DTO
     return CustomerResponse.from(savedCustomer);
+  }
+
+  /**
+   * Retrieves a customer by ID with audit logging.
+   *
+   * <p>Fetches the customer from the database and creates an audit log entry for the READ operation.
+   *
+   * @param customerId the customer ID
+   * @return CustomerResponse containing customer data
+   * @throws ResourceNotFoundException if customer is not found
+   */
+  @Transactional(readOnly = true)
+  public CustomerResponse getCustomer(UUID customerId) {
+    logger.debug("Retrieving customer with ID: {}", customerId);
+
+    // Retrieve customer from database
+    Customer customer = customerRepository.findById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Customer " + customerId + " not found"));
+
+    // Create audit entry for READ operation
+    auditService.createAuditEntry(
+        Operation.READ,
+        "CUSTOMER",
+        customerId,
+        customer,
+        "Customer retrieved via API"
+    );
+
+    logger.info("Customer retrieved successfully: {}", customerId);
+    return CustomerResponse.from(customer);
   }
 
   /**

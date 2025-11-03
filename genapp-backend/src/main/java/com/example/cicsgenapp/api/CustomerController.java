@@ -14,11 +14,14 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,6 +49,78 @@ public class CustomerController {
    */
   public CustomerController(CustomerService customerService) {
     this.customerService = customerService;
+  }
+
+  /**
+   * Retrieves a customer by ID.
+   *
+   * <p>GET /api/v1/customers/{customerId} endpoint for retrieving customer details. Returns 200
+   * OK with customer information if found, 404 Not Found if customer doesn't exist.
+   *
+   * <p>Requires authentication but no specific role for read-only operation.
+   *
+   * @param customerId the customer ID (UUID)
+   * @return ResponseEntity with 200 status and ApiResponse containing customer data
+   * @throws ResourceNotFoundException if customer not found (returns 404)
+   */
+  @GetMapping("/{customerId}")
+  @PreAuthorize("isAuthenticated()")
+  @Operation(
+      summary = "Get customer by ID",
+      description = "Retrieves customer details by ID. Returns all customer information including timestamps and audit fields.",
+      security = @SecurityRequirement(name = "bearer-jwt")
+  )
+  @ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "Customer found successfully",
+          content = @Content(schema = @Schema(implementation = ApiResponse.class))
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "400",
+          description = "Bad Request - invalid customer ID format"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "404",
+          description = "Not Found - customer with specified ID does not exist"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "401",
+          description = "Unauthorized - authentication required"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "500",
+          description = "Internal server error"
+      )
+  })
+  public ResponseEntity<ApiResponse<CustomerResponse>> getCustomer(
+      @PathVariable UUID customerId) {
+
+    logger.info("GET /api/v1/customers/{} - Retrieving customer", customerId);
+
+    try {
+      // Business logic delegated to service
+      CustomerResponse response = customerService.getCustomer(customerId);
+
+      // Build metadata
+      Map<String, Object> metadata = new HashMap<>();
+      metadata.put("timestamp", LocalDateTime.now());
+      metadata.put("version", "v1");
+      metadata.put("operation", "READ");
+
+      // Create response envelope
+      ApiResponse<CustomerResponse> apiResponse = new ApiResponse<>(response, metadata);
+
+      logger.info("Customer retrieved successfully: {}", customerId);
+
+      return ResponseEntity
+          .status(HttpStatus.OK)
+          .body(apiResponse);
+
+    } catch (Exception ex) {
+      logger.error("Error retrieving customer {}: {}", customerId, ex.getMessage(), ex);
+      throw ex; // Let GlobalExceptionHandler handle it
+    }
   }
 
   /**

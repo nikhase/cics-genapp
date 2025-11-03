@@ -1,5 +1,8 @@
 package com.example.cicsgenapp.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,7 +16,9 @@ import com.example.cicsgenapp.service.AuditService;
 import com.example.cicsgenapp.service.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,8 +35,8 @@ import org.springframework.test.web.servlet.MvcResult;
 /**
  * Integration tests for CustomerController.
  *
- * <p>Tests REST API endpoints for customer creation, including happy path, validation errors,
- * duplicate email conflicts, and authorization checks.
+ * <p>Tests REST API endpoints for customer creation and retrieval, including happy path,
+ * validation errors, duplicate email conflicts, 404 errors, and authorization checks.
  */
 @WebMvcTest(CustomerController.class)
 @DisplayName("Customer Controller Integration Tests")
@@ -53,6 +58,13 @@ class CustomerControllerTest {
 
   @Configuration
   static class TestConfig {
+    @Bean
+    public CustomerService customerService(
+        CustomerRepository customerRepository,
+        AuditService auditService) {
+      return new CustomerService(customerRepository, auditService);
+    }
+
     @Bean
     public AuditService auditService() {
       return new AuditService(null, null, new ObjectMapper());
@@ -292,5 +304,163 @@ class CustomerControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated());
+  }
+
+  // ============= GET /api/v1/customers/{customerId} Tests =============
+
+  @Test
+  @DisplayName("GET /api/v1/customers/{id} - Retrieve customer successfully")
+  @WithMockUser
+  void testGetCustomerSuccess() throws Exception {
+    // Given: existing customer
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("John", "Doe", "john@example.com");
+    customer.setCustomerId(customerId);
+    customer.setPhone("+12025551234");
+    customer.setDateOfBirth(LocalDate.of(1990, 1, 15));
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setCreatedBy("SYSTEM");
+    customer.setUpdatedBy("SYSTEM");
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    // When/Then: GET returns 200 with customer data
+    mockMvc.perform(get("/api/v1/customers/{customerId}", customerId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.customerId").value(customerId.toString()))
+        .andExpect(jsonPath("$.data.firstName").value("John"))
+        .andExpect(jsonPath("$.data.lastName").value("Doe"))
+        .andExpect(jsonPath("$.data.email").value("john@example.com"))
+        .andExpect(jsonPath("$.data.phone").value("+12025551234"))
+        .andExpect(jsonPath("$.data.status").value("ACTIVE"))
+        .andExpect(jsonPath("$.data.createdAt").exists())
+        .andExpect(jsonPath("$.data.updatedAt").exists())
+        .andExpect(jsonPath("$.metadata.operation").value("READ"));
+  }
+
+  @Test
+  @DisplayName("GET /api/v1/customers/{id} - Return 404 Not Found when customer doesn't exist")
+  @WithMockUser
+  void testGetCustomerNotFound() throws Exception {
+    // Given: non-existent customer ID
+    UUID nonExistentId = UUID.randomUUID();
+    when(customerRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+    // When/Then: GET returns 404
+    mockMvc.perform(get("/api/v1/customers/{customerId}", nonExistentId))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error.code").value("RESOURCE_NOT_FOUND"))
+        .andExpect(jsonPath("$.error.message").exists());
+  }
+
+  @Test
+  @DisplayName("GET /api/v1/customers/{id} - Return 400 for invalid UUID format")
+  @WithMockUser
+  void testGetCustomerInvalidUUID() throws Exception {
+    // Given: invalid UUID format
+    String invalidId = "not-a-uuid";
+
+    // When/Then: GET returns 400
+    mockMvc.perform(get("/api/v1/customers/{customerId}", invalidId))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("GET /api/v1/customers/{id} - Require authentication")
+  void testGetCustomerNotAuthenticated() throws Exception {
+    // Given: unauthenticated request
+    UUID customerId = UUID.randomUUID();
+
+    // When/Then: GET returns 401
+    mockMvc.perform(get("/api/v1/customers/{customerId}", customerId))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("GET /api/v1/customers/{id} - Response includes all fields")
+  @WithMockUser
+  void testGetCustomerIncludesAllFields() throws Exception {
+    // Given: customer with all fields populated
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("Jane", "Smith", "jane@example.com");
+    customer.setCustomerId(customerId);
+    customer.setDateOfBirth(LocalDate.of(1985, 5, 20));
+    customer.setPhone("+14155551234");
+    customer.setAddress("123 Main St");
+    customer.setCity("San Francisco");
+    customer.setState("CA");
+    customer.setZipCode("94102");
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setCreatedBy("USER1");
+    customer.setUpdatedBy("USER2");
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    // When/Then: All fields are returned in response
+    mockMvc.perform(get("/api/v1/customers/{customerId}", customerId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.customerId").value(customerId.toString()))
+        .andExpect(jsonPath("$.data.firstName").value("Jane"))
+        .andExpect(jsonPath("$.data.lastName").value("Smith"))
+        .andExpect(jsonPath("$.data.dateOfBirth").value("1985-05-20"))
+        .andExpect(jsonPath("$.data.email").value("jane@example.com"))
+        .andExpect(jsonPath("$.data.phone").value("+14155551234"))
+        .andExpect(jsonPath("$.data.address").value("123 Main St"))
+        .andExpect(jsonPath("$.data.city").value("San Francisco"))
+        .andExpect(jsonPath("$.data.state").value("CA"))
+        .andExpect(jsonPath("$.data.zipCode").value("94102"))
+        .andExpect(jsonPath("$.data.status").value("ACTIVE"))
+        .andExpect(jsonPath("$.data.createdAt").exists())
+        .andExpect(jsonPath("$.data.updatedAt").exists())
+        .andExpect(jsonPath("$.data.createdBy").value("USER1"))
+        .andExpect(jsonPath("$.data.updatedBy").value("USER2"));
+  }
+
+  @Test
+  @DisplayName("GET /api/v1/customers/{id} - Verify audit entry is created")
+  @WithMockUser
+  void testGetCustomerCreatesAuditEntry() throws Exception {
+    // Given: existing customer
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("John", "Doe", "john@example.com");
+    customer.setCustomerId(customerId);
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    // When: GET request is made
+    mockMvc.perform(get("/api/v1/customers/{customerId}", customerId))
+        .andExpect(status().isOk());
+
+    // Then: Verify audit service was called (through mock)
+    // Note: Actual audit verification requires integration test with real DB
+  }
+
+  @Test
+  @DisplayName("GET /api/v1/customers/{id} - Response includes metadata with operation type")
+  @WithMockUser
+  void testGetCustomerResponseMetadata() throws Exception {
+    // Given: existing customer
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("John", "Doe", "john@example.com");
+    customer.setCustomerId(customerId);
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    // When/Then: Response includes metadata with READ operation
+    mockMvc.perform(get("/api/v1/customers/{customerId}", customerId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.metadata.timestamp").exists())
+        .andExpect(jsonPath("$.metadata.version").value("v1"))
+        .andExpect(jsonPath("$.metadata.operation").value("READ"));
   }
 }

@@ -54,6 +54,12 @@ public class CustomerResponse {
   @JsonProperty("updatedAt")
   private LocalDateTime updatedAt;
 
+  @JsonProperty("createdBy")
+  private String createdBy;
+
+  @JsonProperty("updatedBy")
+  private String updatedBy;
+
   /**
    * Default constructor for JSON serialization.
    */
@@ -94,6 +100,8 @@ public class CustomerResponse {
     response.status = customer.getStatus();
     response.createdAt = customer.getCreatedAt();
     response.updatedAt = customer.getUpdatedAt();
+    response.createdBy = customer.getCreatedBy();
+    response.updatedBy = customer.getUpdatedBy();
     return response;
   }
 
@@ -201,6 +209,22 @@ public class CustomerResponse {
 
   public void setUpdatedAt(LocalDateTime updatedAt) {
     this.updatedAt = updatedAt;
+  }
+
+  public String getCreatedBy() {
+    return createdBy;
+  }
+
+  public void setCreatedBy(String createdBy) {
+    this.createdBy = createdBy;
+  }
+
+  public String getUpdatedBy() {
+    return updatedBy;
+  }
+
+  public void setUpdatedBy(String updatedBy) {
+    this.updatedBy = updatedBy;
   }
 
   @Override
