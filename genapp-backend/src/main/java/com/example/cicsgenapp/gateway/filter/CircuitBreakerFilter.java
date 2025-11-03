@@ -1,7 +1,8 @@
 package com.example.cicsgenapp.gateway.filter;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.core.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import java.util.List;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,24 +69,20 @@ public class CircuitBreakerFilter extends AbstractGatewayFilterFactory<CircuitBr
   private Mono<Void> executeWithCircuitBreaker(ServerWebExchange exchange,
                                               org.springframework.cloud.gateway.filter.GatewayFilterChain chain,
                                               Config config) {
-    Function<Throwable, Mono<Void>> fallback = throwable -> {
-      LOG.error("Circuit breaker fallback triggered for: {}", exchange.getRequest().getPath());
+    return chain.filter(exchange)
+        .onErrorResume(throwable -> {
+          LOG.error("Circuit breaker fallback triggered for: {}", exchange.getRequest().getPath());
 
-      if (throwable instanceof CallNotPermittedException) {
-        // Circuit is OPEN - return 503 Service Unavailable
-        return returnFallbackResponse(exchange, 503, "LEGACY_SYSTEM_UNAVAILABLE",
-            "Legacy system temporarily unavailable. Please try again in a few moments.");
-      }
+          if (throwable instanceof CallNotPermittedException) {
+            // Circuit is OPEN - return 503 Service Unavailable
+            return returnFallbackResponse(exchange, 503, "LEGACY_SYSTEM_UNAVAILABLE",
+                "Legacy system temporarily unavailable. Please try again in a few moments.");
+          }
 
-      // Other errors (timeout, network, etc) - also return 503
-      return returnFallbackResponse(exchange, 503, "LEGACY_SYSTEM_ERROR",
-          "Unable to reach legacy system: " + throwable.getMessage());
-    };
-
-    return Mono.fromRunnable(() -> circuitBreaker.executeRunnable(
-        () -> chain.filter(exchange).toFuture().get()))
-        .onErrorResume(fallback)
-        .then();
+          // Other errors (timeout, network, etc) - also return 503
+          return returnFallbackResponse(exchange, 503, "LEGACY_SYSTEM_ERROR",
+              "Unable to reach legacy system: " + throwable.getMessage());
+        });
   }
 
   /**
@@ -162,7 +159,7 @@ public class CircuitBreakerFilter extends AbstractGatewayFilterFactory<CircuitBr
   }
 
   @Override
-  public String[] shortcutFieldOrder() {
-    return new String[]{};
+  public List<String> shortcutFieldOrder() {
+    return List.of();
   }
 }

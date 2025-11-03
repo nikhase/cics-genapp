@@ -1,7 +1,6 @@
 package com.example.cicsgenapp.config;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.core.registry.EntryAddedEvent;
 import io.github.resilience4j.core.registry.EntryRemovedEvent;
@@ -45,7 +44,8 @@ public class CircuitBreakerConfig {
    */
   @Bean
   public CircuitBreakerRegistry circuitBreakerRegistry() {
-    CircuitBreakerConfig cbConfig = CircuitBreakerConfig.custom()
+    io.github.resilience4j.circuitbreaker.CircuitBreakerConfig cbConfig =
+        io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.custom()
         // Failure rate threshold: 50% (from AC #4)
         // If 50% or more calls fail, open the circuit
         .failureRateThreshold(50)
@@ -136,7 +136,7 @@ public class CircuitBreakerConfig {
   public RegistryEventConsumer<CircuitBreaker> circuitBreakerEventConsumer() {
     return new RegistryEventConsumer<CircuitBreaker>() {
       @Override
-      public void onEntryAdded(EntryAddedEvent<CircuitBreaker> entryAddedEvent) {
+      public void onEntryAddedEvent(EntryAddedEvent<CircuitBreaker> entryAddedEvent) {
         CircuitBreaker circuitBreaker = entryAddedEvent.getAddedEntry();
         LOG.info("Circuit breaker created: {} with config: failureRate={}%, slowCallRate={}%",
             circuitBreaker.getName(),
@@ -145,8 +145,16 @@ public class CircuitBreakerConfig {
       }
 
       @Override
-      public void onEntryRemoved(EntryRemovedEvent<CircuitBreaker> entryRemovedEvent) {
+      public void onEntryRemovedEvent(EntryRemovedEvent<CircuitBreaker> entryRemovedEvent) {
         LOG.info("Circuit breaker removed: {}", entryRemovedEvent.getRemovedEntry().getName());
+      }
+
+      @Override
+      public void onEntryReplacedEvent(
+          io.github.resilience4j.core.registry.EntryReplacedEvent<CircuitBreaker> event) {
+        LOG.info("Circuit breaker replaced: {} -> {}",
+            event.getOldEntry().getName(),
+            event.getNewEntry().getName());
       }
     };
   }

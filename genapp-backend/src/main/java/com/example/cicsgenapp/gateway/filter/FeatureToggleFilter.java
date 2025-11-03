@@ -1,5 +1,6 @@
 package com.example.cicsgenapp.gateway.filter;
 
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -121,7 +122,7 @@ public class FeatureToggleFilter extends AbstractGatewayFilterFactory<FeatureTog
   }
 
   @Override
-  public String[] shortcutFieldOrder() {
-    return new String[]{};
+  public List<String> shortcutFieldOrder() {
+    return List.of();
   }
 }
