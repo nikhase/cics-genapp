@@ -1,0 +1,301 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.1</storyId>
+    <title>Customer Domain Model and PostgreSQL Schema</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-1-customer-domain-model-and-postgresql-schema.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Backend Developer</asA>
+    <iWant>to define the Customer domain model and create the PostgreSQL schema</iWant>
+    <soThat>I have a foundation for implementing customer CRUD operations</soThat>
+    <tasks>
+      - Task 1: Create Customer JPA entity class (AC: #1, #5, #6)
+      - Task 2: Create PostgreSQL schema migration script (AC: #2, #3)
+      - Task 3: Create CustomerRepository interface (AC: #4)
+      - Task 4: Configure Flyway migration execution (AC: #3)
+      - Task 5: Implement JPA entity listener for audit column management (AC: #6)
+      - Task 6: Test schema creation and sample data (AC: #7)
+      - Task 7: Document entity and schema structure (AC: #1, #2)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Customer JPA entity created with fields: customerId (UUID, primary key), firstName, lastName (String, required, 1-100 characters), dateOfBirth (LocalDate, optional), email (String, required, unique, email format), phone (String, optional, phone format), address, city, state, zipCode (String, optional), status (enum: ACTIVE, INACTIVE), createdAt, updatedAt (LocalDateTime, auto-managed via JPA @EntityListeners), createdBy, updatedBy (String, populated from JWT token)
+    2. PostgreSQL table `CUSTOMER` created with: Columns matching entity fields, Indexes: email, phone, status, createdAt, Constraints: email UNIQUE, NOT NULL on required fields
+    3. Flyway migration script created (V2__create_customer_table.sql) and tested
+    4. JPA repository interface created: `CustomerRepository extends JpaRepository&lt;Customer, UUID&gt;` with custom finder methods: findByEmail(String email), findByPhone(String phone), findByLastNameContainingIgnoreCase(String lastName), findByStatusAndCreatedAtAfter(Status status, LocalDateTime date) for reporting
+    5. Entity validation annotations applied: @NotNull on required fields, @Email on email field, @Pattern(regexp="...") for phone format (international format support), @Min(18) @Max(150) for age validation
+    6. Audit columns (createdAt, updatedAt, createdBy, updatedBy) auto-managed
+    7. Schema tested with sample data insert/select
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Documentation</title>
+        <section>Architectural Layers - Data Management Layer</section>
+        <snippet>Legacy system uses 3-tier architecture with Db2 data access layer. Modern system replaces this with JPA/Spring Data repositories accessing PostgreSQL as primary store.</snippet>
+      </doc>
+      <doc>
+        <path>docs/data-models.md</path>
+        <title>Data Models &amp; Storage Schema</title>
+        <section>Customer Table</section>
+        <snippet>Legacy CUSTOMER table structure: CUST_ID (DECIMAL 10), CUST_NAME (VARCHAR 30), CUST_ADDRESS, CUST_CITY, CUST_STATE, CUST_ZIP, CUST_PHONE, CUST_EMAIL, CREATED_DATE, LAST_MODIFIED. Modern schema modernizes this with UUID primary keys, extended validation, and audit trail.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>CICS GenApp Cloud Modernization - Product Requirements Document</title>
+        <section>Functional Requirements - Customer Management</section>
+        <snippet>FR001: Add customer record with required personal/contact information. FR002: Search and retrieve customer by ID, name, email, or phone. FR003: Update customer personal/contact details with audit trail. FR004: Soft-delete customer (mark inactive).</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/1-3-postgresql-database-connectivity-and-schema-management.md</path>
+        <title>Story 1.3: PostgreSQL Database Connectivity and Schema Management</title>
+        <section>Completion Status</section>
+        <snippet>Story 1.3 established PostgreSQL connectivity, Flyway migrations (V1__initial_schema.sql created infrastructure), and verified database connection. This story builds on that foundation with V2 migration for Customer table.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 2: Customer Service API &amp; Spring Boot Backend</section>
+        <snippet>Story 2.1 establishes Customer domain model as first vertical slice of Epic 2. Creates foundation for Stories 2.2-2.6 (Customer CRUD APIs).</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/resources/db/migration/V1__initial_schema.sql</path>
+        <kind>migration</kind>
+        <symbol>V1__initial_schema</symbol>
+        <lines>complete</lines>
+        <reason>Existing Flyway migration establishing database infrastructure. Story 2.1 creates V2__create_customer_table.sql as next sequential migration.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/CicsGenAppApplication.java</path>
+        <kind>application</kind>
+        <symbol>CicsGenAppApplication</symbol>
+        <lines>complete</lines>
+        <reason>Main Spring Boot application class. Customer entity will be component-scanned from this base package.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/exception/ResourceNotFoundException.java</path>
+        <kind>exception</kind>
+        <symbol>ResourceNotFoundException</symbol>
+        <lines>complete</lines>
+        <reason>Existing exception class. CustomerRepository may throw this when customer not found.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/exception/DuplicateKeyException.java</path>
+        <kind>exception</kind>
+        <symbol>DuplicateKeyException</symbol>
+        <lines>complete</lines>
+        <reason>Existing exception class. Relevant for handling email uniqueness constraint violations.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/exception/ValidationException.java</path>
+        <kind>exception</kind>
+        <symbol>ValidationException</symbol>
+        <lines>complete</lines>
+        <reason>Existing exception class for validation failures. Will be used for entity validation errors.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/test/java/com/example/cicsgenapp/FlywayMigrationTests.java</path>
+        <kind>test</kind>
+        <symbol>FlywayMigrationTests</symbol>
+        <lines>complete</lines>
+        <reason>Existing test class verifying Flyway migrations execute correctly. V2 migration should be added to this test.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <java>
+        <dependency>
+          <name>spring-boot-starter-data-jpa</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <name>spring-boot-starter-validation</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <name>postgresql</name>
+          <version>runtime</version>
+          <scope>runtime</scope>
+        </dependency>
+        <dependency>
+          <name>flyway-core</name>
+          <version>bundled with Spring Boot 3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <name>h2</name>
+          <version>bundled</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <name>testcontainers-postgresql</name>
+          <version>1.17.6</version>
+          <scope>test</scope>
+        </dependency>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Java 21 LTS required (established in Story 1.1, pom.xml configured)
+    - Spring Boot 3.3.4 LTS (established in Story 1.2)
+    - PostgreSQL 15+ (established in Story 1.3)
+    - UUID as primary key (design decision for distributed generation, scalability)
+    - Email must be unique (business requirement: no duplicate email addresses)
+    - ACTIVE/INACTIVE status for soft-delete pattern (customers marked inactive, not hard-deleted)
+    - Audit columns (createdAt, updatedAt, createdBy, updatedBy) auto-managed via JPA EntityListeners
+    - Security context (JWT) used to populate createdBy/updatedBy fields
+    - Flyway migration versioning: V2__create_customer_table.sql (sequential after V1)
+    - Package structure: com.example.cicsgenapp.entity, com.example.cicsgenapp.repository, com.example.cicsgenapp.listener
+    - Google Java Style Guide (Checkstyle enforced in pom.xml)
+    - Maven module: genapp-backend
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>CustomerRepository</name>
+      <kind>Spring Data JPA Repository</kind>
+      <signature>
+        public interface CustomerRepository extends JpaRepository&lt;Customer, UUID&gt; {
+          Optional&lt;Customer&gt; findByEmail(String email);
+          Optional&lt;Customer&gt; findByPhone(String phone);
+          List&lt;Customer&gt; findByLastNameContainingIgnoreCase(String lastName);
+          List&lt;Customer&gt; findByStatusAndCreatedAtAfter(Status status, LocalDateTime date);
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/repository/CustomerRepository.java (NEW)</path>
+    </interface>
+    <interface>
+      <name>Customer Entity</name>
+      <kind>JPA Entity</kind>
+      <signature>
+        @Entity
+        @Table(name = "CUSTOMER")
+        @EntityListeners(AuditListener.class)
+        public class Customer {
+          @Id
+          @GeneratedValue(strategy = GenerationType.UUID)
+          private UUID customerId;
+
+          @NotNull
+          @Column(length = 100)
+          private String firstName;
+
+          @NotNull
+          @Column(length = 100)
+          private String lastName;
+
+          private LocalDate dateOfBirth;
+
+          @NotNull
+          @Email
+          @Column(unique = true, length = 254)
+          private String email;
+
+          @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$")
+          @Column(length = 20)
+          private String phone;
+
+          @Column(length = 255)
+          private String address;
+
+          @Column(length = 100)
+          private String city;
+
+          @Column(length = 2)
+          private String state;
+
+          @Column(length = 10)
+          private String zipCode;
+
+          @Enumerated(EnumType.STRING)
+          private Status status;
+
+          private LocalDateTime createdAt;
+          private LocalDateTime updatedAt;
+          private String createdBy;
+          private String updatedBy;
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/entity/Customer.java (NEW)</path>
+    </interface>
+    <interface>
+      <name>AuditListener</name>
+      <kind>JPA EntityListener</kind>
+      <signature>
+        public class AuditListener {
+          @PrePersist
+          public void prePersist(Object entity) {
+            // Set createdAt, updatedAt, createdBy, updatedBy from SecurityContext
+          }
+
+          @PreUpdate
+          public void preUpdate(Object entity) {
+            // Update updatedAt, updatedBy from SecurityContext
+          }
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/listener/AuditListener.java (NEW)</path>
+    </interface>
+    <interface>
+      <name>Flyway Migration V2</name>
+      <kind>SQL migration script</kind>
+      <signature>
+        CREATE TABLE CUSTOMER (
+          customerId UUID PRIMARY KEY,
+          firstName VARCHAR(100) NOT NULL,
+          lastName VARCHAR(100) NOT NULL,
+          dateOfBirth DATE,
+          email VARCHAR(254) NOT NULL UNIQUE,
+          phone VARCHAR(20),
+          address VARCHAR(255),
+          city VARCHAR(100),
+          state VARCHAR(2),
+          zipCode VARCHAR(10),
+          status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+          createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          createdBy VARCHAR(255),
+          updatedBy VARCHAR(255)
+        );
+        CREATE INDEX idx_customer_email ON CUSTOMER(email);
+        CREATE INDEX idx_customer_phone ON CUSTOMER(phone);
+        CREATE INDEX idx_customer_status ON CUSTOMER(status);
+        CREATE INDEX idx_customer_createdAt ON CUSTOMER(createdAt);
+      </signature>
+      <path>genapp-backend/src/main/resources/db/migration/V2__create_customer_table.sql (NEW)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing standards for Story 2.1 require 85%+ test coverage for entity and repository classes. Use JUnit 5, Spring Boot Test, and Testcontainers for PostgreSQL integration tests. Unit tests verify entity validation and audit listener behavior. Integration tests verify Flyway migration execution, schema creation, INSERT/SELECT queries, and index presence. Test classes follow naming convention: *Test.java (unit), *IntegrationTest.java (integration).
+    </standards>
+    <locations>
+      - genapp-backend/src/test/java/com/example/cicsgenapp/entity/CustomerEntityTest.java (NEW - unit tests)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/repository/CustomerRepositoryIntegrationTest.java (NEW - integration tests)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/listener/AuditListenerTest.java (NEW - audit column tests)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/FlywayMigrationTests.java (EXISTING - add V2 verification)
+    </locations>
+    <ideas>
+      AC1: Unit test - Create Customer instance, verify all fields can be set; validate with valid data passes; validate with invalid email format fails
+      AC2: Integration test - Verify CUSTOMER table created with correct columns, indexes (idx_customer_email, idx_customer_phone, idx_customer_status, idx_customer_createdAt), and constraints (email UNIQUE, NOT NULL on required fields)
+      AC3: Integration test - Execute V2 Flyway migration, verify success, verify rollback protection
+      AC4: Integration test - Test CustomerRepository findByEmail, findByPhone, findByLastNameContainingIgnoreCase (partial match), findByStatusAndCreatedAtAfter
+      AC5: Unit test - Validate @NotNull on firstName/lastName fails with null; validate @Email on invalid format fails; validate @Pattern on phone with invalid format fails
+      AC6: Unit test - Create Customer with AuditListener, verify createdAt/updatedAt auto-populated; update Customer, verify updatedAt changes and createdAt unchanged
+      AC7: Integration test - Insert sample customer (Jane Smith, jane@example.com, +1-555-0123), query by email/phone/lastName, verify results correct
+    </ideas>
+  </tests>
+</story-context>

@@ -1,6 +1,6 @@
 # Story 2.8: API Documentation (OpenAPI/Swagger) and Audit Logging
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -361,7 +361,7 @@ src/test/java/com/example/cicsgenapp/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- docs/stories/2-8-api-documentation-openapi-swagger-and-audit-logging.context.xml
 
 ### Agent Model Used
 

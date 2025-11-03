@@ -1,0 +1,369 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.2</storyId>
+    <title>Customer Create API (POST /api/v1/customers)</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-2-customer-create-api-post-api-v1-customers.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Customer Service Agent</asA>
+    <iWant>to create a new customer via REST API</iWant>
+    <soThat>I can add new customers to the system</soThat>
+    <tasks>
+      - Task 1: Create CustomerController with POST endpoint (AC: #1, #9)
+      - Task 2: Create CustomerService with create business logic (AC: #2, #3, #7, #8)
+      - Task 3: Create request/response DTOs (AC: #2, #3)
+      - Task 4: Implement duplicate email detection and conflict handling (AC: #5)
+      - Task 5: Implement request/response structured JSON logging (AC: #6)
+      - Task 6: Implement automatic audit entry creation (AC: #7)
+      - Task 7: Implement authorization checks (AC: #9)
+      - Task 8: Performance testing and optimization (AC: #10)
+      - Task 9: Implement error handling and validation (AC: #4)
+      - Task 10: Integration tests for full API flow (AC: #1-10)
+      - Task 11: Documentation and API contract (AC: #1-3)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. POST /api/v1/customers endpoint implemented with @PostMapping("/customers")
+    2. Request body schema accepts: firstName, lastName, dateOfBirth, email, phone, address, city, state, zipCode
+    3. Returns 201 Created with response body containing: customerId, firstName, lastName, email, phone, status, createdAt, plus metadata (timestamp, version)
+    4. Validation errors return 400 Bad Request with field-level errors
+    5. Duplicate email returns 409 Conflict with message: "Customer with this email already exists"
+    6. Request/response logged in structured JSON format (info level)
+    7. Audit entry created automatically (operation: CREATE, user from JWT token, all field values)
+    8. Default status set to ACTIVE
+    9. Requires ROLE_CUSTOMER_SERVICE_AGENT or higher authorization
+    10. Response time &lt; 200ms typical
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>CICS GenApp Cloud Modernization - Product Requirements Document</title>
+        <section>Functional Requirements - Customer Management</section>
+        <snippet>FR001: Add customer record with required personal/contact information (COBOL: SSC1 transaction equivalent). FR013: Audit logging for all data mutations (who, what, when, why, before/after values). FR019: Role-based access control (RBAC: customer service agents, admin).</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Documentation</title>
+        <section>Modernization Architecture - REST API Layer</section>
+        <snippet>Modern system uses Spring MVC controllers for REST endpoints, service layer for business logic, and repository layer for data access. Replaces COBOL SSC1 transaction with POST /api/v1/customers endpoint.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-1-customer-domain-model-and-postgresql-schema.md</path>
+        <title>Story 2.1: Customer Domain Model and PostgreSQL Schema</title>
+        <section>Entity and Repository</section>
+        <snippet>Story 2.1 provides Customer JPA entity with validation annotations and CustomerRepository with findByEmail() method. This story uses these for persistence and email uniqueness checking.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/1-2-spring-boot-starter-project-with-core-configuration.md</path>
+        <title>Story 1.2: Spring Boot Starter Project with Core Configuration</title>
+        <section>Error Handling Framework</section>
+        <snippet>Story 1.2 established GlobalExceptionHandler with @ControllerAdvice for centralized error handling. This story extends it to handle validation errors, duplicate key exceptions, and business exceptions.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 2: Customer Service API &amp; Spring Boot Backend</section>
+        <snippet>Story 2.2 implements first REST API endpoint (POST /api/v1/customers) for customer creation, replacing legacy COBOL SSC1 transaction. Sets pattern for subsequent CRUD operations (Stories 2.3-2.6).</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/exception/GlobalExceptionHandler.java</path>
+        <kind>exception-handler</kind>
+        <symbol>GlobalExceptionHandler</symbol>
+        <lines>complete</lines>
+        <reason>Existing exception handler. Extend to handle MethodArgumentNotValidException (400), DuplicateKeyException (409), and business exceptions.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/exception/ResourceNotFoundException.java</path>
+        <kind>exception</kind>
+        <symbol>ResourceNotFoundException</symbol>
+        <lines>complete</lines>
+        <reason>Existing exception class. Pattern for creating CustomerAlreadyExistsException for duplicate email handling.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/exception/DuplicateKeyException.java</path>
+        <kind>exception</kind>
+        <symbol>DuplicateKeyException</symbol>
+        <lines>complete</lines>
+        <reason>Existing exception class for duplicate key violations. Use for email uniqueness constraint failures.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/config/SecurityConfig.java</path>
+        <kind>configuration</kind>
+        <symbol>SecurityConfig</symbol>
+        <lines>complete</lines>
+        <reason>Existing security configuration. Ensures @PreAuthorize annotations are processed and JWT tokens provide role information.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/filter/LoggingFilter.java</path>
+        <kind>filter</kind>
+        <symbol>LoggingFilter</symbol>
+        <lines>complete</lines>
+        <reason>Existing logging filter. May be used or extended for request/response JSON logging with MDC trace ID.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/api/HealthController.java</path>
+        <kind>controller</kind>
+        <symbol>HealthController</symbol>
+        <lines>complete</lines>
+        <reason>Existing controller example. Pattern for creating CustomerController with REST endpoints, @RestController, and ResponseEntity.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <java>
+        <dependency>
+          <name>spring-boot-starter-web</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <name>spring-boot-starter-data-jpa</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <name>spring-boot-starter-security</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <name>spring-boot-starter-validation</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <name>spring-boot-starter-oauth2-resource-server</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <name>springdoc-openapi (for Swagger/OpenAPI)</name>
+          <version>to be determined - latest stable</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <name>logstash-logback-encoder</name>
+          <version>7.4</version>
+          <scope>compile</scope>
+        </dependency>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Java 21 LTS required (established in Story 1.1)
+    - Spring Boot 3.3.4 LTS (established in Story 1.2)
+    - REST API endpoint pattern: POST /api/v1/customers (API versioning required)
+    - Authorization: Requires ROLE_CUSTOMER_SERVICE_AGENT or ROLE_ADMIN (enforced via @PreAuthorize)
+    - Email uniqueness: Business rule enforced (check before save, return 409 if exists)
+    - Default status: ACTIVE (set in service layer before persisting)
+    - Response time: &lt; 200ms typical (performance requirement)
+    - Audit trail: Automatic audit entry creation for all CREATE operations
+    - Structured logging: JSON format with trace ID, user ID, timestamp
+    - Error handling: Field-level validation errors returned as 400 with detailed messages
+    - Request/Response DTOs: Separate from entity model (CreateCustomerRequest, CustomerResponse)
+    - Service layer pattern: Controller delegates to CustomerService for business logic
+    - HTTP status codes: 201 Created (success), 400 Bad Request (validation), 409 Conflict (duplicate), 403 Forbidden (unauthorized)
+    - Package structure: controller/, service/, dto/ packages under com.example.cicsgenapp
+    - Google Java Style Guide (Checkstyle enforced)
+    - Story 2.1 must be completed first (Customer entity and repository required)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>CustomerController POST endpoint</name>
+      <kind>REST API Controller</kind>
+      <signature>
+        @RestController
+        @RequestMapping("/api/v1/customers")
+        public class CustomerController {
+
+          @PostMapping
+          @PreAuthorize("hasAnyRole('CUSTOMER_SERVICE_AGENT', 'ADMIN')")
+          public ResponseEntity&lt;ApiResponse&lt;CustomerResponse&gt;&gt; createCustomer(
+            @Valid @RequestBody CreateCustomerRequest request
+          ) {
+            CustomerResponse response = customerService.createCustomer(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+              new ApiResponse&lt;&gt;(response, metadata)
+            );
+          }
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/CustomerController.java (NEW)</path>
+    </interface>
+    <interface>
+      <name>CustomerService create method</name>
+      <kind>Service Layer</kind>
+      <signature>
+        @Service
+        public class CustomerService {
+
+          public CustomerResponse createCustomer(CreateCustomerRequest request) {
+            // Check email uniqueness
+            if (customerRepository.findByEmail(request.getEmail()).isPresent()) {
+              throw new CustomerAlreadyExistsException("Customer with this email already exists");
+            }
+
+            // Map to entity
+            Customer customer = new Customer();
+            customer.setFirstName(request.getFirstName());
+            customer.setLastName(request.getLastName());
+            customer.setEmail(request.getEmail());
+            customer.setStatus(Status.ACTIVE); // Default
+            // ... set other fields
+
+            // Save
+            Customer saved = customerRepository.save(customer);
+
+            // Audit
+            auditService.createAuditEntry(Operation.CREATE, "CUSTOMER", saved.getCustomerId(), user);
+
+            // Return response
+            return CustomerResponse.from(saved);
+          }
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/service/CustomerService.java (NEW)</path>
+    </interface>
+    <interface>
+      <name>CreateCustomerRequest DTO</name>
+      <kind>Data Transfer Object</kind>
+      <signature>
+        public class CreateCustomerRequest {
+          @NotNull @Size(min=1, max=100)
+          private String firstName;
+
+          @NotNull @Size(min=1, max=100)
+          private String lastName;
+
+          private LocalDate dateOfBirth;
+
+          @NotNull @Email
+          private String email;
+
+          @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$")
+          private String phone;
+
+          private String address;
+          private String city;
+          private String state;
+          private String zipCode;
+
+          // Getters and setters
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/dto/CreateCustomerRequest.java (NEW)</path>
+    </interface>
+    <interface>
+      <name>CustomerResponse DTO</name>
+      <kind>Data Transfer Object</kind>
+      <signature>
+        public class CustomerResponse {
+          private UUID customerId;
+          private String firstName;
+          private String lastName;
+          private String email;
+          private String phone;
+          private Status status;
+          private LocalDateTime createdAt;
+          private LocalDateTime updatedAt;
+
+          public static CustomerResponse from(Customer customer) {
+            // Map entity to DTO
+          }
+
+          // Getters and setters
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/dto/CustomerResponse.java (NEW)</path>
+    </interface>
+    <interface>
+      <name>ApiResponse generic wrapper</name>
+      <kind>Data Transfer Object</kind>
+      <signature>
+        public class ApiResponse&lt;T&gt; {
+          private T data;
+          private Map&lt;String, Object&gt; metadata;
+
+          public ApiResponse(T data, Map&lt;String, Object&gt; metadata) {
+            this.data = data;
+            this.metadata = metadata;
+            this.metadata.put("timestamp", LocalDateTime.now());
+            this.metadata.put("version", "v1");
+          }
+
+          // Getters and setters
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/dto/ApiResponse.java (NEW or MODIFIED)</path>
+    </interface>
+    <interface>
+      <name>AuditService</name>
+      <kind>Service Layer</kind>
+      <signature>
+        @Service
+        public class AuditService {
+          public void createAuditEntry(
+            Operation operation,
+            String entityType,
+            UUID entityId,
+            String user
+          ) {
+            AuditLog auditLog = new AuditLog();
+            auditLog.setOperation(operation);
+            auditLog.setEntityType(entityType);
+            auditLog.setEntityId(entityId);
+            auditLog.setUserId(user);
+            auditLog.setTimestamp(LocalDateTime.now());
+            auditLogRepository.save(auditLog);
+          }
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/service/AuditService.java (NEW)</path>
+    </interface>
+    <interface>
+      <name>CustomerRepository (from Story 2.1)</name>
+      <kind>Spring Data JPA Repository</kind>
+      <signature>
+        public interface CustomerRepository extends JpaRepository&lt;Customer, UUID&gt; {
+          Optional&lt;Customer&gt; findByEmail(String email);
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/repository/CustomerRepository.java (Story 2.1)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing standards for Story 2.2 require 85%+ test coverage for controller and service classes. Use JUnit 5, Spring Boot Test, MockMvc for controller testing, and Mockito for service layer unit tests. Integration tests use @SpringBootTest with Testcontainers for PostgreSQL. API contract tests verify request/response schema. Performance tests verify &lt;200ms response time. Error path tests cover validation errors, duplicate email, unauthorized access.
+    </standards>
+    <locations>
+      - genapp-backend/src/test/java/com/example/cicsgenapp/controller/CustomerControllerTest.java (NEW - controller tests with MockMvc)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/service/CustomerServiceTest.java (NEW - service unit tests)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/integration/CustomerApiIntegrationTest.java (NEW - full API flow tests)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/dto/CreateCustomerRequestValidationTest.java (NEW - DTO validation tests)
+    </locations>
+    <ideas>
+      AC1: Controller test - POST /api/v1/customers with valid data, verify 201 status and endpoint mapping works
+      AC2: DTO validation test - Verify CreateCustomerRequest accepts all fields (firstName, lastName, dateOfBirth, email, phone, address, city, state, zipCode)
+      AC3: Controller test - Verify 201 response contains customerId, firstName, lastName, email, phone, status, createdAt, and metadata (timestamp, version)
+      AC4: Controller test - POST with invalid email format, verify 400 Bad Request with field-level error details
+      AC5: Service test - Call createCustomer() with duplicate email, verify CustomerAlreadyExistsException thrown; Controller test - verify 409 Conflict response
+      AC6: Integration test - POST customer, verify request and response logged in JSON format with trace ID
+      AC7: Service test - Verify auditService.createAuditEntry() called with operation=CREATE, user from JWT token, all customer field values
+      AC8: Service test - Verify default status set to ACTIVE when creating customer
+      AC9: Controller test - POST without CUSTOMER_SERVICE_AGENT role, verify 403 Forbidden response
+      AC10: Performance test - POST 1000+ requests, verify P99 response time &lt; 200ms
+    </ideas>
+  </tests>
+</story-context>

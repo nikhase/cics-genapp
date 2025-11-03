@@ -1,0 +1,156 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.3</storyId>
+    <title>Customer Read API (GET /api/v1/customers/{id})</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-3-customer-read-api-get-api-v1-customers-id.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Customer Service Agent</asA>
+    <iWant>to retrieve customer details by ID</iWant>
+    <soThat>I can view customer information</soThat>
+    <tasks>
+      - Task 1: Implement GET endpoint in CustomerController (AC: #1, #2, #7)
+      - Task 2: Implement retrieval logic in CustomerService (AC: #2, #4)
+      - Task 3: Implement 404 Not Found error handling (AC: #3)
+      - Task 4: Implement audit logging for READ operations (AC: #5)
+      - Task 5: Optimize query performance (AC: #6)
+      - Task 6: Add HATEOAS links for related resources (AC: #8 - optional)
+      - Task 7: Implement structured JSON logging (AC: #2)
+      - Task 8: Add OpenAPI/Swagger documentation (AC: #1, #2)
+      - Task 9: Integration tests for GET endpoint (AC: #1-8)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. GET /api/v1/customers/{customerId} endpoint implemented
+    2. Returns 200 OK with customer object including all fields: customerId, firstName, lastName, dateOfBirth, email, phone, address, city, state, zipCode, status, createdAt, updatedAt, createdBy, updatedBy
+    3. Customer not found returns 404 Not Found with message: "Customer {customerId} not found"
+    4. Response includes all customer fields including timestamps and audit info
+    5. Audit entry created (READ operations logged for compliance)
+    6. Performance: response &lt; 100ms for typical query
+    7. Invalid UUID format returns 400 Bad Request
+    8. Can include related resources link: "_links": {"policies": "/api/v1/policies?customerId=..."}
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR002 - Customer Retrieval</section>
+        <snippet>FR002: Search and retrieve customer by ID, name, email, or phone with pagination. NFR001: API endpoint response times &lt; 200ms target, &lt; 500ms maximum acceptable.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-2-customer-create-api-post-api-v1-customers.md</path>
+        <title>Story 2.2: Customer Create API</title>
+        <section>CustomerController and CustomerService pattern</section>
+        <snippet>Story 2.2 established CustomerController with REST endpoints and CustomerService for business logic. Story 2.3 extends CustomerController with GET endpoint following same pattern.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/CustomerController.java</path>
+        <kind>controller</kind>
+        <symbol>CustomerController (from Story 2.2)</symbol>
+        <lines>complete</lines>
+        <reason>Add GET /{customerId} endpoint to existing controller established in Story 2.2.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/service/CustomerService.java</path>
+        <kind>service</kind>
+        <symbol>CustomerService (from Story 2.2)</symbol>
+        <lines>complete</lines>
+        <reason>Add getCustomer(UUID) method to existing service from Story 2.2.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/repository/CustomerRepository.java</path>
+        <kind>repository</kind>
+        <symbol>CustomerRepository (from Story 2.1)</symbol>
+        <lines>complete</lines>
+        <reason>Use findById(UUID) method from JpaRepository to retrieve customer.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <java>
+        <dependency>
+          <name>spring-boot-starter-web</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <name>spring-boot-starter-data-jpa</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Response time &lt; 100ms for typical query (stricter than general 200ms requirement)
+    - All customer fields must be returned (including audit fields: createdBy, updatedBy)
+    - READ operations must be audited for compliance
+    - 404 Not Found when customer doesn't exist
+    - 400 Bad Request for invalid UUID format
+    - No authorization required (authenticated users can read)
+    - HATEOAS links optional but recommended for discoverability
+    - Story 2.2 must be completed first (CustomerController and CustomerService exist)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>CustomerController GET endpoint</name>
+      <kind>REST API Controller</kind>
+      <signature>
+        @GetMapping("/{customerId}")
+        public ResponseEntity&lt;ApiResponse&lt;CustomerResponse&gt;&gt; getCustomer(
+          @PathVariable UUID customerId
+        ) {
+          CustomerResponse response = customerService.getCustomer(customerId);
+          return ResponseEntity.ok(new ApiResponse&lt;&gt;(response, metadata));
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/CustomerController.java (MODIFY)</path>
+    </interface>
+    <interface>
+      <name>CustomerService getCustomer method</name>
+      <kind>Service Layer</kind>
+      <signature>
+        public CustomerResponse getCustomer(UUID customerId) {
+          Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -&gt; new CustomerNotFoundException("Customer " + customerId + " not found"));
+
+          auditService.createAuditEntry(Operation.READ, "CUSTOMER", customerId, user);
+
+          return CustomerResponse.from(customer);
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/service/CustomerService.java (MODIFY)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing standards for Story 2.3 require controller and service tests for GET endpoint. Use MockMvc for controller testing, Mockito for service mocking. Integration tests verify full flow with database. Performance tests verify &lt;100ms response time. Error path tests cover 404 and 400 responses.
+    </standards>
+    <locations>
+      - genapp-backend/src/test/java/com/example/cicsgenapp/controller/CustomerControllerTest.java (MODIFY - add GET tests)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/service/CustomerServiceTest.java (MODIFY - add getCustomer tests)
+    </locations>
+    <ideas>
+      AC1: Controller test - GET /api/v1/customers/{customerId} with valid UUID, verify 200 status
+      AC2: Service test - Verify CustomerResponse includes all fields (customerId, firstName, lastName, dateOfBirth, email, phone, address, city, state, zipCode, status, createdAt, updatedAt, createdBy, updatedBy)
+      AC3: Service test - getCustomer() with non-existent ID throws CustomerNotFoundException, controller returns 404 with message
+      AC4: Service test - Verify all customer fields present in response including timestamps and audit info
+      AC5: Service test - Verify auditService.createAuditEntry() called with operation=READ after successful retrieval
+      AC6: Performance test - GET 100+ requests, verify P99 response time &lt; 100ms
+      AC7: Controller test - GET with invalid UUID format "not-a-uuid", verify 400 Bad Request
+      AC8: Integration test - Verify _links section present in response with policies link
+    </ideas>
+  </tests>
+</story-context>

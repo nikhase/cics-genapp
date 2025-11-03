@@ -55,14 +55,14 @@ development_status:
 
   # EPIC 2: Customer Service API & Spring Boot Backend
   epic-2: backlog
-  2-1-customer-domain-model-and-postgresql-schema: drafted
-  2-2-customer-create-api-post-api-v1-customers: drafted
-  2-3-customer-read-api-get-api-v1-customers-id: drafted
-  2-4-customer-search-list-api-get-api-v1-customers: drafted
-  2-5-customer-update-api-put-api-v1-customers-id: drafted
-  2-6-customer-soft-delete-api-delete-api-v1-customers-id: drafted
-  2-7-input-validation-and-error-handling-framework: drafted
-  2-8-api-documentation-openapi-swagger-and-audit-logging: drafted
+  2-1-customer-domain-model-and-postgresql-schema: ready-for-dev
+  2-2-customer-create-api-post-api-v1-customers: ready-for-dev
+  2-3-customer-read-api-get-api-v1-customers-id: ready-for-dev
+  2-4-customer-search-list-api-get-api-v1-customers: ready-for-dev
+  2-5-customer-update-api-put-api-v1-customers-id: ready-for-dev
+  2-6-customer-soft-delete-api-delete-api-v1-customers-id: ready-for-dev
+  2-7-input-validation-and-error-handling-framework: ready-for-dev
+  2-8-api-documentation-openapi-swagger-and-audit-logging: ready-for-dev
   epic-2-retrospective: optional
 
   # EPIC 3: React Frontend - Authentication & Core UI

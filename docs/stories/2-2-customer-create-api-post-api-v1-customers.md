@@ -1,6 +1,6 @@
 # Story 2.2: Customer Create API (POST /api/v1/customers)
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -266,7 +266,7 @@ src/test/java/com/example/cicsgenapp/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- docs/stories/2-2-customer-create-api-post-api-v1-customers.context.xml
 
 ### Agent Model Used
 

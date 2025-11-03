@@ -1,6 +1,6 @@
 # Story 2.4: Customer Search/List API (GET /api/v1/customers)
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -259,7 +259,7 @@ src/test/java/com/example/cicsgenapp/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- docs/stories/2-4-customer-search-list-api-get-api-v1-customers.context.xml
 
 ### Agent Model Used
 

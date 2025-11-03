@@ -1,0 +1,164 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.7</storyId>
+    <title>Input Validation and Error Handling Framework</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-7-input-validation-and-error-handling-framework.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Backend Developer</asA>
+    <iWant>consistent error handling and validation across all customer APIs</iWant>
+    <soThat>clients receive clear, actionable error messages</soThat>
+    <tasks>
+      - Task 1: Create global @ControllerAdvice exception handler (AC: #1, #5, #6)
+      - Task 2: Create standard error response DTOs (AC: #1, #2, #5)
+      - Task 3: Create custom exception classes (AC: #5)
+      - Task 4: Implement field-level validation annotations (AC: #3, #7)
+      - Task 5: Implement custom validators for complex rules (AC: #8)
+      - Task 6: Test all error scenarios and status codes (AC: #4, #5)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Global exception handler (@ControllerAdvice) created for all endpoints
+    2. Validation errors return structured response with field-level error details
+    3. Field-level validation rules: firstName/lastName (required, 1-100), email (required, valid format, unique), phone (optional, valid format), dateOfBirth (optional, age &gt;= 18), zipCode (optional, valid format)
+    4. Business logic validation: Cannot create customer with duplicate email, Cannot update customer to INACTIVE if referenced by active entities
+    5. HTTP status codes used correctly: 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 500 Internal Server Error
+    6. Error response includes traceId (correlation ID)
+    7. Validation annotations (@NotNull, @Email, @Pattern) used in entity
+    8. Custom validators for complex rules (age validation, phone format)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR012 - API Validation</section>
+        <snippet>FR012: Request/response payload validation with clear, field-level error messaging. Provide actionable error messages for client developers.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/1-2-spring-boot-starter-project-with-core-configuration.md</path>
+        <title>Story 1.2: Spring Boot Core Configuration</title>
+        <section>GlobalExceptionHandler</section>
+        <snippet>Story 1.2 established basic GlobalExceptionHandler. Story 2.7 extends it with comprehensive validation error handling and field-level error details.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/exception/GlobalExceptionHandler.java</path>
+        <kind>exception-handler</kind>
+        <symbol>GlobalExceptionHandler</symbol>
+        <lines>complete</lines>
+        <reason>Extend existing exception handler with all validation error handlers, field-level error extraction, and traceId inclusion.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <java>
+        <dependency>
+          <name>spring-boot-starter-validation</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Centralized error handling: All exceptions handled in @ControllerAdvice
+    - Field-level error details: Extract from BindingResult for validation errors
+    - TraceId inclusion: Extract from MDC (X-Trace-Id header from Story 1.4)
+    - Standard error response format: ErrorDetails + FieldError + metadata
+    - HTTP status codes strictly followed: 400 validation, 404 not found, 409 conflict, 500 server error
+    - Custom validators: AgeValidator (age &gt;= 18), PhoneValidator (international format)
+    - Story 2.2-2.6 context: All CRUD operations use validation framework
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GlobalExceptionHandler</name>
+      <kind>Exception Handler</kind>
+      <signature>
+        @ControllerAdvice
+        @ResponseBody
+        public class GlobalExceptionHandler {
+
+          @ExceptionHandler(MethodArgumentNotValidException.class)
+          public ResponseEntity&lt;StandardErrorResponse&gt; handleValidationException(MethodArgumentNotValidException ex) {
+            List&lt;FieldError&gt; fieldErrors = extractFieldErrors(ex.getBindingResult());
+            ErrorDetails errorDetails = new ErrorDetails("VALIDATION_ERROR", "Validation failed", fieldErrors);
+            return ResponseEntity.badRequest().body(new StandardErrorResponse(errorDetails, getMetadata()));
+          }
+
+          @ExceptionHandler(CustomerNotFoundException.class)
+          public ResponseEntity&lt;StandardErrorResponse&gt; handleNotFound(CustomerNotFoundException ex) {
+            ErrorDetails errorDetails = new ErrorDetails("NOT_FOUND", ex.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StandardErrorResponse(errorDetails, getMetadata()));
+          }
+
+          @ExceptionHandler(CustomerAlreadyExistsException.class)
+          public ResponseEntity&lt;StandardErrorResponse&gt; handleConflict(CustomerAlreadyExistsException ex) {
+            ErrorDetails errorDetails = new ErrorDetails("CONFLICT", ex.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new StandardErrorResponse(errorDetails, getMetadata()));
+          }
+
+          @ExceptionHandler(Exception.class)
+          public ResponseEntity&lt;StandardErrorResponse&gt; handleGenericException(Exception ex) {
+            ErrorDetails errorDetails = new ErrorDetails("INTERNAL_ERROR", "An unexpected error occurred", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new StandardErrorResponse(errorDetails, getMetadata()));
+          }
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/exception/GlobalExceptionHandler.java (MODIFY)</path>
+    </interface>
+    <interface>
+      <name>StandardErrorResponse DTO</name>
+      <kind>Data Transfer Object</kind>
+      <signature>
+        public class StandardErrorResponse {
+          private ErrorDetails error;
+          private Map&lt;String, Object&gt; metadata; // timestamp, traceId
+
+          public static class ErrorDetails {
+            private String code;
+            private String message;
+            private List&lt;FieldError&gt; details;
+          }
+
+          public static class FieldError {
+            private String field;
+            private String message;
+            private Object value;
+            private String code;
+          }
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/dto/StandardErrorResponse.java (NEW)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing standards require comprehensive error scenario tests for all validation rules, custom validators, and HTTP status code correctness.
+    </standards>
+    <locations>
+      - genapp-backend/src/test/java/com/example/cicsgenapp/exception/GlobalExceptionHandlerTest.java (NEW)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/validation/CustomValidatorTest.java (NEW)
+    </locations>
+    <ideas>
+      AC1: Test GlobalExceptionHandler handles all exception types with correct status codes
+      AC2: Test MethodArgumentNotValidException returns 400 with field-level error details
+      AC3: Test field validation: firstName required (400 if null), email format (400 if invalid), phone format (400 if invalid pattern), age validation (400 if &lt; 18)
+      AC4: Test business validation: duplicate email returns 409 Conflict
+      AC5: Test HTTP status codes: 200 OK (success), 201 Created (create), 400 Bad Request (validation), 404 Not Found (resource missing), 409 Conflict (duplicate/state conflict), 500 Internal Server Error (unexpected)
+      AC6: Test error response includes traceId extracted from MDC
+      AC7: Test validation annotations work on Customer entity: @NotNull, @Email, @Pattern
+      AC8: Test custom validators: AgeValidator (age &gt;= 18), PhoneValidator (international format regex)
+    </ideas>
+  </tests>
+</story-context>

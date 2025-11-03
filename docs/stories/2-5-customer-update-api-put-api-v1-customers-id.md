@@ -1,6 +1,6 @@
 # Story 2.5: Customer Update API (PUT /api/v1/customers/{id})
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -231,7 +231,7 @@ src/test/java/com/example/cicsgenapp/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- docs/stories/2-5-customer-update-api-put-api-v1-customers-id.context.xml
 
 ### Agent Model Used
 

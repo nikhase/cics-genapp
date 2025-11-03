@@ -1,0 +1,141 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.6</storyId>
+    <title>Customer Soft-Delete API (DELETE /api/v1/customers/{id})</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-6-customer-soft-delete-api-delete-api-v1-customers-id.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Compliance Officer</asA>
+    <iWant>to soft-delete customers (mark inactive, preserve history)</iWant>
+    <soThat>customer records are retained for audit purposes</soThat>
+    <tasks>
+      - Task 1: Implement DELETE endpoint in CustomerController (AC: #1, #11)
+      - Task 2: Create DeleteCustomerRequest DTO (AC: #6)
+      - Task 3: Implement soft-delete logic (AC: #2, #3, #5)
+      - Task 4: Implement audit entry creation with deletion reason (AC: #6)
+      - Task 5: Handle associated policies (AC: #8, #9)
+      - Task 6: Implement search filter for soft-deleted customers (AC: #7)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. DELETE /api/v1/customers/{customerId} endpoint implemented
+    2. Sets customer status to INACTIVE (soft delete)
+    3. Returns 200 OK or 204 No Content
+    4. Customer not found returns 404 Not Found
+    5. Deleting already-inactive customer returns 200 OK (idempotent)
+    6. Audit entry created with deletion reason
+    7. Soft-deleted customer still queryable via GET (visible to compliance roles)
+    8. Associated policies remain ACTIVE (customer status independent)
+    9. Policies cannot be linked to INACTIVE customers for new creations
+    10. Hard delete not possible via API (compliance requirement)
+    11. Requires ROLE_COMPLIANCE_OFFICER or ROLE_ADMIN authorization
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR004 - Customer Soft Delete</section>
+        <snippet>FR004: Soft-delete customer (mark inactive while preserving history for compliance). Soft-delete preserves data for audit and compliance purposes.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/CustomerController.java</path>
+        <kind>controller</kind>
+        <symbol>CustomerController</symbol>
+        <lines>complete</lines>
+        <reason>Add DELETE /{customerId} endpoint to existing controller.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <java>
+        <dependency>
+          <name>spring-boot-starter-data-jpa</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Soft delete only: Set status=INACTIVE, do NOT delete from database
+    - Idempotent: Deleting INACTIVE customer returns 200 OK (no error)
+    - Deletion reason optional but recommended (max 500 chars)
+    - Add deletedAt (LocalDateTime) field to Customer entity
+    - Add deletionReason (String) field to Customer entity
+    - Audit entry must record deletion reason
+    - Authorization: COMPLIANCE_OFFICER or ADMIN only
+    - Soft-deleted customers visible to compliance roles via includeDeleted flag
+    - Hard delete not exposed via API (data retention requirement)
+    - Story 2.5 must be completed (CustomerService update logic exists)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>CustomerController DELETE endpoint</name>
+      <kind>REST API Controller</kind>
+      <signature>
+        @DeleteMapping("/{customerId}")
+        @PreAuthorize("hasAnyRole('COMPLIANCE_OFFICER', 'ADMIN')")
+        public ResponseEntity&lt;Void&gt; deleteCustomer(
+          @PathVariable UUID customerId,
+          @RequestBody(required = false) DeleteCustomerRequest request
+        ) {
+          customerService.deleteCustomer(customerId, request != null ? request.getReason() : null);
+          return ResponseEntity.ok().build(); // or noContent().build()
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/CustomerController.java (MODIFY)</path>
+    </interface>
+    <interface>
+      <name>CustomerService deleteCustomer method</name>
+      <kind>Service Layer</kind>
+      <signature>
+        public void deleteCustomer(UUID customerId, String reason) {
+          Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -&gt; new CustomerNotFoundException("Customer " + customerId + " not found"));
+
+          customer.setStatus(Status.INACTIVE);
+          customer.setDeletedAt(LocalDateTime.now());
+          customer.setDeletionReason(reason);
+          customerRepository.save(customer);
+
+          auditService.createAuditEntry(Operation.DELETE, "CUSTOMER", customerId, reason, user);
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/service/CustomerService.java (MODIFY)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing standards require soft-delete tests, idempotency tests, audit entry verification with deletion reason, and role-based access tests.
+    </standards>
+    <locations>
+      - genapp-backend/src/test/java/com/example/cicsgenapp/controller/CustomerControllerTest.java (MODIFY - add DELETE tests)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/service/CustomerServiceTest.java (MODIFY - add delete tests)
+    </locations>
+    <ideas>
+      AC1: Controller test - DELETE /api/v1/customers/{customerId}, verify 200 or 204 status
+      AC2: Service test - Delete customer, verify status changed to INACTIVE
+      AC3: Service test - Delete customer, verify 200 OK response
+      AC4: Service test - Delete non-existent customer, verify 404 Not Found
+      AC5: Service test - Delete already-inactive customer, verify 200 OK (idempotent)
+      AC6: Service test - Delete with reason, verify auditService called with deletion reason
+      AC7: Integration test - Soft-deleted customer still retrievable via GET (compliance role can see)
+      AC8: Integration test - Verify associated policies remain ACTIVE after customer deletion
+      AC9: Integration test - Attempt to create policy linked to INACTIVE customer, verify validation error
+      AC10: Service test - Verify customer NOT hard-deleted from database
+      AC11: Controller test - Delete without COMPLIANCE_OFFICER role, verify 403 Forbidden
+    </ideas>
+  </tests>
+</story-context>

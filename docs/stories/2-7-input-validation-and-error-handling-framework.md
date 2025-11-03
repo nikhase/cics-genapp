@@ -1,6 +1,6 @@
 # Story 2.7: Input Validation and Error Handling Framework
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -310,7 +310,7 @@ src/test/java/com/example/cicsgenapp/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- docs/stories/2-7-input-validation-and-error-handling-framework.context.xml
 
 ### Agent Model Used
 

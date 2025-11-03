@@ -1,0 +1,155 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.5</storyId>
+    <title>Customer Update API (PUT /api/v1/customers/{id})</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-5-customer-update-api-put-api-v1-customers-id.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Customer Service Agent</asA>
+    <iWant>to update customer details</iWant>
+    <soThat>I can keep customer information current</soThat>
+    <tasks>
+      - Task 1: Implement PUT endpoint in CustomerController (AC: #1, #11)
+      - Task 2: Create UpdateCustomerRequest DTO (AC: #2)
+      - Task 3: Implement update logic with partial updates (AC: #2, #3, #7)
+      - Task 4: Implement email uniqueness validation (AC: #6)
+      - Task 5: Implement optimistic locking (AC: #10)
+      - Task 6: Track field changes for audit trail (AC: #7, #9)
+      - Task 7: Auto-update timestamps (AC: #8)
+      - Task 8: Implement audit entry creation (AC: #9)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. PUT /api/v1/customers/{customerId} endpoint implemented
+    2. Accepts partial updates (only provided fields updated)
+    3. Returns 200 OK with updated customer object
+    4. Customer not found returns 404 Not Found
+    5. Validation errors return 400 Bad Request
+    6. Duplicate email returns 409 Conflict
+    7. Tracks which fields changed (before/after values)
+    8. updatedAt timestamp auto-updated
+    9. Audit entry created with before/after values
+    10. Optimistic locking: etag header prevents concurrent updates
+    11. Requires ROLE_CUSTOMER_SERVICE_AGENT or ROLE_ADMIN authorization
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR003 - Customer Update</section>
+        <snippet>FR003: Update customer personal/contact details with audit trail. FR013: Audit logging for all data mutations (who, what, when, before/after values).</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-2-customer-create-api-post-api-v1-customers.md</path>
+        <title>Story 2.2: Customer Create API</title>
+        <section>AuditService pattern</section>
+        <snippet>Story 2.2 established AuditService for CREATE operations. Story 2.5 extends it to track before/after field changes for UPDATE operations.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/CustomerController.java</path>
+        <kind>controller</kind>
+        <symbol>CustomerController</symbol>
+        <lines>complete</lines>
+        <reason>Add PUT /{customerId} endpoint to existing controller.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/service/CustomerService.java</path>
+        <kind>service</kind>
+        <symbol>CustomerService</symbol>
+        <lines>complete</lines>
+        <reason>Add updateCustomer(UUID, UpdateCustomerRequest) method with change tracking logic.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <java>
+        <dependency>
+          <name>spring-boot-starter-data-jpa</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Partial updates: Only non-null fields in request are updated
+    - Email uniqueness: Check new email doesn't exist for other customers
+    - Optimistic locking: Add @Version field to Customer entity, use etag header
+    - Change tracking: Store before/after values for all changed fields
+    - updatedAt auto-updated via JPA @PreUpdate listener
+    - Audit entry includes before/after map: {field: {before: val1, after: val2}}
+    - Authorization required: CUSTOMER_SERVICE_AGENT or ADMIN
+    - Story 2.2 must be completed (CustomerService and AuditService exist)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>CustomerController PUT endpoint</name>
+      <kind>REST API Controller</kind>
+      <signature>
+        @PutMapping("/{customerId}")
+        @PreAuthorize("hasAnyRole('CUSTOMER_SERVICE_AGENT', 'ADMIN')")
+        public ResponseEntity&lt;ApiResponse&lt;CustomerResponse&gt;&gt; updateCustomer(
+          @PathVariable UUID customerId,
+          @Valid @RequestBody UpdateCustomerRequest request
+        ) {
+          CustomerResponse response = customerService.updateCustomer(customerId, request);
+          return ResponseEntity.ok(new ApiResponse&lt;&gt;(response, metadata));
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/CustomerController.java (MODIFY)</path>
+    </interface>
+    <interface>
+      <name>UpdateCustomerRequest DTO</name>
+      <kind>Data Transfer Object</kind>
+      <signature>
+        public class UpdateCustomerRequest {
+          private String firstName; // All fields optional
+          private String lastName;
+          private LocalDate dateOfBirth;
+          private String email;
+          private String phone;
+          private String address;
+          private String city;
+          private String state;
+          private String zipCode;
+          // Validation annotations where applicable
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/dto/UpdateCustomerRequest.java (NEW)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing standards require update tests with partial updates, change tracking tests, optimistic locking tests, and audit entry verification with before/after values.
+    </standards>
+    <locations>
+      - genapp-backend/src/test/java/com/example/cicsgenapp/controller/CustomerControllerTest.java (MODIFY - add PUT tests)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/service/CustomerServiceTest.java (MODIFY - add update tests)
+    </locations>
+    <ideas>
+      AC1: Controller test - PUT /api/v1/customers/{customerId} with update data, verify 200 status
+      AC2: Service test - Partial update with only email field, verify only email updated, other fields unchanged
+      AC3: Service test - Update customer, verify 200 OK with updated customer object
+      AC4: Service test - Update non-existent customer ID, verify 404 Not Found
+      AC5: Service test - Update with invalid email format, verify 400 Bad Request
+      AC6: Service test - Update email to existing email (another customer), verify 409 Conflict
+      AC7: Service test - Update customer, verify change tracker captures before/after values for modified fields only
+      AC8: Service test - Update customer, verify updatedAt timestamp changed, createdAt unchanged
+      AC9: Service test - Verify auditService called with before/after map for changed fields
+      AC10: Integration test - Concurrent update with stale version, verify 409 OptimisticLockException
+      AC11: Controller test - Update without CUSTOMER_SERVICE_AGENT role, verify 403 Forbidden
+    </ideas>
+  </tests>
+</story-context>

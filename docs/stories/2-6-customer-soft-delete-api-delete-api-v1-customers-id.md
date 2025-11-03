@@ -1,6 +1,6 @@
 # Story 2.6: Customer Soft-Delete API (DELETE /api/v1/customers/{id})
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -225,7 +225,7 @@ src/test/java/com/example/cicsgenapp/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- docs/stories/2-6-customer-soft-delete-api-delete-api-v1-customers-id.context.xml
 
 ### Agent Model Used
 

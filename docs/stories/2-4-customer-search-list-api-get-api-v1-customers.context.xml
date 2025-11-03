@@ -1,0 +1,150 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.4</storyId>
+    <title>Customer Search/List API (GET /api/v1/customers)</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-4-customer-search-list-api-get-api-v1-customers.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Customer Service Agent</asA>
+    <iWant>to search for customers by name, email, or phone with pagination</iWant>
+    <soThat>I can quickly find customers in the system</soThat>
+    <tasks>
+      - Task 1: Implement GET endpoint in CustomerController (AC: #1, #2)
+      - Task 2: Create SearchCriteria DTO (AC: #2)
+      - Task 3: Create PagedResponse DTO (AC: #3)
+      - Task 4: Implement search logic with multi-field filtering (AC: #2, #4)
+      - Task 5: Implement sorting and pagination (AC: #2, #10)
+      - Task 6: Implement pagination validation and limits (AC: #8, #9)
+      - Task 7: Optimize database queries with indexes (AC: #5, #6)
+      - Task 8: Implement audit logging for search operations (AC: #7)
+      - Task 9: Integration tests for search/pagination (AC: #1-10)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. GET /api/v1/customers endpoint with query parameters for filtering, sorting, and pagination
+    2. Query parameters: query (searches firstName, lastName, email, phone), status (ACTIVE/INACTIVE), limit (default 50, max 100), offset (default 0), sortBy (default "lastName"), sortOrder (default "ASC")
+    3. Returns 200 OK with paginated response: data array, pagination metadata (limit, offset, total, hasMore)
+    4. Empty results return 200 OK with empty data array
+    5. Performance: response &lt; 500ms for large datasets (1M+ customers)
+    6. Database query uses indexed columns (email, phone, lastName)
+    7. Audit entry created for search operations
+    8. Limit enforced (max 100)
+    9. Offset must be non-negative
+    10. Results sorted by specified field
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR002 - Customer Search</section>
+        <snippet>FR002: Search and retrieve customer by ID, name, email, or phone with pagination. NFR001: Performance &lt; 500ms for typical operations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-1-customer-domain-model-and-postgresql-schema.md</path>
+        <title>Story 2.1: Customer Domain Model</title>
+        <section>Database Indexes</section>
+        <snippet>Story 2.1 created indexes on email, phone, status, createdAt for search performance. Story 2.4 relies on these indexes for multi-field search.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/repository/CustomerRepository.java</path>
+        <kind>repository</kind>
+        <symbol>CustomerRepository (from Story 2.1)</symbol>
+        <lines>complete</lines>
+        <reason>Use findByLastNameContainingIgnoreCase() and add custom @Query methods for multi-field search with pagination.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <java>
+        <dependency>
+          <name>spring-boot-starter-data-jpa</name>
+          <version>3.3.4</version>
+          <scope>compile</scope>
+        </dependency>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Max limit: 100 (prevent resource exhaustion)
+    - Offset must be non-negative
+    - Multi-field search: firstName OR lastName OR email OR phone (case-insensitive substring match)
+    - AND logic for combining query with status filter
+    - Response time &lt; 500ms for large datasets (1M+ customers)
+    - Use indexed columns for WHERE clauses
+    - Empty results return 200 OK (not error)
+    - Story 2.3 must be completed (CustomerController exists)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>CustomerController search endpoint</name>
+      <kind>REST API Controller</kind>
+      <signature>
+        @GetMapping
+        public ResponseEntity&lt;ApiResponse&lt;PagedResponse&lt;CustomerResponse&gt;&gt;&gt; searchCustomers(
+          @RequestParam(required = false) String query,
+          @RequestParam(required = false) CustomerStatus status,
+          @RequestParam(defaultValue = "50") int limit,
+          @RequestParam(defaultValue = "0") int offset,
+          @RequestParam(defaultValue = "lastName") String sortBy,
+          @RequestParam(defaultValue = "ASC") String sortOrder
+        ) {
+          SearchCriteria criteria = new SearchCriteria(query, status, limit, offset, sortBy, sortOrder);
+          PagedResponse&lt;CustomerResponse&gt; response = customerService.searchCustomers(criteria);
+          return ResponseEntity.ok(new ApiResponse&lt;&gt;(response, metadata));
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/CustomerController.java (MODIFY)</path>
+    </interface>
+    <interface>
+      <name>PagedResponse DTO</name>
+      <kind>Data Transfer Object</kind>
+      <signature>
+        public class PagedResponse&lt;T&gt; {
+          private List&lt;T&gt; data;
+          private PaginationInfo pagination;
+
+          public static class PaginationInfo {
+            private int limit;
+            private int offset;
+            private long total;
+            private boolean hasMore;
+          }
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/dto/PagedResponse.java (NEW)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing standards require multi-field search tests, pagination tests, performance tests for large datasets. Use JUnit 5, MockMvc, Testcontainers. Verify indexed columns used via EXPLAIN PLAN.
+    </standards>
+    <locations>
+      - genapp-backend/src/test/java/com/example/cicsgenapp/controller/CustomerControllerSearchTest.java (NEW)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/service/CustomerServiceSearchTest.java (NEW)
+    </locations>
+    <ideas>
+      AC1: Controller test - GET /api/v1/customers with query parameters, verify endpoint mapping
+      AC2: Service test - Search with query="smith", verify matches firstName/lastName/email/phone containing "smith" (case-insensitive)
+      AC3: Service test - Verify PagedResponse includes data, limit, offset, total, hasMore fields
+      AC4: Service test - Search with no results, verify 200 OK with empty data array
+      AC5: Performance test - Search on 1M+ customer dataset, verify response &lt; 500ms
+      AC6: Integration test - Verify database uses indexes (EXPLAIN PLAN shows idx_customer_email, idx_customer_phone, idx_customer_lastName)
+      AC7: Service test - Verify auditService called with operation=SEARCH
+      AC8: Controller test - Request limit=200, verify capped at 100
+      AC9: Controller test - Request offset=-1, verify 400 Bad Request
+      AC10: Service test - Verify results sorted by sortBy field in sortOrder direction
+    </ideas>
+  </tests>
+</story-context>

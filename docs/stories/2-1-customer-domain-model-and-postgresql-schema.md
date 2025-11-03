@@ -1,6 +1,6 @@
 # Story 2.1: Customer Domain Model and PostgreSQL Schema
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -197,7 +197,7 @@ src/test/java/com/example/cicsgenapp/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- docs/stories/2-1-customer-domain-model-and-postgresql-schema.context.xml
 
 ### Agent Model Used
 

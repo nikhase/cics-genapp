@@ -1,0 +1,199 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.8</storyId>
+    <title>API Documentation (OpenAPI/Swagger) and Audit Logging</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-8-api-documentation-openapi-swagger-and-audit-logging.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Frontend Developer</asA>
+    <iWant>comprehensive OpenAPI documentation and audit logging for all customer APIs</iWant>
+    <soThat>I know how to call the APIs and compliance has a record of all operations</soThat>
+    <tasks>
+      - Task 1: Configure SpringDoc-OpenAPI dependency and Swagger UI (AC: #1, #2)
+      - Task 2: Add OpenAPI annotations to customer endpoints (AC: #3)
+      - Task 3: Create OpenAPI schema definitions for request/response DTOs (AC: #3)
+      - Task 4: Create AuditLog entity and repository (AC: #5, #6)
+      - Task 5: Implement comprehensive audit logging for all operations (AC: #4)
+      - Task 6: Create audit query API for compliance (AC: #8)
+      - Task 7: Test Swagger UI and audit logging (AC: #1-8)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. OpenAPI 3.0 specification generated via SpringDoc-OpenAPI
+    2. Swagger UI available at /api/docs
+    3. Documentation includes: endpoints, request/response schemas, status codes, required headers, examples, required roles
+    4. Audit logging for all operations: CREATE (all attributes, user, timestamp), READ (access log), UPDATE (before/after values), DELETE (deletion reason)
+    5. Audit entries in PostgreSQL AUDIT_LOG table: auditId, timestamp, userId (JWT), operation (CREATE/READ/UPDATE/DELETE), entityType (CUSTOMER), entityId, changes (JSON), ipAddress, userAgent
+    6. Audit entries immutable (insert only, no update/delete)
+    7. Audit entries not in normal API responses
+    8. Audit query API: GET /api/v1/audit?entity=CUSTOMER&amp;limit=100 (admin/compliance only)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR013 - Audit Logging</section>
+        <snippet>FR013: Audit logging for all data mutations (who, what, when, why, before/after values). Comprehensive audit trail for compliance and regulatory requirements.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-2-customer-create-api-post-api-v1-customers.md</path>
+        <title>Story 2.2: Customer Create API</title>
+        <section>AuditService</section>
+        <snippet>Story 2.2 established basic AuditService for CREATE operations. Story 2.8 extends it with comprehensive audit logging for all CRUD operations, AuditLog entity, and audit query API.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/service/AuditService.java</path>
+        <kind>service</kind>
+        <symbol>AuditService</symbol>
+        <lines>complete</lines>
+        <reason>Extend existing AuditService with comprehensive audit entry creation including changes JSON, ipAddress, userAgent extraction.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/CustomerController.java</path>
+        <kind>controller</kind>
+        <symbol>CustomerController</symbol>
+        <lines>complete</lines>
+        <reason>Add OpenAPI annotations (@Operation, @ApiResponse, @Parameter, @SecurityRequirement) to all customer endpoints (POST, GET, PUT, DELETE).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <java>
+        <dependency>
+          <name>springdoc-openapi-starter-webmvc-ui</name>
+          <version>2.x.x (latest stable)</version>
+          <scope>compile</scope>
+        </dependency>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - OpenAPI 3.0 specification auto-generated
+    - Swagger UI at /api/docs (configurable path)
+    - Security scheme: BearerAuth (JWT from Zitadel)
+    - All endpoints documented with examples
+    - Audit entries immutable: No UPDATE or DELETE operations allowed
+    - Audit query API restricted to ADMIN/COMPLIANCE_OFFICER roles
+    - Changes field stores JSON: {fieldName: {before: value, after: value}}
+    - ipAddress and userAgent extracted from HttpServletRequest
+    - userId extracted from JWT SecurityContext
+    - Story 2.2-2.6 must be completed (all CRUD operations exist)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>OpenApiConfig</name>
+      <kind>Configuration</kind>
+      <signature>
+        @Configuration
+        public class OpenApiConfig {
+
+          @Bean
+          public OpenAPI customOpenAPI() {
+            return new OpenAPI()
+              .info(new Info()
+                .title("CICS GenApp Customer API")
+                .version("1.0.0")
+                .description("Customer management REST API"))
+              .addSecurityItem(new SecurityRequirement().addList("bearer-jwt"))
+              .components(new Components()
+                .addSecuritySchemes("bearer-jwt", new SecurityScheme()
+                  .type(SecurityScheme.Type.HTTP)
+                  .scheme("bearer")
+                  .bearerFormat("JWT")
+                  .description("JWT token from Zitadel")));
+          }
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/config/OpenApiConfig.java (NEW)</path>
+    </interface>
+    <interface>
+      <name>AuditLog Entity</name>
+      <kind>JPA Entity</kind>
+      <signature>
+        @Entity
+        @Table(name = "AUDIT_LOG")
+        public class AuditLog {
+          @Id
+          @GeneratedValue(strategy = GenerationType.UUID)
+          private UUID auditId;
+
+          private LocalDateTime timestamp;
+          private String userId;
+
+          @Enumerated(EnumType.STRING)
+          private Operation operation; // CREATE, READ, UPDATE, DELETE
+
+          private String entityType; // CUSTOMER
+          private UUID entityId;
+
+          @Column(columnDefinition = "jsonb") // PostgreSQL JSONB
+          private String changes; // {field: {before, after}}
+
+          private String ipAddress;
+          private String userAgent;
+
+          // Getters and setters
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/entity/AuditLog.java (NEW)</path>
+    </interface>
+    <interface>
+      <name>AuditController</name>
+      <kind>REST API Controller</kind>
+      <signature>
+        @RestController
+        @RequestMapping("/api/v1/audit")
+        @PreAuthorize("hasAnyRole('ADMIN', 'COMPLIANCE_OFFICER')")
+        public class AuditController {
+
+          @GetMapping
+          public ResponseEntity&lt;PagedResponse&lt;AuditLog&gt;&gt; queryAuditLogs(
+            @RequestParam(required = false) String entity,
+            @RequestParam(defaultValue = "100") int limit,
+            @RequestParam(defaultValue = "0") int offset
+          ) {
+            PagedResponse&lt;AuditLog&gt; response = auditService.queryAuditLogs(entity, limit, offset);
+            return ResponseEntity.ok(response);
+          }
+        }
+      </signature>
+      <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/AuditController.java (NEW)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing standards require Swagger UI accessibility tests, OpenAPI spec validation, comprehensive audit logging tests for all CRUD operations, and audit query API tests with role-based access.
+    </standards>
+    <locations>
+      - genapp-backend/src/test/java/com/example/cicsgenapp/config/OpenApiConfigTest.java (NEW)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/service/AuditServiceTest.java (MODIFY - comprehensive tests)
+      - genapp-backend/src/test/java/com/example/cicsgenapp/controller/AuditControllerTest.java (NEW)
+    </locations>
+    <ideas>
+      AC1: Test OpenAPI 3.0 spec generated at /v3/api-docs
+      AC2: Test Swagger UI accessible at /api/docs
+      AC3: Test all customer endpoints documented with correct schemas, status codes, examples, security requirements
+      AC4: Test CREATE audit entry includes all customer attributes, user ID, timestamp
+      AC4: Test READ audit entry logs customer access with user ID, timestamp
+      AC4: Test UPDATE audit entry includes before/after values for changed fields only
+      AC4: Test DELETE audit entry includes deletion reason, user ID, timestamp
+      AC5: Test AuditLog entity persisted to AUDIT_LOG table with all fields: auditId, timestamp, userId, operation, entityType, entityId, changes (JSON), ipAddress, userAgent
+      AC6: Test audit entries are immutable (no UPDATE or DELETE allowed)
+      AC7: Test audit entries not returned in normal customer API responses
+      AC8: Test audit query API accessible to ADMIN/COMPLIANCE_OFFICER roles only (403 for others)
+      AC8: Test audit query API filters by entity type and supports pagination
+    </ideas>
+  </tests>
+</story-context>
