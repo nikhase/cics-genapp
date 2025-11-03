@@ -1,10 +1,12 @@
 package com.example.cicsgenapp;
 
+import com.example.cicsgenapp.config.TestcontainersConfiguration;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,14 +16,14 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * Integration tests for Flyway database migration setup.
  * Validates that Flyway is configured and migrations execute successfully.
  *
- * NOTE: Flyway is disabled in the test profile (spring.flyway.enabled=false)
- * because the test profile uses H2 in-memory database while migrations are
- * written for PostgreSQL. Schema is created via Hibernate DDL-auto=create-drop.
- * These tests are kept for reference and run only when Flyway is enabled.
+ * NOTE: Uses PostgreSQL via Testcontainers to test actual Flyway migrations.
+ * The test profile enables Flyway with PostgreSQL and validates migrations
+ * are applied to the real database.
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@Disabled("Spring Cloud Gateway/Spring MVC conflict in test context - Flyway is disabled in test profile for H2 compatibility")
+@Import(TestcontainersConfiguration.class)
+@Disabled("Spring Cloud Gateway/Spring MVC conflict in test context")
 class FlywayMigrationTests {
 
   @Autowired(required = false)
@@ -31,11 +33,11 @@ class FlywayMigrationTests {
    * Test AC #4: Flyway migration tool integrated for schema versioning
    * Verifies Flyway bean exists and is properly configured
    *
-   * Skipped in test profile since Flyway is disabled for H2 compatibility.
+   * Uses PostgreSQL via Testcontainers for actual migration testing.
    */
   @Test
   void testFlywayBeanIsConfigured() {
-    assumeTrue(flyway != null, "Flyway is disabled in test profile for H2 compatibility");
+    assumeTrue(flyway != null, "Flyway bean not available");
     assertThat(flyway).isNotNull();
   }
 
@@ -43,11 +45,11 @@ class FlywayMigrationTests {
    * Test AC #4: Flyway migrations executed successfully
    * Verifies that migrations have been applied to the database
    *
-   * Skipped in test profile since Flyway is disabled for H2 compatibility.
+   * Uses PostgreSQL via Testcontainers for actual migration testing.
    */
   @Test
   void testFlywayMigrationsExecuted() {
-    assumeTrue(flyway != null, "Flyway is disabled in test profile for H2 compatibility");
+    assumeTrue(flyway != null, "Flyway bean not available");
     assertThat(flyway).isNotNull();
     // If migrations failed, Flyway would have thrown an exception during application startup
     // This test passing means migrations were successful
@@ -58,11 +60,11 @@ class FlywayMigrationTests {
   /**
    * Test AC #4: Verify V1__initial_schema migration is applied
    *
-   * Skipped in test profile since Flyway is disabled for H2 compatibility.
+   * Uses PostgreSQL via Testcontainers for actual migration testing.
    */
   @Test
   void testInitialSchemaMigrationApplied() {
-    assumeTrue(flyway != null, "Flyway is disabled in test profile for H2 compatibility");
+    assumeTrue(flyway != null, "Flyway bean not available");
     assertThat(flyway).isNotNull();
     boolean v1Applied = false;
     for (var info : flyway.info().all()) {

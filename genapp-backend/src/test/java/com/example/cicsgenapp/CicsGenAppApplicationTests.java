@@ -1,8 +1,10 @@
 package com.example.cicsgenapp;
 
+import com.example.cicsgenapp.config.TestcontainersConfiguration;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
@@ -17,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestcontainersConfiguration.class)
 @Disabled("Spring Cloud Gateway/Spring MVC conflict in test context - app works in dev/prod")
 class CicsGenAppApplicationTests {
 

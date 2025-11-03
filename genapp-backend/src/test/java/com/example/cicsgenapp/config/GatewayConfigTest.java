@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import reactor.core.publisher.Flux;
 
@@ -19,6 +20,7 @@ import reactor.core.publisher.Flux;
  */
 @SpringBootTest
 @TestPropertySource(properties = {"spring.profiles.active=test"})
+@Import(TestcontainersConfiguration.class)
 class GatewayConfigTest {
 
   @Autowired

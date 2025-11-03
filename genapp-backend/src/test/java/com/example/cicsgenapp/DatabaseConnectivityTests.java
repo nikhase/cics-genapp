@@ -1,9 +1,11 @@
 package com.example.cicsgenapp;
 
+import com.example.cicsgenapp.config.TestcontainersConfiguration;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.sql.DataSource;
@@ -16,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Integration tests for database connectivity and schema setup.
  * Validates that the application can connect to the database and schema is properly created.
- * Profile: test (uses H2 in-memory database)
+ * Profile: test (uses PostgreSQL via Testcontainers)
  *
  * NOTE: These tests are currently disabled due to Spring Cloud Gateway / Spring MVC
  * compatibility issues in test context. Manual testing with dev profile confirms
@@ -25,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestcontainersConfiguration.class)
 @Disabled("Spring Cloud Gateway/Spring MVC conflict in test context - manual testing in dev profile confirms setup is correct")
 class DatabaseConnectivityTests {
 

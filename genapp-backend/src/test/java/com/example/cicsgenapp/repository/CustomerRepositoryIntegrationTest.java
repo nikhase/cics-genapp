@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.example.cicsgenapp.config.TestcontainersConfiguration;
 import com.example.cicsgenapp.entity.Customer;
 import com.example.cicsgenapp.entity.Status;
 import java.time.LocalDateTime;
@@ -15,16 +16,21 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Integration tests for CustomerRepository.
  * Tests repository query methods and database interactions.
- * Uses H2 in-memory database (test profile) for isolation.
+ * Uses PostgreSQL via Testcontainers for testing PostgreSQL-specific features.
  */
 @DataJpaTest
 @ActiveProfiles("test")
+@Import(TestcontainersConfiguration.class)
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 class CustomerRepositoryIntegrationTest {
 
   @Autowired
