@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.1</storyId>
+    <title>React Project Setup with Vite and Material Design</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03T20:30:00Z</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-1-react-project-setup-with-vite-and-material-design.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Frontend Developer</asA>
+    <iWant>to set up a React 18 SPA with Vite, TypeScript, routing, and Material Design 3</iWant>
+    <soThat>I have a solid foundation for building UI components</soThat>
+    <tasks>
+      <task id="1">Initialize Vite React TypeScript project (AC: #1, #2)</task>
+      <task id="2">Configure TypeScript for strict type safety (AC: #2)</task>
+      <task id="3">Install and configure React Router v6 (AC: #3)</task>
+      <task id="4">Install and configure Material-UI (MUI) v5 (AC: #4)</task>
+      <task id="5">Apply Clarity Enterprise Design System theme customization (AC: #5)</task>
+      <task id="6">Create folder structure and placeholder components (AC: #6)</task>
+      <task id="7">Install and configure ESLint and Prettier (AC: #7)</task>
+      <task id="8">Set up public folder with favicon and metadata (AC: #8)</task>
+      <task id="9">Configure environment variables for dev and prod (AC: #9)</task>
+      <task id="10">Test build and dev server startup (AC: #10, #11)</task>
+      <task id="11">Create comprehensive README with setup instructions (AC: #11)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">React 18 project created with Vite (npm create vite@latest cicsgenapp-frontend -- --template react-ts)</criterion>
+    <criterion id="2">TypeScript configured for type safety (tsconfig.json with strict mode enabled)</criterion>
+    <criterion id="3">React Router v6 configured for client-side routing (BrowserRouter, Routes, lazy loading)</criterion>
+    <criterion id="4">Material-UI (MUI) v5 installed with TypeScript support</criterion>
+    <criterion id="5">Clarity Enterprise Design System theme customization applied (color palette, typography)</criterion>
+    <criterion id="6">Project structure created with 7 primary folders (components, pages, services, hooks, context, types, styles)</criterion>
+    <criterion id="7">ESLint and Prettier configured for code style</criterion>
+    <criterion id="8">Public folder with favicon, index.html, robots.txt</criterion>
+    <criterion id="9">Environment variables configured (.env.dev, .env.prod) with API_BASE_URL</criterion>
+    <criterion id="10">Build process tested: npm run build (optimized build, size &lt; 500KB gzipped for JavaScript bundle)</criterion>
+    <criterion id="11">Dev server runs on http://localhost:3000</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown - EPIC 3: React Frontend - Authentication &amp; Core UI</title>
+        <section>Story 3.1: React Project Setup with Vite and Material Design</section>
+        <snippet>As a Frontend Developer, I want to set up a React 18 SPA with Vite, TypeScript, routing, and Material Design 3, So that I have a solid foundation for building UI components. Acceptance Criteria includes Vite setup, TypeScript strict mode, React Router v6, Material-UI v5, Clarity theme, project structure, ESLint/Prettier, build optimization.</snippet>
+      </doc>
+      <doc>
+        <path>docs/development-guide.md</path>
+        <title>Development Guide</title>
+        <section>Frontend Development Environment</section>
+        <snippet>Development guide for setting up local frontend development environment, including Node.js LTS requirements, npm/yarn setup, and development server configuration for React applications.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Frontend User Interface Requirements</section>
+        <snippet>PRD defines frontend technology stack: React 18, Vite, TypeScript, Material-UI v5, React Router v6, responsive design, accessibility standards (WCAG 2.1 AA), and performance targets.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Documentation</title>
+        <section>Frontend Architecture Patterns</section>
+        <snippet>Architecture documentation includes frontend patterns for component layering, state management with React Context, API integration patterns, and design system integration with Material-UI.</snippet>
+      </doc>
+      <doc>
+        <path>docs/data-models.md</path>
+        <title>Data Models</title>
+        <section>Frontend Type Definitions</section>
+        <snippet>Data models document includes TypeScript interfaces for Customer, Policy, User, and other domain entities that will be used in frontend components and API responses.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-8-api-documentation-openapi-swagger-and-audit-logging.md</path>
+        <title>Story 2.8: API Documentation and Audit Logging</title>
+        <section>API Response Format and Patterns</section>
+        <snippet>Story 2.8 documents API response format (data/metadata wrapper), error handling patterns, authentication model (JWT bearer tokens from Zitadel), and correlation ID usage. Frontend must consume these patterns.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>genapp-backend/pom.xml</path>
+        <kind>build-config</kind>
+        <symbol>Spring Boot Backend Configuration</symbol>
+        <reason>Frontend development depends on backend API availability; review backend dependencies and versions for compatibility, especially Spring Security, Spring Data JPA, and auth patterns.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/cicsgenapp/controller/CustomerController.java</path>
+        <kind>controller</kind>
+        <symbol>CustomerController</symbol>
+        <reason>Frontend will call customer REST endpoints; understand request/response schemas, authentication requirements, and error handling patterns used in this controller.</reason>
+      </artifact>
+      <artifact>
+        <path>docs/stories/</path>
+        <kind>directory</kind>
+        <symbol>Story Files (2.1-2.8)</symbol>
+        <reason>Stories 2.1-2.8 define customer API endpoints, response formats, and validation rules that frontend will consume via API calls.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <ecosystem name="node">
+        <package>
+          <name>react</name>
+          <version>^18.2.0</version>
+          <reason>Core framework for building UI</reason>
+        </package>
+        <package>
+          <name>react-dom</name>
+          <version>^18.2.0</version>
+          <reason>React DOM rendering</reason>
+        </package>
+        <package>
+          <name>typescript</name>
+          <version>^5.2.0</version>
+          <reason>Type safety and development experience</reason>
+        </package>
+        <package>
+          <name>vite</name>
+          <version>^5.0.0</version>
+          <reason>Build tool and dev server</reason>
+        </package>
+        <package>
+          <name>react-router-dom</name>
+          <version>^6.8.0</version>
+          <reason>Client-side routing</reason>
+        </package>
+        <package>
+          <name>@mui/material</name>
+          <version>^5.14.0</version>
+          <reason>Component library</reason>
+        </package>
+        <package>
+          <name>@mui/icons-material</name>
+          <version>^5.14.0</version>
+          <reason>Icon library</reason>
+        </package>
+        <package>
+          <name>@emotion/react</name>
+          <version>^11.11.0</version>
+          <reason>CSS-in-JS solution (MUI peer dependency)</reason>
+        </package>
+        <package>
+          <name>@emotion/styled</name>
+          <version>^11.11.0</version>
+          <reason>Styled components (MUI peer dependency)</reason>
+        </package>
+        <package>
+          <name>axios</name>
+          <version>^1.6.0</version>
+          <reason>HTTP client for API calls (to be added in Story 3.8)</reason>
+        </package>
+        <package>
+          <name>eslint</name>
+          <version>^8.0.0</version>
+          <reason>Code quality and linting</reason>
+        </package>
+        <package>
+          <name>prettier</name>
+          <version>^3.0.0</version>
+          <reason>Code formatting</reason>
+        </package>
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <domain>TypeScript</domain>
+      <rule>All code must use TypeScript strict mode enabled (strict: true in tsconfig.json). No 'any' types except where explicitly justified.</rule>
+      <source>AC #2, Dev Notes</source>
+    </constraint>
+    <constraint>
+      <domain>Component Structure</domain>
+      <rule>Components must follow folder structure: src/components/ for reusable, src/pages/ for route-level components, src/hooks/ for custom hooks, src/context/ for providers.</rule>
+      <source>AC #6, unified-project-structure.md</source>
+    </constraint>
+    <constraint>
+      <domain>Routing</domain>
+      <rule>Use React Router v6 with lazy loading via React.lazy() and Suspense for code splitting. All routes must have proper error boundaries.</rule>
+      <source>AC #3</source>
+    </constraint>
+    <constraint>
+      <domain>Design System</domain>
+      <rule>Apply Clarity Enterprise Design System colors and typography via MUI theme provider. Do not hardcode colors; use theme values.</rule>
+      <source>AC #5, Dev Notes</source>
+    </constraint>
+    <constraint>
+      <domain>Environment Variables</domain>
+      <rule>Use VITE_ prefix for environment variables (Vite convention). Store in .env.dev, .env.prod, .env.example. Load via import.meta.env.</rule>
+      <source>AC #9</source>
+    </constraint>
+    <constraint>
+      <domain>Bundle Size</domain>
+      <rule>Optimize build output to &lt; 500KB gzipped JavaScript bundle. Use lazy loading and code splitting to achieve target.</rule>
+      <source>AC #10</source>
+    </constraint>
+    <constraint>
+      <domain>Dev Server Port</domain>
+      <rule>Dev server must run on http://localhost:3000 (or configurable in vite.config.ts). Backend API expected at http://localhost:8080 (configurable via VITE_API_BASE_URL).</rule>
+      <source>AC #11, Config</source>
+    </constraint>
+    <constraint>
+      <domain>Code Quality</domain>
+      <rule>ESLint and Prettier must be configured and run as pre-commit hooks to prevent unformatted code commits.</rule>
+      <source>AC #7</source>
+    </constraint>
+    <constraint>
+      <domain>Testing</domain>
+      <rule>Test framework (Jest + React Testing Library) setup deferred to Story 3.7 (Form Components). For now, ensure project structure supports tests/ directory.</rule>
+      <source>Development Guide</source>
+    </constraint>
+    <constraint>
+      <domain>Dependencies</domain>
+      <rule>Pin major versions of key dependencies (React 18, TypeScript 5, MUI 5) in package.json. Use npm ci for reproducible installs in CI/CD.</rule>
+      <source>Best Practices</source>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>API Base URL Configuration</name>
+      <kind>environment-variable</kind>
+      <signature>VITE_API_BASE_URL=http://localhost:8080 (dev) or https://api.example.com (prod)</signature>
+      <path>src/config/config.ts</path>
+      <description>Frontend must know backend API base URL for all REST calls. Configured via environment variables and loaded at runtime.</description>
+    </interface>
+    <interface>
+      <name>Zitadel OIDC Configuration</name>
+      <kind>environment-variable</kind>
+      <signature>VITE_ZITADEL_CLIENT_ID, VITE_ZITADEL_AUTHORITY (defined in .env.dev/.env.prod)</signature>
+      <path>src/config/config.ts</path>
+      <description>Authentication configuration for Zitadel OIDC provider (Story 3.2 will implement). Configured via environment variables.</description>
+    </interface>
+    <interface>
+      <name>Theme Provider</name>
+      <kind>react-component</kind>
+      <signature>ThemeProvider from @mui/material/styles - wraps App component</signature>
+      <path>src/main.tsx</path>
+      <description>Material-UI ThemeProvider must wrap the entire application to apply custom theme globally. Theme defined in src/theme/theme.ts.</description>
+    </interface>
+    <interface>
+      <name>Router Configuration</name>
+      <kind>react-component</kind>
+      <signature>BrowserRouter, Routes, Route from react-router-dom - top-level routing</signature>
+      <path>src/main.tsx</path>
+      <description>React Router v6 must be configured at application root. Routes defined in src/router/Router.tsx with lazy loading via React.lazy().</description>
+    </interface>
+    <interface>
+      <name>Project Structure Layout</name>
+      <kind>directory-structure</kind>
+      <signature>src/{components,pages,services,hooks,context,types,styles,utils,router,config}/</signature>
+      <path>src/</path>
+      <description>Standard React project structure with clear separation: reusable components, page components, services, custom hooks, context providers, TypeScript types, styling, utilities, routing, and configuration.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing will be implemented in later stories (3.7 for form components). For Story 3.1, verification is manual: (1) npm run dev starts dev server on http://localhost:3000, (2) npm run build completes without errors and produces bundle &lt; 500KB gzipped, (3) vite.config.ts and tsconfig.json configured correctly, (4) ESLint and Prettier run without errors on src/ folder.
+    </standards>
+    <locations>
+      <location>src/tests/ - Test directory (to be created in Story 3.7)</location>
+      <location>src/ - Jest/RTL tests will follow pattern: __tests__/ subdirectory or *.test.tsx files alongside source</location>
+      <location>e2e/ - End-to-end tests via Playwright/Cypress (future epic)</location>
+    </locations>
+    <ideas>
+      <idea ac-ref="1,2">Verify Vite project initializes with React 18 and TypeScript strict mode enabled</idea>
+      <idea ac-ref="2">Verify tsconfig.json has all strict options enabled: strict: true, noImplicitAny, strictNullChecks, noUnusedLocals, etc.</idea>
+      <idea ac-ref="3">Verify React Router v6 routes can be navigated without page reload; check Network tab for lazy loading</idea>
+      <idea ac-ref="4">Verify Material-UI components render correctly (Button, TextField, Card, etc.)</idea>
+      <idea ac-ref="5">Verify Clarity theme colors applied correctly (primary blue #0050D8, secondary gray #6A7781, etc.)</idea>
+      <idea ac-ref="6">Verify project folder structure matches requirements: src/components/, src/pages/, src/services/, src/hooks/, src/context/, src/types/, src/styles/</idea>
+      <idea ac-ref="7">Verify ESLint and Prettier run without errors; npm run lint and npm run format work correctly</idea>
+      <idea ac-ref="8">Verify public folder includes favicon, index.html with proper meta tags, robots.txt</idea>
+      <idea ac-ref="9">Verify environment variables loaded correctly: console.log(import.meta.env.VITE_API_BASE_URL) shows correct value</idea>
+      <idea ac-ref="10">Verify npm run build completes without errors; check dist/ folder size (should be &lt; 500KB gzipped)</idea>
+      <idea ac-ref="11">Verify dev server runs on http://localhost:3000; can navigate to routes and see hot module replacement working</idea>
+    </ideas>
+  </tests>
+
+</story-context>
