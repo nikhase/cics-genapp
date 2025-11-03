@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
@@ -84,6 +85,10 @@ public class Customer {
 
   @Column(name = "updated_by", length = 255)
   private String updatedBy;
+
+  @Version
+  @Column(name = "version")
+  private Long version;
 
   /**
    * Default constructor for JPA.
@@ -221,6 +226,14 @@ public class Customer {
 
   public void setUpdatedBy(String updatedBy) {
     this.updatedBy = updatedBy;
+  }
+
+  public Long getVersion() {
+    return version;
+  }
+
+  public void setVersion(Long version) {
+    this.version = version;
   }
 
   // equals() and hashCode() based on UUID

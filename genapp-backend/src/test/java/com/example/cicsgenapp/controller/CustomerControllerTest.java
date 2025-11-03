@@ -4,11 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.cicsgenapp.api.CustomerController;
 import com.example.cicsgenapp.dto.CreateCustomerRequest;
+import com.example.cicsgenapp.dto.UpdateCustomerRequest;
 import com.example.cicsgenapp.entity.Customer;
 import com.example.cicsgenapp.entity.Status;
 import com.example.cicsgenapp.repository.CustomerRepository;
@@ -463,5 +465,210 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.metadata.timestamp").exists())
         .andExpect(jsonPath("$.metadata.version").value("v1"))
         .andExpect(jsonPath("$.metadata.operation").value("READ"));
+  }
+
+  // ============= PUT /api/v1/customers/{customerId} Tests (Story 2.5) =============
+
+  @Test
+  @DisplayName("PUT /api/v1/customers/{id} - Partial update with only email field")
+  @WithMockUser(roles = "CUSTOMER_SERVICE_AGENT")
+  void testUpdateCustomerPartialEmailOnly() throws Exception {
+    // Given: existing customer
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("John", "Doe", "john@example.com");
+    customer.setCustomerId(customerId);
+    customer.setPhone("+12025551234");
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setVersion(1L);
+
+    // Update request with only email
+    UpdateCustomerRequest request = new UpdateCustomerRequest();
+    request.setEmail("newemail@example.com");
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.save(any(Customer.class))).thenReturn(customer);
+
+    // When/Then: PUT returns 200 with updated customer
+    mockMvc.perform(put("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.customerId").value(customerId.toString()))
+        .andExpect(jsonPath("$.data.firstName").value("John")) // Unchanged
+        .andExpect(jsonPath("$.data.lastName").value("Doe")) // Unchanged
+        .andExpect(jsonPath("$.metadata.operation").value("UPDATE"));
+  }
+
+  @Test
+  @DisplayName("PUT /api/v1/customers/{id} - Return 404 Not Found when customer doesn't exist")
+  @WithMockUser(roles = "CUSTOMER_SERVICE_AGENT")
+  void testUpdateCustomerNotFound() throws Exception {
+    // Given: non-existent customer ID
+    UUID nonExistentId = UUID.randomUUID();
+    UpdateCustomerRequest request = new UpdateCustomerRequest();
+    request.setFirstName("Jane");
+
+    when(customerRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+    // When/Then: PUT returns 404
+    mockMvc.perform(put("/api/v1/customers/{customerId}", nonExistentId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error.code").value("RESOURCE_NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("PUT /api/v1/customers/{id} - Return 400 Bad Request for invalid email")
+  @WithMockUser(roles = "CUSTOMER_SERVICE_AGENT")
+  void testUpdateCustomerInvalidEmail() throws Exception {
+    // Given: existing customer and invalid email request
+    UUID customerId = UUID.randomUUID();
+    UpdateCustomerRequest request = new UpdateCustomerRequest();
+    request.setEmail("not-an-email");
+
+    // When/Then: PUT returns 400
+    mockMvc.perform(put("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @DisplayName("PUT /api/v1/customers/{id} - Return 403 Forbidden without CUSTOMER_SERVICE_AGENT role")
+  @WithMockUser(roles = "USER")
+  void testUpdateCustomerUnauthorized() throws Exception {
+    // Given: user with insufficient role
+    UUID customerId = UUID.randomUUID();
+    UpdateCustomerRequest request = new UpdateCustomerRequest();
+    request.setFirstName("Jane");
+
+    // When/Then: PUT returns 403
+    mockMvc.perform(put("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("PUT /api/v1/customers/{id} - Return 401 Unauthorized without authentication")
+  void testUpdateCustomerNotAuthenticated() throws Exception {
+    // Given: unauthenticated request
+    UUID customerId = UUID.randomUUID();
+    UpdateCustomerRequest request = new UpdateCustomerRequest();
+    request.setFirstName("Jane");
+
+    // When/Then: PUT returns 401
+    mockMvc.perform(put("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("PUT /api/v1/customers/{id} - Verify ADMIN role can also update customers")
+  @WithMockUser(roles = "ADMIN")
+  void testUpdateCustomerWithAdminRole() throws Exception {
+    // Given: existing customer and ADMIN user
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("John", "Doe", "john@example.com");
+    customer.setCustomerId(customerId);
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setVersion(1L);
+
+    UpdateCustomerRequest request = new UpdateCustomerRequest();
+    request.setFirstName("Jane");
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.save(any(Customer.class))).thenReturn(customer);
+
+    // When/Then: PUT succeeds with ADMIN role
+    mockMvc.perform(put("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.customerId").value(customerId.toString()));
+  }
+
+  @Test
+  @DisplayName("PUT /api/v1/customers/{id} - Return 409 Conflict for duplicate email")
+  @WithMockUser(roles = "CUSTOMER_SERVICE_AGENT")
+  void testUpdateCustomerDuplicateEmail() throws Exception {
+    // Given: two customers, trying to update first one's email to second one's email
+    UUID customerId1 = UUID.randomUUID();
+    UUID customerId2 = UUID.randomUUID();
+
+    Customer customer1 = new Customer("John", "Doe", "john@example.com");
+    customer1.setCustomerId(customerId1);
+    customer1.setStatus(Status.ACTIVE);
+    customer1.setCreatedAt(LocalDateTime.now());
+    customer1.setUpdatedAt(LocalDateTime.now());
+    customer1.setVersion(1L);
+
+    Customer customer2 = new Customer("Jane", "Smith", "jane@example.com");
+    customer2.setCustomerId(customerId2);
+
+    UpdateCustomerRequest request = new UpdateCustomerRequest();
+    request.setEmail("jane@example.com"); // Trying to update to existing email
+
+    when(customerRepository.findById(customerId1)).thenReturn(Optional.of(customer1));
+    when(customerRepository.findByEmail("jane@example.com")).thenReturn(Optional.of(customer2));
+
+    // When/Then: PUT returns 409 Conflict
+    mockMvc.perform(put("/api/v1/customers/{customerId}", customerId1)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.error.code").value("DUPLICATE_KEY"));
+  }
+
+  @Test
+  @DisplayName("PUT /api/v1/customers/{id} - Update response includes metadata with UPDATE operation")
+  @WithMockUser(roles = "CUSTOMER_SERVICE_AGENT")
+  void testUpdateCustomerResponseMetadata() throws Exception {
+    // Given: existing customer
+    UUID customerId = UUID.randomUUID();
+    Customer customer = new Customer("John", "Doe", "john@example.com");
+    customer.setCustomerId(customerId);
+    customer.setStatus(Status.ACTIVE);
+    customer.setCreatedAt(LocalDateTime.now());
+    customer.setUpdatedAt(LocalDateTime.now());
+    customer.setVersion(1L);
+
+    UpdateCustomerRequest request = new UpdateCustomerRequest();
+    request.setFirstName("Jane");
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.save(any(Customer.class))).thenReturn(customer);
+
+    // When/Then: Response includes UPDATE operation in metadata
+    mockMvc.perform(put("/api/v1/customers/{customerId}", customerId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.metadata.timestamp").exists())
+        .andExpect(jsonPath("$.metadata.version").value("v1"))
+        .andExpect(jsonPath("$.metadata.operation").value("UPDATE"));
+  }
+
+  @Test
+  @DisplayName("PUT /api/v1/customers/{id} - Return 400 for invalid UUID format")
+  @WithMockUser(roles = "CUSTOMER_SERVICE_AGENT")
+  void testUpdateCustomerInvalidUUID() throws Exception {
+    // Given: invalid UUID format
+    String invalidId = "not-a-uuid";
+    UpdateCustomerRequest request = new UpdateCustomerRequest();
+    request.setFirstName("Jane");
+
+    // When/Then: PUT returns 400
+    mockMvc.perform(put("/api/v1/customers/{customerId}", invalidId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
   }
 }

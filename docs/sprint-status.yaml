@@ -59,7 +59,7 @@ development_status:
   2-2-customer-create-api-post-api-v1-customers: review
   2-3-customer-read-api-get-api-v1-customers-id: review
   2-4-customer-search-list-api-get-api-v1-customers: review
-  2-5-customer-update-api-put-api-v1-customers-id: in-progress
+  2-5-customer-update-api-put-api-v1-customers-id: in-review  # Dev: Story 2.5 implementation complete - ready for code review
   2-6-customer-soft-delete-api-delete-api-v1-customers-id: ready-for-dev
   2-7-input-validation-and-error-handling-framework: ready-for-dev
   2-8-api-documentation-openapi-swagger-and-audit-logging: ready-for-dev

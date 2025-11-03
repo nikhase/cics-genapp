@@ -4,14 +4,17 @@ import com.example.cicsgenapp.dto.CreateCustomerRequest;
 import com.example.cicsgenapp.dto.CustomerResponse;
 import com.example.cicsgenapp.dto.PagedResponse;
 import com.example.cicsgenapp.dto.SearchCriteria;
+import com.example.cicsgenapp.dto.UpdateCustomerRequest;
 import com.example.cicsgenapp.entity.Customer;
 import com.example.cicsgenapp.entity.Operation;
 import com.example.cicsgenapp.entity.Status;
 import com.example.cicsgenapp.exception.CustomerAlreadyExistsException;
+import com.example.cicsgenapp.exception.OptimisticLockException;
 import com.example.cicsgenapp.exception.ResourceNotFoundException;
 import com.example.cicsgenapp.repository.CustomerRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -249,5 +252,97 @@ public class CustomerService {
     );
 
     return response;
+  }
+
+  /**
+   * Updates an existing customer with provided request data.
+   *
+   * <p>Supports partial updates - only non-null fields in the request are updated. Tracks all
+   * changes for audit purposes. Validates email uniqueness if email is being updated.
+   *
+   * @param customerId the customer ID to update
+   * @param request the customer update request with new values
+   * @return CustomerResponse with updated customer data
+   * @throws ResourceNotFoundException if customer is not found
+   * @throws CustomerAlreadyExistsException if email is being updated to an email that already
+   *     exists for another customer
+   * @throws OptimisticLockException if version conflict detected (concurrent update)
+   */
+  @Transactional
+  public CustomerResponse updateCustomer(UUID customerId, UpdateCustomerRequest request) {
+    logger.debug("Updating customer with ID: {}", customerId);
+
+    // Retrieve existing customer
+    Customer customer = customerRepository.findById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Customer " + customerId + " not found"));
+
+    // Track changes before updating
+    ChangeTracker tracker = ChangeTracker.trackChanges(customer, request);
+
+    // Validate email uniqueness if email is being updated
+    if (request.getEmail() != null && !request.getEmail().equals(customer.getEmail())) {
+      Optional<Customer> existingWithEmail = customerRepository.findByEmail(request.getEmail());
+      if (existingWithEmail.isPresent()) {
+        logger.warn("Attempted to update customer with duplicate email: {}", request.getEmail());
+        throw new CustomerAlreadyExistsException(
+            "Email already in use by another customer");
+      }
+    }
+
+    // Apply updates - only non-null fields from request
+    if (request.getFirstName() != null) {
+      customer.setFirstName(request.getFirstName());
+    }
+    if (request.getLastName() != null) {
+      customer.setLastName(request.getLastName());
+    }
+    if (request.getDateOfBirth() != null) {
+      customer.setDateOfBirth(request.getDateOfBirth());
+    }
+    if (request.getEmail() != null) {
+      customer.setEmail(request.getEmail());
+    }
+    if (request.getPhone() != null) {
+      customer.setPhone(request.getPhone());
+    }
+    if (request.getAddress() != null) {
+      customer.setAddress(request.getAddress());
+    }
+    if (request.getCity() != null) {
+      customer.setCity(request.getCity());
+    }
+    if (request.getState() != null) {
+      customer.setState(request.getState());
+    }
+    if (request.getZipCode() != null) {
+      customer.setZipCode(request.getZipCode());
+    }
+
+    try {
+      // Save updated customer (updatedAt will be auto-managed by JPA auditing)
+      Customer savedCustomer = customerRepository.save(customer);
+      logger.info("Customer updated successfully with ID: {}", customerId);
+
+      // Create audit entry with change map
+      if (tracker.hasChanges()) {
+        auditService.createAuditEntry(
+            Operation.UPDATE,
+            "CUSTOMER",
+            customerId,
+            tracker.getChanges(),
+            "Customer updated: " + tracker.getSummary()
+        );
+      } else {
+        // Log when no actual changes occurred
+        logger.debug("Update request for customer {} contained no actual changes", customerId);
+      }
+
+      return CustomerResponse.from(savedCustomer);
+    } catch (jakarta.persistence.OptimisticLockException ex) {
+      logger.warn("Optimistic lock conflict detected for customer: {}", customerId);
+      throw new OptimisticLockException(
+          "Customer was modified by another user. Please refresh and try again.", ex);
+    }
   }
 }

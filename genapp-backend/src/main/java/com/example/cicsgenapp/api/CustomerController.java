@@ -5,6 +5,7 @@ import com.example.cicsgenapp.dto.CreateCustomerRequest;
 import com.example.cicsgenapp.dto.CustomerResponse;
 import com.example.cicsgenapp.dto.PagedResponse;
 import com.example.cicsgenapp.dto.SearchCriteria;
+import com.example.cicsgenapp.dto.UpdateCustomerRequest;
 import com.example.cicsgenapp.entity.Status;
 import com.example.cicsgenapp.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +28,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -314,6 +316,91 @@ public class CustomerController {
 
     } catch (Exception ex) {
       logger.error("Error creating customer: {}", ex.getMessage(), ex);
+      throw ex; // Let GlobalExceptionHandler handle it
+    }
+  }
+
+  /**
+   * Updates an existing customer record.
+   *
+   * <p>PUT /api/v1/customers/{customerId} endpoint for updating customers. Supports partial updates
+   * - only provided fields are updated, others remain unchanged. Validates email uniqueness if email
+   * is being updated. Returns 200 OK with updated customer details.
+   *
+   * <p>Requires CUSTOMER_SERVICE_AGENT or ADMIN role for authorization.
+   *
+   * @param customerId the customer ID (UUID) to update
+   * @param request the customer update request containing fields to update
+   * @return ResponseEntity with 200 status and ApiResponse containing updated customer
+   *
+   * @throws ResourceNotFoundException if customer not found (returns 404)
+   * @throws CustomerAlreadyExistsException if email is being updated to one that already exists
+   *     (returns 409 Conflict)
+   * @throws OptimisticLockException if version conflict detected (returns 409 Conflict)
+   * @throws MethodArgumentNotValidException if validation fails (returns 400 Bad Request)
+   */
+  @PutMapping("/{customerId}")
+  @PreAuthorize("hasAnyRole('CUSTOMER_SERVICE_AGENT', 'ADMIN')")
+  @Operation(
+      summary = "Update a customer",
+      description = "Updates an existing customer record with provided details. Supports partial updates - "
+          + "only non-null fields are updated. Email must be unique if being updated.",
+      security = @SecurityRequirement(name = "bearer-jwt")
+  )
+  @ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "Customer updated successfully",
+          content = @Content(schema = @Schema(implementation = ApiResponse.class))
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "400",
+          description = "Validation error - invalid request format or field constraints violated"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "404",
+          description = "Not Found - customer with specified ID does not exist"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "409",
+          description = "Conflict - email already exists for another customer or version conflict (concurrent update)"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "403",
+          description = "Forbidden - insufficient permissions to update customer"
+      ),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "500",
+          description = "Internal server error"
+      )
+  })
+  public ResponseEntity<ApiResponse<CustomerResponse>> updateCustomer(
+      @PathVariable UUID customerId,
+      @Valid @RequestBody UpdateCustomerRequest request) {
+
+    logger.info("PUT /api/v1/customers/{} - Updating customer", customerId);
+
+    try {
+      // Business logic delegated to service
+      CustomerResponse response = customerService.updateCustomer(customerId, request);
+
+      // Build metadata
+      Map<String, Object> metadata = new HashMap<>();
+      metadata.put("timestamp", LocalDateTime.now());
+      metadata.put("version", "v1");
+      metadata.put("operation", "UPDATE");
+
+      // Create response envelope
+      ApiResponse<CustomerResponse> apiResponse = new ApiResponse<>(response, metadata);
+
+      logger.info("Customer updated successfully: {}", customerId);
+
+      return ResponseEntity
+          .status(HttpStatus.OK)
+          .body(apiResponse);
+
+    } catch (Exception ex) {
+      logger.error("Error updating customer {}: {}", customerId, ex.getMessage(), ex);
       throw ex; // Let GlobalExceptionHandler handle it
     }
   }

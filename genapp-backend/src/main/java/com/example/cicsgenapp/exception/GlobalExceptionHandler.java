@@ -140,6 +140,58 @@ public class GlobalExceptionHandler {
   }
 
   /**
+   * Handles OptimisticLockException - returns 409 Conflict.
+   *
+   * <p>Occurs when a concurrent update conflict is detected (version mismatch).
+   *
+   * @param ex the exception
+   * @param request the web request
+   * @return 409 error response
+   */
+  @ExceptionHandler(OptimisticLockException.class)
+  public ResponseEntity<ErrorResponse> handleOptimisticLock(
+      OptimisticLockException ex,
+      WebRequest request) {
+
+    ErrorResponse error = createErrorResponse(
+        "OPTIMISTIC_LOCK_CONFLICT",
+        ex.getMessage(),
+        HttpStatus.CONFLICT,
+        null
+    );
+
+    return ResponseEntity
+        .status(HttpStatus.CONFLICT)
+        .body(error);
+  }
+
+  /**
+   * Handles JPA OptimisticLockException - returns 409 Conflict.
+   *
+   * <p>JPA throws this when version doesn't match during update.
+   *
+   * @param ex the exception
+   * @param request the web request
+   * @return 409 error response
+   */
+  @ExceptionHandler(jakarta.persistence.OptimisticLockException.class)
+  public ResponseEntity<ErrorResponse> handleJpaOptimisticLock(
+      jakarta.persistence.OptimisticLockException ex,
+      WebRequest request) {
+
+    ErrorResponse error = createErrorResponse(
+        "OPTIMISTIC_LOCK_CONFLICT",
+        "Resource was modified by another user. Please refresh and try again.",
+        HttpStatus.CONFLICT,
+        null
+    );
+
+    return ResponseEntity
+        .status(HttpStatus.CONFLICT)
+        .body(error);
+  }
+
+  /**
    * Handles MethodArgumentNotValidException from @Valid annotation - returns 400 Bad Request.
    *
    * @param ex the exception
