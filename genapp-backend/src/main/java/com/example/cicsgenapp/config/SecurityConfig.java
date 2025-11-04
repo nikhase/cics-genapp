@@ -67,8 +67,8 @@ public class SecurityConfig {
             .permitAll()
             .defaultSuccessUrl("/", true))
         .logout(logout -> logout
-            .permitAll())
-        .httpBasic(basic -> {}) // Enable for API access during development
+            .disable()) // Logout is handled by Vaadin LogoutView component
+        .httpBasic(basic -> basic.disable()) // Disabled for Vaadin (form login only)
         .authorizeHttpRequests(authz -> authz
             // Public endpoints
             .requestMatchers("/login").permitAll()
