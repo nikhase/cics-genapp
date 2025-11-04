@@ -32,7 +32,7 @@ This is the frontend application for the CICS GenApp cloud modernization project
 
 2. **Navigate to frontend directory:**
    ```bash
-   cd cicsgenapp-frontend
+   cd genapp-frontend
    ```
 
 3. **Install dependencies:**
@@ -88,7 +88,7 @@ npm run preview
 ## Project Structure
 
 ```
-cicsgenapp-frontend/
+genapp-frontend/
 ├── src/
 │   ├── main.tsx                 # Application entry point
 │   ├── App.tsx                  # Root application component

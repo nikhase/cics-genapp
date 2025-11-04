@@ -339,7 +339,7 @@ All 11 tasks completed successfully. Story 3.1 establishes the foundational Reac
 **New Files Created (Primary Implementation):**
 
 ```
-cicsgenapp-frontend/
+genapp-frontend/
 ├── src/
 │   ├── main.tsx (MODIFIED - added ThemeProvider, RouterProvider, global styles)
 │   ├── components/
