@@ -1103,6 +1103,205 @@ Build the responsive Vaadin web application that replaces the 3270 terminal inte
 
 ---
 
+### Story 3.9: Test Data Setup and Seed Database
+
+**As a** QA Engineer,
+**I want** to populate the database with realistic test customer and policy data,
+**So that** I can develop and test customer/policy features without manual data entry.
+
+**Acceptance Criteria:**
+
+1. Repeatable Flyway migrations (R__) created for seeding test data
+2. Test data includes 17+ realistic customers with diverse demographics:
+   - Mixed names (Jane Smith, John Smith, Sarah Johnson, etc.)
+   - International names for Unicode testing (Anna Müller, Pierre Dupont, Maria Rossi, Carlos Hernandez)
+   - Email addresses use @example.com domain (never production)
+   - Phone numbers in E.164 format (+1-555-0XXX)
+   - Date of birth values ensure all customers are 18+ years old
+   - All customers marked ACTIVE status by default
+   - Addresses in various Oregon cities for geographic diversity
+3. UPSERT pattern (ON CONFLICT ... DO UPDATE) ensures fresh data on each application startup
+4. Seeds preserve created_at timestamp from original insert, update updated_at on each run
+5. Seed data accessible via GET /api/v1/customers - search returns expected customers
+6. Seed includes at least 2 customers with last name "Smith" for search testing
+7. Optional: Seed policy data if policy APIs exist (defer if not)
+8. Migration is idempotent - running multiple times produces consistent data state
+9. Test data clearly separated from production data (email domain, user IDs)
+10. Seed data documented in README with verification queries
+
+**Prerequisites:** Stories 1.2, 3.1, Stories 2.1-2.4 (APIs)
+
+---
+
+### Story 3.10: Customer List Overview Page with Vaadin Grid
+
+**As a** Customer Service Agent,
+**I want** a consolidated dashboard showing all active customers with key metrics,
+**So that** I can quickly understand workload and customer distribution.
+
+**Acceptance Criteria:**
+
+1. CustomerListView created at route `/customers/overview` (alternative to detailed search page)
+2. Displays Vaadin Grid with all active customers:
+   - Columns: ID (truncated), Name, Email, City, Status Badge, Created Date
+   - Sortable columns (click header to toggle sort direction)
+   - Built-in pagination (25/50/100 rows per page)
+   - Page navigation (Previous/Next, "Page X of Y")
+3. Summary metrics bar at top:
+   - Total active customers count
+   - Total customers by status breakdown (pie chart or horizontal bar chart)
+   - Last updated timestamp
+4. Quick filters above grid:
+   - Filter by status (All / Active / Inactive)
+   - Filter by city (ComboBox with state list)
+5. Row actions (action column):
+   - View → navigates to `/customers/{id}`
+   - Edit → navigates to `/customers/{id}/edit`
+   - Delete (context menu or vertical actions button)
+6. Bulk actions (optional, checkbox selection):
+   - Delete multiple selected customers
+   - Mark as inactive for multiple customers
+7. Empty state message if no customers found
+8. Loading overlay while fetching data
+9. Responsive design (works on mobile/tablet/desktop)
+10. Keyboard navigation (arrow keys to navigate rows, Enter to view detail)
+
+**Prerequisites:** Stories 1.2, 3.1, 3.3, Stories 2.3-2.4 (APIs)
+
+---
+
+### Story 3.11: Unified Customer Management Interface with SSC1-Style UX
+
+**As a** Customer Service Agent used to the legacy CICS SSC1 terminal interface,
+**I want** a single unified Vaadin view for all customer operations (search, create, edit, view) with terminal-style keyboard shortcuts,
+**So that** I can perform customer management tasks without navigating between multiple pages and maintain muscle memory from the 3270 terminal interface.
+
+**Acceptance Criteria:**
+
+1. UnifiedCustomerView created at route `/customers/dashboard` - single consolidated interface combining:
+   - Customer search/lookup with quick find field
+   - View customer details (in context)
+   - Create new customer (toggle to form mode)
+   - Edit existing customer (inline or side panel)
+   - Delete customer (with confirmation)
+   - View customer history/audit trail
+
+2. Layout design (single-page, context-aware):
+   - Left panel: Search/lookup field + customer list grid (responsive, ~30% width)
+   - Right panel: Detail view or form (toggle based on context, ~70% width)
+   - Top action bar with quick commands
+   - Status bar at bottom showing current mode and available shortcuts
+
+3. Customer search/quick find:
+   - Search field with focus-steal behavior (Ctrl+F to focus)
+   - Real-time search as user types (debounce 300ms)
+   - Results shown in left panel grid (ID, Name, Email, Status)
+   - Click row to load customer details in right panel
+   - Search history (last 5 searches, accessible via dropdown)
+
+4. Keyboard shortcuts (SSC1-style terminal shortcuts):
+   - **Ctrl+A** → Add new customer (focus to create form)
+   - **Ctrl+E** → Edit selected customer
+   - **Ctrl+S** → Search/focus search field
+   - **Ctrl+D** → Delete selected customer (with confirmation)
+   - **Ctrl+L** → Clear search / reset to customer list view
+   - **Ctrl+?** → Show keyboard shortcut help (modal dialog)
+   - **Escape** → Cancel current operation / return to list view
+   - **Arrow Up/Down** → Navigate customer list (when focus in list)
+   - **Enter** → Select/open customer from list
+
+5. Right panel modes (context-aware):
+   - **View Mode** (default after selecting customer):
+     - Display customer details (read-only)
+     - Buttons: Edit, Delete, Audit Trail
+     - Show related policies (grid)
+   - **Edit Mode**:
+     - Form with validated fields (phone, email, DOB, address)
+     - In-place editing (no modal dialog, integrated in right panel)
+     - Save/Cancel buttons
+     - Validation errors displayed inline
+   - **Create Mode** (triggered by Ctrl+A):
+     - Empty form with all customer fields
+     - Save/Cancel buttons
+     - Clear focus on successful save, ready for next customer
+
+6. Customer list grid features:
+   - Display: ID (first 8 chars), Name, Email, Status badge
+   - Highlight selected row (background color change)
+   - Show count: "X customers found"
+   - Support sorting by Name, Email, Status
+   - Sticky header (scrolls with content)
+
+7. Form validation and error handling:
+   - Real-time validation (as user types)
+   - Field-level error messages (red text below field)
+   - Required field indicators (red asterisk *)
+   - Async validation for email uniqueness (show spinner)
+   - Form-level error notification (red banner at top)
+   - Success notification on save (green banner)
+
+8. Status indicators and UX feedback:
+   - "Mode: View / Edit / Create" label in status bar
+   - "X matches found" in search results
+   - Loading spinner while fetching
+   - "Saved" confirmation (3s toast notification)
+   - Unsaved changes warning if user tries to navigate away
+
+9. Mobile responsive design:
+   - Stack layout: search above, details below (single column on mobile)
+   - Touch-friendly buttons and grid rows
+   - Simplified keyboard shortcuts (Ctrl+X may not work on mobile, fall back to buttons)
+
+10. Accessibility:
+    - ARIA labels on all interactive elements
+    - Keyboard navigation throughout (Tab, Shift+Tab, arrow keys)
+    - Screen reader friendly (semantic HTML, proper heading hierarchy)
+    - High contrast mode support
+
+11. Performance:
+    - Customer list loads within 2 seconds
+    - Search results update in < 500ms (with debouncing)
+    - Pagination prevents loading entire customer table
+
+12. Testing:
+    - Unit tests for search logic and filtering
+    - Manual testing of all keyboard shortcuts
+    - Test with screen reader (NVDA or JAWS)
+    - Test on mobile devices (iOS Safari, Chrome Android)
+
+**Dev Notes:**
+
+This story represents a significant UX pivot from the current multi-page approach (separate search, detail, create, edit pages) to a unified SSC1-inspired interface. The goal is to minimize page navigation and provide power-user experience through keyboard shortcuts, similar to the legacy CICS 3270 terminal interface that customers are already familiar with.
+
+Key architectural decisions:
+- Single Vaadin View with mode switching (not multiple routes)
+- Left panel uses Grid, right panel uses FormLayout or read-only display
+- Keyboard event handlers registered globally to Vaadin UI
+- Context maintained in View state (selectedCustomer, currentMode)
+- API calls async (no blocking)
+
+Implementation approach:
+- Combine existing CustomerListView (grid) and CustomerDetailView (form) into single UnifiedCustomerView
+- Add keyboard shortcut handler using Vaadin's keyboard events
+- Refactor to use side-panel layout instead of full-page navigation
+- Preserve all validation and error handling from existing components
+
+Related Stories:
+- Reuse components from Stories 3.4, 3.5, 3.6 (avoid duplication)
+- Reuse API services from Story 3.8 (CustomerService)
+- Apply validation patterns from Story 3.7 (ValidatedTextField, etc.)
+
+Potential Extensions (post-MVP):
+- Customer bulk operations (multi-select, bulk delete, status change)
+- Advanced search filters (date range, address search, etc.)
+- Customer history panel (audit trail in side panel)
+- Policy linking UI (assign policies to customer in same view)
+- Favorites/recent customers (quick access)
+
+**Prerequisites:** Stories 3.4-3.8 (existing search/detail/edit/form/services components)
+
+---
+
 ## EPIC 4: Parallel Run Validation Framework
 
 **Expanded Goal:**
