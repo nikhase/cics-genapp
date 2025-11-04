@@ -225,8 +225,8 @@ public class CustomerSearchView extends VerticalLayout {
     hideErrorMessage();
 
     try {
-      // Call backend API
-      PagedResponse<CustomerResponse> response = customerService.searchCustomers(
+      // Build search criteria for the service
+      com.example.cicsgenapp.dto.SearchCriteria criteria =
           new com.example.cicsgenapp.dto.SearchCriteria(
               lastQuery.isEmpty() ? null : lastQuery,
               lastStatus,
@@ -234,8 +234,10 @@ public class CustomerSearchView extends VerticalLayout {
               currentPage * pageSize,
               "lastName",
               "ASC"
-          )
-      );
+          );
+
+      // Call backend service which handles the REST API call
+      PagedResponse<CustomerResponse> response = customerService.searchCustomers(criteria);
 
       if (response.getData().isEmpty()) {
         showEmptyState("No customers found. Try different search criteria.");

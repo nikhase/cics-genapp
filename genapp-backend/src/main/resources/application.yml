@@ -20,7 +20,7 @@ spring:
       connection-timeout: 10000
       connection-test-query: "SELECT 1"
   flyway:
-    enabled: false
+    enabled: true
   servlet:
     multipart:
       max-file-size: 10MB
@@ -101,7 +101,7 @@ spring:
       enabled: false
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:

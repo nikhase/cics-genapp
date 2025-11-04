@@ -1,15 +1,12 @@
--- V7__seed_test_customers.sql
--- Seed test database with realistic customer test data for development and testing
--- This migration is idempotent and safe to run multiple times
-
--- Delete existing test data (optional - for reset capability)
--- Uncomment the line below to reset test data on each migration
--- DELETE FROM customer WHERE email LIKE '%.test-%' OR email LIKE '%@example.com';
+-- R__seed_test_customers.sql
+-- Repeatable migration: Seeds and maintains test customer data for development and testing
+-- This migration runs every time the file changes, ensuring fresh test data in dev environments
+-- Uses UPSERT (ON CONFLICT ... DO UPDATE) to safely update existing test customers
 
 -- ============================================================================
--- INSERT TEST CUSTOMER DATA
+-- UPSERT TEST CUSTOMER DATA
 -- ============================================================================
--- Inserting 18 realistic test customer records with diverse demographics
+-- Inserting/updating 17 realistic test customer records with diverse demographics
 -- All customers created with ACTIVE status for testing active customer scenarios
 -- Email addresses use example.com domain to ensure they never reach production
 -- Phone numbers follow E.164 international format
@@ -57,7 +54,19 @@ VALUES
   ('f47ac10b-58cc-4372-a567-0e02b2c3d48d'::uuid, 'Michelle', 'Thomas', '1981-04-09'::date, 'michelle.thomas@example.com', '+15550115', '456 Poplar Rd', 'West Linn', 'OR', '97068', 'ACTIVE', 'test-data-seed', 'test-data-seed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('f47ac10b-58cc-4372-a567-0e02b2c3d48e'::uuid, 'Christopher', 'Jackson', '1979-11-27'::date, 'christopher.jackson@example.com', '+15550116', '321 Cherry Ln', 'Oregon City', 'OR', '97045', 'ACTIVE', 'test-data-seed', 'test-data-seed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('f47ac10b-58cc-4372-a567-0e02b2c3d48f'::uuid, 'Amanda', 'White', '1993-05-21'::date, 'amanda.white@example.com', '+15550117', '654 Peach St', 'Hillsboro', 'OR', '97123', 'ACTIVE', 'test-data-seed', 'test-data-seed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-ON CONFLICT (customer_id) DO NOTHING;
+ON CONFLICT (customer_id) DO UPDATE SET
+  first_name = EXCLUDED.first_name,
+  last_name = EXCLUDED.last_name,
+  date_of_birth = EXCLUDED.date_of_birth,
+  email = EXCLUDED.email,
+  phone = EXCLUDED.phone,
+  address = EXCLUDED.address,
+  city = EXCLUDED.city,
+  state = EXCLUDED.state,
+  zip_code = EXCLUDED.zip_code,
+  status = EXCLUDED.status,
+  updated_by = EXCLUDED.updated_by,
+  updated_at = CURRENT_TIMESTAMP;
 
 -- ============================================================================
 -- VERIFICATION QUERIES
@@ -82,12 +91,15 @@ ON CONFLICT (customer_id) DO NOTHING;
 -- ============================================================================
 -- IDEMPOTENCY NOTES
 -- ============================================================================
--- This migration uses ON CONFLICT (customer_id) DO NOTHING to ensure idempotency.
--- If the migration is run multiple times, existing records will NOT be updated or duplicated.
--- This allows safe re-running for dev/test environment resets.
+-- This migration is REPEATABLE (R__ prefix) and uses UPSERT (ON CONFLICT ... DO UPDATE).
+-- Every time this migration runs, it will:
+-- 1. Insert new test customers if they don't exist
+-- 2. Update existing test customers with current values from this migration
+-- 3. Preserve created_at timestamps from original inserts
+-- 4. Update updated_at timestamps on each migration run
 --
--- To reset test data completely:
--- 1. Delete existing test customers: DELETE FROM customer WHERE email LIKE '%@example.com';
--- 2. Re-run this migration to re-seed: flyway clean && flyway migrate
---
--- WARNING: Using flyway clean will delete ALL migrations and data. Use with caution!
+-- This pattern ensures:
+-- - Fresh test data on every environment startup
+-- - No data loss due to CREATE-DROP scenarios
+-- - Safe to re-run without side effects
+-- - Useful for dev/test environments where you want consistent, fresh data
