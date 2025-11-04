@@ -3,15 +3,20 @@
  * Defines all routes with lazy loading and error boundaries
  */
 
-import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { lazy, Suspense, ReactNode } from 'react';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { LoadingFallback } from '../components/LoadingFallback';
+import { ProtectedRoute } from './ProtectedRoute';
+import { AuthProvider } from '../context/AuthContext';
 
 // Lazy-loaded pages for code splitting
 const LoginPage = lazy(() => import('../pages/LoginPage').then((m) => ({ default: m.LoginPage })));
+const AuthCallbackPage = lazy(() =>
+  import('../pages/AuthCallbackPage').then((m) => ({ default: m.AuthCallbackPage }))
+);
 const DashboardPage = lazy(() =>
   import('../pages/DashboardPage').then((m) => ({ default: m.DashboardPage }))
 );
@@ -21,6 +26,22 @@ const DashboardPage = lazy(() =>
  */
 const routes: RouteObject[] = [
   {
+    path: '/login',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <LoginPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/auth/callback',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <AuthCallbackPage />
+      </Suspense>
+    ),
+  },
+  {
     path: '/',
     element: <Layout />,
     children: [
@@ -28,7 +49,9 @@ const routes: RouteObject[] = [
         index: true,
         element: (
           <Suspense fallback={<LoadingFallback />}>
-            <DashboardPage />
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
           </Suspense>
         ),
       },
@@ -36,15 +59,9 @@ const routes: RouteObject[] = [
         path: 'dashboard',
         element: (
           <Suspense fallback={<LoadingFallback />}>
-            <DashboardPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'login',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <LoginPage />
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
           </Suspense>
         ),
       },
@@ -110,8 +127,22 @@ const routes: RouteObject[] = [
 ];
 
 /**
- * Create and export browser router
+ * Create browser router
  */
-export const router = createBrowserRouter(routes);
+const browserRouter = createBrowserRouter(routes);
 
-export default router;
+/**
+ * App Root Component with Auth Provider
+ */
+export const AppWithAuth: React.FC = () => (
+  <AuthProvider>
+    <RouterProvider router={browserRouter} />
+  </AuthProvider>
+);
+
+/**
+ * Create and export browser router (legacy export for compatibility)
+ */
+export const router = browserRouter;
+
+export default browserRouter;
