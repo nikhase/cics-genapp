@@ -18,13 +18,20 @@ CICS GenApp Backend is a Spring Boot 3.3+ REST API designed to gradually replace
 - **Language:** Java 21 LTS
 - **Framework:** Spring Boot 3.3+ LTS
 - **API:** Spring Web (REST)
+- **UI Framework:** Vaadin 24.5.0 (Server-side Java web framework)
 - **Data Access:** Spring Data JPA
-- **Security:** Spring Security + OIDC (Zitadel)
+- **Security:** Spring Security (Form-based auth for MVP, OIDC deferred)
 - **Gateway:** Spring Cloud Gateway
 - **Database:** PostgreSQL 16 LTS
-- **Build Tool:** Maven 3.8+
+- **Build Tool:** Maven 3.8+ (single build process for backend + frontend)
 - **Container:** Docker
 - **Orchestration:** Kubernetes (Helm charts included)
+
+**Note:** The application uses Vaadin for the frontend instead of React/TypeScript. This provides:
+- Server-side rendering with Java-only development
+- No separate Node.js build process
+- Built-in UI components and theming
+- Seamless integration with Spring Security for session-based authentication
 
 ## Prerequisites
 
@@ -283,6 +290,83 @@ curl http://localhost:8080/api/v1/customers/123 \
   -H "X-Trace-Id: my-trace-id-123"
 # Response includes: X-Trace-Id: my-trace-id-123
 ```
+
+---
+
+## Vaadin Web UI (Frontend)
+
+The application includes a server-side Vaadin web interface for customer service agent interaction:
+
+### Accessing the UI
+
+- **Web Interface:** `http://localhost:8080`
+- **Login Page:** `http://localhost:8080/login`
+
+### MVP Authentication
+
+For development and MVP testing, use these hardcoded credentials:
+
+```
+Username: admin    Password: admin123   (Full access)
+Username: user     Password: user123    (Limited access)
+```
+
+**Note:** These are for MVP development only. Story 3.2 will implement proper form-based authentication with database-backed users.
+
+### Vaadin Features
+
+- **Server-Side Rendering:** Eliminates complex frontend build tools (no Node.js, Webpack, or TypeScript)
+- **Built-in UI Components:** Vaadin provides production-ready components (Grid, Form, AppLayout, etc.)
+- **Session-Based Authentication:** Spring Security integration for stateful authentication
+- **Responsive Design:** Auto-responsive layouts for mobile, tablet, and desktop
+- **Lumo Design System:** Professional theming with light/dark mode support
+
+### Project Structure (UI)
+
+```
+genapp-backend/src/main/java/com/example/cicsgenapp/ui/
+├── views/                    # @Route pages for routes
+│   ├── LoginView.java        # Form-based login (Story 3.2)
+│   ├── DashboardView.java    # Home page after login (Story 3.3)
+│   ├── customers/
+│   │   ├── CustomerSearchView.java    # Customer search/list (Story 3.4)
+│   │   ├── CustomerDetailView.java    # Customer details (Story 3.5)
+│   │   └── CustomerFormView.java      # Create/Edit customer (Story 3.6)
+│   └── policies/
+│       ├── PolicyListView.java        # Policy search/list (Story 3.7)
+│       └── PolicyDetailView.java      # Policy details (Story 3.8)
+├── layouts/
+│   ├── MainLayout.java       # AppLayout with navigation (Story 3.1)
+│   └── NavigationMenu.java   # Shared navigation components
+└── components/               # Reusable Vaadin components
+    ├── CustomerGrid.java
+    ├── PolicyGrid.java
+    └── SearchForm.java
+```
+
+### Why Vaadin (Not React/TypeScript)?
+
+The decision to use Vaadin instead of React/TypeScript was made to:
+
+1. **Simplify Frontend Development:** Single Maven build process (no separate Node.js frontend)
+2. **Improve Developer Productivity:** Java-only development; no TypeScript learning curve
+3. **Faster MVP Delivery:** 2-2.5 weeks estimated (vs. 3-4 weeks with React)
+4. **Server-Side Rendering:** Reduces complexity and client-side state management
+5. **Built-in Features:** Professional UI components without additional libraries
+
+### Building the Vaadin UI
+
+The Vaadin frontend is built as part of the standard Maven build. No additional build steps required:
+
+```bash
+# Vaadin builds automatically with Maven
+mvn clean install
+
+# Or for development with auto-refresh
+mvn spring-boot:run
+```
+
+The Vaadin application includes frontend resources that are compiled and packaged in the JAR.
 
 ---
 
