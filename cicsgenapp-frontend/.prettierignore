@@ -1,0 +1,31 @@
+# Build artifacts
+dist/
+build/
+node_modules/
+
+# Environment files
+.env.dev
+.env.prod
+.env.local
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Git
+.git/
+.gitignore
