@@ -391,6 +391,67 @@ The application uses Flyway for database migrations. Migrations are automaticall
 # Format: V1__Initial_schema.sql, V2__Add_customers_table.sql, etc.
 ```
 
+### Test Data Seeding
+
+The development database is automatically populated with realistic test customer data via Flyway migration `V7__seed_test_customers.sql`. This data includes:
+
+- **18 test customer records** with diverse names, locations, and demographics
+- **International names** (German, French, Italian, Spanish) for Unicode support testing
+- **Realistic contact information** (email addresses using @example.com, valid E.164 phone numbers)
+- **Multiple geographic locations** (Oregon cities + one Washington city) for regional testing
+- **All customers marked ACTIVE** for testing active customer scenarios
+
+#### Using Test Data
+
+The test data is automatically loaded when the application starts. You can use it for:
+
+1. **UI Testing:** Search, filter, and list customers in the Vaadin interface
+2. **API Testing:** Test REST endpoints with real data via Postman or curl
+3. **Pagination Testing:** Test with 18 records per page in various page sizes
+4. **Search Functionality:** Test by name, email, location, status
+
+#### Sample Test Queries
+
+```sql
+-- Find all test customers
+SELECT COUNT(*) FROM customer WHERE email LIKE '%@example.com';
+-- Result: 18 test customers
+
+-- Search by last name
+SELECT * FROM customer WHERE last_name = 'Smith' AND email LIKE '%@example.com';
+-- Result: 2 customers (Jane Smith, John Smith)
+
+-- Find active test customers
+SELECT COUNT(*) FROM customer WHERE status = 'ACTIVE' AND email LIKE '%@example.com';
+-- Result: 18 (all test customers)
+```
+
+#### Resetting Test Data
+
+To reset test data during development:
+
+```bash
+# Option 1: Delete test data and restart (Flyway will re-seed)
+DELETE FROM customer WHERE email LIKE '%@example.com';
+
+# Then restart the application - Flyway will automatically re-seed on startup
+
+# Option 2: Reset specific test customer
+DELETE FROM customer WHERE customer_id = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid;
+```
+
+**Note:** Do NOT use `flyway:clean` in production. It deletes all migrations and data!
+
+#### Test Data Reference
+
+For complete test data documentation including:
+- Customer names, IDs, and contact information
+- Demographic distribution
+- Sample test queries
+- Testing strategies
+
+**See:** `../../docs/test-data.md`
+
 ### Manual Database Access
 
 Connect to PostgreSQL:
