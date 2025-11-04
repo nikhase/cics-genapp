@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>7</storyId>
+    <title>Policy List Page with Vaadin Grid</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-04</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-7-policy-list.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Customer Service Agent</asA>
+    <iWant>to search for and view a list of all policies with filtering by type and status</iWant>
+    <soThat>I can manage policies across the customer base efficiently</soThat>
+    <tasks>
+      <task id="1">Create Policy List Page Component - Create PolicyListPage.java with route /policies</task>
+      <task id="2">Create Policy List Page Component - Extend VerticalLayout with Vaadin components</task>
+      <task id="3">Implement Search &amp; Filter Form - Create search input field with placeholder</task>
+      <task id="4">Implement Search &amp; Filter Form - Create policy type filter dropdown (All, Motor, Endowment, House, Commercial)</task>
+      <task id="5">Implement Search &amp; Filter Form - Create status filter dropdown (All, Active, Lapsed, Renewed)</task>
+      <task id="6">Implement Search &amp; Filter Form - Implement Search/Filter button and auto-filter on change</task>
+      <task id="7">Implement Search &amp; Filter Form - Add loading indicator while fetching results</task>
+      <task id="8">Implement Results Grid - Configure Vaadin Grid with columns (Policy ID, Customer Name, Policy Type, Status, Premium Amount, Created Date)</task>
+      <task id="9">Implement Results Grid - Make grid columns sortable (click header)</task>
+      <task id="10">Implement Results Grid - Set default sort by Policy ID</task>
+      <task id="11">Implement Results Grid - Make customer name a clickable link to customer detail</task>
+      <task id="12">Implement Results Grid - Format policy type with abbreviation (M, E, H, C) and tooltip</task>
+      <task id="13">Implement Results Grid - Make row click navigate to Policy Detail page (Story 3.8)</task>
+      <task id="14">Implement Pagination - Configure pagination controls (Previous/Next buttons or page selector)</task>
+      <task id="15">Implement Pagination - Set page size to 20 results per page</task>
+      <task id="16">Implement Pagination - Display current page indicator (Page X of Y)</task>
+      <task id="17">Implement Pagination - Update grid when pagination changes</task>
+      <task id="18">Implement Empty State - Show placeholder message before search executed</task>
+      <task id="19">Implement Empty State - Show "No policies found" message when search returns empty</task>
+      <task id="20">Implement Empty State - Suggest trying different filters in empty state</task>
+      <task id="21">Implement API Integration - Call GET /api/v1/policies with query parameters</task>
+      <task id="22">Implement API Integration - Pass search, type, status filter to API</task>
+      <task id="23">Implement API Integration - Handle pagination offset/limit</task>
+      <task id="24">Implement API Integration - Handle sorting parameters</task>
+      <task id="25">Implement User Experience - Focus search field on page load</task>
+      <task id="26">Implement User Experience - Trigger search on Enter key</task>
+      <task id="27">Implement User Experience - Set filter dropdowns to "All" by default</task>
+      <task id="28">Implement Styling &amp; Responsive - Apply Material Design 3 theme</task>
+      <task id="29">Implement Styling &amp; Responsive - Full-width grid on mobile</task>
+      <task id="30">Implement Styling &amp; Responsive - Status badge colors (green/gray)</task>
+      <task id="31">Implement Accessibility - Add proper labels to form inputs</task>
+      <task id="32">Implement Accessibility - Enable keyboard navigation (Tab, Enter, Escape)</task>
+      <task id="33">Testing - Manual test: navigate to Policies page from Dashboard</task>
+      <task id="34">Testing - Manual test: search for policy number (POL-001)</task>
+      <task id="35">Testing - Manual test: filter by policy type (Motor, Endowment, House, Commercial)</task>
+      <task id="36">Testing - Manual test: filter by status (Active, Lapsed, Renewed)</task>
+      <task id="37">Testing - Manual test: verify results update with search/filter</task>
+      <task id="38">Testing - Manual test: click result row navigates to Policy Detail</task>
+      <task id="39">Testing - Manual test: pagination (next/prev buttons, page indicator)</task>
+      <task id="40">Testing - Manual test: sort by clicking column headers</task>
+      <task id="41">Testing - Performance test: search/filter loads in &lt; 2 seconds</task>
+      <task id="42">Testing - Performance test: grid renders 20 rows smoothly</task>
+      <task id="43">Testing - API test: verify HTTP GET request with correct parameters</task>
+      <task id="44">Testing - API test: verify response mapped to grid rows correctly</task>
+      <task id="45">Testing - Error test: verify error handling if API fails</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">
+      <title>Search &amp; Filter Form</title>
+      <requirements>
+        <req>Search input field with placeholder "Search by policy number or customer"</req>
+        <req>Policy Type filter dropdown: All, Motor, Endowment, House, Commercial</req>
+        <req>Status filter dropdown: All, Active, Lapsed, Renewed</req>
+        <req>Search/Filter button (or auto-filter on change)</req>
+        <req>Loading indicator while fetching results</req>
+        <req>API call: GET /api/v1/policies?search={query}&amp;type={type}&amp;status={status}&amp;page=0&amp;size=20</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="2">
+      <title>Results Grid (Vaadin Grid)</title>
+      <requirements>
+        <req>Displays results in table with columns: Policy ID, Customer Name, Policy Type, Status, Premium Amount, Created Date</req>
+        <req>Grid sorted by Policy ID (default)</req>
+        <req>Sortable columns (click header to sort)</req>
+        <req>Click row → navigates to Policy Detail page (Story 3.8)</req>
+        <req>Customer Name column displays linked customer name</req>
+        <req>Policy Type column shows abbreviation (M, E, H, C) with full name in tooltip</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="3">
+      <title>Pagination</title>
+      <requirements>
+        <req>Results limited to 20 per page</req>
+        <req>Pagination controls: Previous/Next buttons or page selector</req>
+        <req>Current page indicator (e.g., "Page 1 of 10")</req>
+        <req>Clicking pagination updates grid</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="4">
+      <title>Empty State</title>
+      <requirements>
+        <req>No search executed initially (show placeholder message)</req>
+        <req>Search with no results shows "No policies found"</req>
+        <req>Message suggests trying different filters</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="5">
+      <title>Performance</title>
+      <requirements>
+        <req>Search/filter results load in &lt; 2 seconds</req>
+        <req>Grid renders 20 rows smoothly</req>
+        <req>Pagination responsive</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="6">
+      <title>User Experience</title>
+      <requirements>
+        <req>Search field focused on page load (ready to type)</req>
+        <req>Enter key triggers search</req>
+        <req>Filter dropdowns default to "All" (show all results)</req>
+        <req>Responsive layout (full-width grid on mobile)</req>
+        <req>Accessible: proper labels, keyboard navigation</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="7">
+      <title>Type-Specific Display</title>
+      <requirements>
+        <req>Policy Type column clearly shows type abbreviation (M, E, H, C) with full name in tooltip</req>
+        <req>Future story (3.8) can show type-specific details on detail page</req>
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic 3 Vaadin Frontend - Story 3.7</title>
+        <section>Policy List Page with Vaadin Grid</section>
+        <snippet>Similar to customer list but for policies with type filtering. Vaadin Grid showing policies. Filter by type (Motor, Endowment, House, Commercial). Filter by status (Active, Renewed, Lapsed). Linked customer column. Action buttons: View, Edit, Delete.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/epic-3-stories-summary.md</path>
+        <title>Epic 3 Stories Summary - Story 3.7</title>
+        <section>Tier 3: Policy Management (Ready for Development)</section>
+        <snippet>Vaadin Grid showing policies with columns: ID, Customer, Type, Status, Premium, Created. Filter by type and status dropdowns. Search by policy number or customer name. Sortable columns, pagination (20 per page).</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/stories/3-4-customer-search-list.md</path>
+        <title>Story 3.4: Customer Search and List Page - Reference</title>
+        <section>Similar UI Pattern Implementation</section>
+        <snippet>Reference implementation for similar list/search grid pattern. Use same Vaadin Grid approach, similar filter/search form structure, pagination pattern for consistency.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>System Architecture - Vaadin Grid and Data Loading</title>
+        <section>Vaadin Grid with Lazy Data Provider</section>
+        <snippet>Lazy data provider pattern for efficient pagination. ClientSortedProvider or ServerSortedProvider for sorting. Responsive layout using Flex and responsive utilities.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/Policy.java</path>
+        <kind>entity</kind>
+        <symbol>Policy</symbol>
+        <reason>Policy entity structure with type enum (MOTOR, ENDOWMENT, HOUSE, COMMERCIAL), status, premium amount. Need to understand fields displayed in grid.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/PolicyType.java</path>
+        <kind>enum</kind>
+        <symbol>PolicyType</symbol>
+        <reason>Enum with MOTOR, ENDOWMENT, HOUSE, COMMERCIAL values. Used for filter dropdown options and type abbreviation display (M, E, H, C).</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/PolicyStatus.java</path>
+        <kind>enum</kind>
+        <symbol>PolicyStatus</symbol>
+        <reason>Enum with status values (ACTIVE, LAPSED, RENEWED). Used for status filter dropdown.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/api/controller/PolicyController.java</path>
+        <kind>controller</kind>
+        <symbol>PolicyController</symbol>
+        <reason>Provides GET /api/v1/policies endpoint with query/filter/pagination parameters. Primary API for this story's grid data loading.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/api/dto/PolicyListResponse.java</path>
+        <kind>dto</kind>
+        <symbol>PolicyListResponse</symbol>
+        <reason>Response DTO for policy list API. Should include: { data: [...], pagination: { limit, offset, total, hasMore } }</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-frontend/src/main/java/com/example/ui/views/PolicyListPage.java</path>
+        <kind>view</kind>
+        <symbol>PolicyListPage</symbol>
+        <reason>Main page component to create. Route: @Route("/policies")</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-frontend/src/main/java/com/example/ui/views/CustomerListPage.java</path>
+        <kind>view</kind>
+        <symbol>CustomerListPage</symbol>
+        <reason>Reference implementation for similar list/search/filter/pagination pattern. Study structure, API calls, grid configuration.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-frontend/src/main/java/com/example/ui/components/PolicyGridDataProvider.java</path>
+        <kind>component</kind>
+        <symbol>PolicyGridDataProvider</symbol>
+        <reason>Lazy data provider for efficient grid loading. Should be created or reused for handling pagination, sorting, filtering at data layer.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-frontend/src/main/resources/application.yml</path>
+        <kind>configuration</kind>
+        <symbol>theme.color, theme.spacing</symbol>
+        <reason>Material Design 3 theme configuration. Apply consistent colors and spacing used in other Vaadin pages.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <java>
+        <package name="vaadin-spring-boot-starter" version="24+">Vaadin framework with Spring Boot integration</package>
+        <package name="spring-boot-starter-web" version="3.4+">Spring Web for REST client calls</package>
+        <package name="vaadin-core" version="24+">Vaadin Grid, ComboBox, TextField, Button components</package>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <title>Grid Pattern Consistency</title>
+      <description>Follow same Vaadin Grid pattern as Story 3.4 (Customer List) for consistency. Use similar search form structure, filter dropdowns, pagination controls, and responsive layout.</description>
+    </constraint>
+
+    <constraint>
+      <title>Lazy Data Loading</title>
+      <description>Use lazy data provider pattern to efficiently handle potentially large policy datasets. Grid should not load all policies at once. Implement ClientSortedProvider or ServerSortedProvider for sorting.</description>
+    </constraint>
+
+    <constraint>
+      <title>Policy Type Display</title>
+      <description>Display policy types as abbreviations (M=Motor, E=Endowment, H=House, C=Commercial) with full name in tooltip for space efficiency. Use PolicyType enum for filter dropdown options.</description>
+    </constraint>
+
+    <constraint>
+      <title>Customer Link Integration</title>
+      <description>Customer Name column should display customer name as clickable link (RouterLink) to customer detail page if needed. Requires customer ID in policy API response.</description>
+    </constraint>
+
+    <constraint>
+      <title>Filter Defaults</title>
+      <description>Status and Type filter dropdowns must default to "All" to show all results initially. Policy List can be searched/filtered or browsed without initial search.</description>
+    </constraint>
+
+    <constraint>
+      <title>API Query Parameters</title>
+      <description>API call must pass: search (policy number or customer name), type (policy type filter), status (policy status filter), page (0-indexed), size (20 records per page), sortBy, sortOrder.</description>
+    </constraint>
+
+    <constraint>
+      <title>Material Design 3 Styling</title>
+      <description>Apply Material Design 3 theme consistent with other Vaadin pages. Status badges should use color (if used). Icons for sort direction indicators. Responsive spacing and sizing.</description>
+    </constraint>
+
+    <constraint>
+      <title>Responsive Design</title>
+      <description>Full-width grid on mobile. Consider collapsing columns on small screens if needed (optional, but recommended). Touch-friendly button sizes. Vertical scrolling for wide tables.</description>
+    </constraint>
+
+    <constraint>
+      <title>Accessibility WCAG 2.1 AA</title>
+      <description>Proper labels on form inputs. Grid with proper headers. Keyboard navigation (Tab, Enter, Escape). Focus indicators visible. Aria labels where appropriate.</description>
+    </constraint>
+
+    <constraint>
+      <title>Navigation to Detail</title>
+      <description>Row click or View action must navigate to Story 3.8 (Policy Detail page). Use Vaadin Router to navigate to /policies/{policyId}.</description>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Policy List Search API</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/v1/policies?search={query}&amp;type={type}&amp;status={status}&amp;page={page}&amp;size={size}&amp;sortBy={field}&amp;sortOrder={asc|desc}</signature>
+      <path>genapp-backend/src/main/java/com/example/api/controller/PolicyController.java</path>
+      <description>Primary API for loading policy grid data. Returns paginated results with total count. Supports search by policy number or customer name, filtering by type and status, sorting, and pagination.</description>
+    </interface>
+
+    <interface>
+      <name>Vaadin Grid</name>
+      <kind>UI Component</kind>
+      <signature>Grid&lt;Policy&gt; with LazyDataProvider</signature>
+      <path>genapp-frontend/src/main/java/com/example/ui/views/PolicyListPage.java</path>
+      <description>Main data table component. Supports lazy loading, sorting, column resizing. Populate with policy data from API.</description>
+    </interface>
+
+    <interface>
+      <name>Vaadin Router</name>
+      <kind>Navigation API</kind>
+      <signature>getUI().ifPresent(ui -&gt; ui.navigate(...)), RouterLink, @Route</signature>
+      <path>genapp-frontend/src/main/java/com/example/ui/views/PolicyListPage.java</path>
+      <description>Navigation from row click to Policy Detail page (/policies/{policyId}). Route for Policy List page: @Route("/policies")</description>
+    </interface>
+
+    <interface>
+      <name>ComboBox (Filter Dropdowns)</name>
+      <kind>UI Component</kind>
+      <signature>ComboBox&lt;PolicyType&gt;, ComboBox&lt;PolicyStatus&gt;</signature>
+      <path>genapp-frontend/src/main/java/com/example/ui/views/PolicyListPage.java</path>
+      <description>Filter dropdown components for type and status. Populated with enum values. Default selection "All" (null or special ALL value).</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Integration tests calling backend GET /api/v1/policies endpoint with various query parameters. Manual UI testing for search, filtering, sorting, pagination. API mock testing with @MockBean. Responsive design tested on multiple breakpoints. Performance testing to ensure &lt; 2s load time and smooth rendering of 20 rows.
+    </standards>
+
+    <locations>
+      <location>genapp-backend/src/test/java/com/example/api/controller/PolicyControllerTest.java</location>
+      <location>genapp-frontend/src/test/java/com/example/ui/views/PolicyListPageTest.java</location>
+      <location>genapp-frontend/src/test/java/com/example/ui/components/PolicyGridDataProviderTest.java</location>
+    </locations>
+
+    <ideas>
+      <idea criteria="1">Test search input field accepts policy number and customer name</idea>
+      <idea criteria="1">Test type filter dropdown shows Motor, Endowment, House, Commercial options</idea>
+      <idea criteria="1">Test status filter dropdown shows Active, Lapsed, Renewed options</idea>
+      <idea criteria="1">Test loading indicator displays while fetching results</idea>
+      <idea criteria="1">Test API call includes correct query parameters</idea>
+      <idea criteria="2">Verify grid displays columns: ID, Customer, Type, Status, Premium, Created</idea>
+      <idea criteria="2">Verify grid default sort by Policy ID ascending</idea>
+      <idea criteria="2">Verify sorting by clicking column headers (toggle asc/desc)</idea>
+      <idea criteria="2">Verify customer name displays in grid</idea>
+      <idea criteria="2">Verify policy type abbreviation (M, E, H, C) displays with tooltip</idea>
+      <idea criteria="2">Verify row click navigates to Policy Detail page</idea>
+      <idea criteria="3">Test pagination: 20 rows per page limit</idea>
+      <idea criteria="3">Test pagination controls: previous/next buttons</idea>
+      <idea criteria="3">Test page indicator "Page X of Y"</idea>
+      <idea criteria="3">Test pagination updates grid when changed</idea>
+      <idea criteria="4">Test initial load shows placeholder message (no search executed)</idea>
+      <idea criteria="4">Test search with no results shows "No policies found" message</idea>
+      <idea criteria="4">Test empty state suggests trying different filters</idea>
+      <idea criteria="5">Performance: search/filter loads in &lt; 2 seconds</idea>
+      <idea criteria="5">Performance: grid renders 20 rows smoothly</idea>
+      <idea criteria="5">Performance: pagination responsive without lag</idea>
+      <idea criteria="6">Test search field focused on page load</idea>
+      <idea criteria="6">Test Enter key triggers search</idea>
+      <idea criteria="6">Test filter dropdowns default to "All"</idea>
+      <idea criteria="6">Test responsive layout on mobile (full-width grid)</idea>
+      <idea criteria="6">Test keyboard navigation (Tab, arrow keys in grid)</idea>
+    </ideas>
+  </tests>
+</story-context>

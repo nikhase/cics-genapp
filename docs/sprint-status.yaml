@@ -75,8 +75,8 @@ development_status:
   3-6-customer-create-edit-page-with-vaadin-form: review  # Implementation complete 2025-11-04 - Ready for code review
   3-7-policy-list-page-with-vaadin-grid: ready-for-dev  # NEW (was component library)
   3-8-policy-detail-page-with-vaadin-display-components: ready-for-dev  # NEW (was API integration)
-  3-9-test-data-setup-and-seed-database: drafted  # NEW - Test data for realistic testing
-  3-10-customer-list-overview-page-with-vaadin-grid: drafted  # NEW - Customer list/overview matching SSC1 screen functionality
+  3-9-test-data-setup-and-seed-database: ready-for-dev  # Story context created 2025-11-04
+  3-10-customer-list-overview-page-with-vaadin-grid: ready-for-dev  # Story context created 2025-11-04
   epic-3-retrospective: optional
 
   # EPIC 4: Parallel Run Validation Framework

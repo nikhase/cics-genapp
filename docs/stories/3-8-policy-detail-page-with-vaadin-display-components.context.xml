@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>8</storyId>
+    <title>Policy Detail Page with Vaadin Display Components</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-04</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-8-policy-detail.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Customer Service Agent</asA>
+    <iWant>to view full details of a selected policy including customer information and type-specific attributes</iWant>
+    <soThat>I can understand policy coverage, terms, and customer relationship</soThat>
+    <tasks>
+      <task id="1">Create Policy Detail Page Component - Create PolicyDetailPage.java with route /policies/{id}</task>
+      <task id="2">Create Policy Detail Page Component - Extract policy ID from Vaadin RouteParameters</task>
+      <task id="3">Create Policy Detail Page Component - Set page title to policy number (e.g., "Policy POL-001234 - Details")</task>
+      <task id="4">Implement API Integration - Call GET /api/v1/policies/{id} on page load</task>
+      <task id="5">Implement API Integration - Handle 404 "Policy not found" error</task>
+      <task id="6">Implement API Integration - Handle API error gracefully</task>
+      <task id="7">Implement Basic Policy Display - Display policy ID, type, customer name, status</task>
+      <task id="8">Implement Basic Policy Display - Display premium amount, start date, end date, created/updated dates</task>
+      <task id="9">Implement Type-Specific Display - Motor: Vehicle Registration, Vehicle Model, Coverage Type</task>
+      <task id="10">Implement Type-Specific Display - Endowment: Maturity Date, Bonus Rate, Fund Value</task>
+      <task id="11">Implement Type-Specific Display - House: Property Address, Coverage Limit, Deductible</task>
+      <task id="12">Implement Type-Specific Display - Commercial: Business Type, Coverage Limit, Deductible</task>
+      <task id="13">Implement Customer Link - Customer name displayed as clickable link</task>
+      <task id="14">Implement Customer Link - Link navigates to Customer Detail page (Story 3.5)</task>
+      <task id="15">Implement Customer Link - Optionally display customer contact info (phone, email)</task>
+      <task id="16">Implement Action Buttons - "Edit Policy" button → navigates to Policy Create/Edit page</task>
+      <task id="17">Implement Action Buttons - "Back" button → returns to Policy List page (Story 3.7)</task>
+      <task id="18">Implement Action Buttons - "Delete Policy" button (optional, grayed out if active)</task>
+      <task id="19">Implement Loading State - Spinner overlay while fetching policy data</task>
+      <task id="20">Implement Error State - "Policy not found" message if API returns 404</task>
+      <task id="21">Implement Error State - "Unable to load policy" message with retry button on error</task>
+      <task id="22">Implement Responsive Layout - Desktop: 2-column (basic left, type-specific right)</task>
+      <task id="23">Implement Responsive Layout - Mobile: 1-column (stacked vertically)</task>
+      <task id="24">Implement Responsive Layout - All text readable without horizontal scrolling</task>
+      <task id="25">Implement Breadcrumbs - Display path: Dashboard > Policies > POL-001234</task>
+      <task id="26">Implement Styling - Material Design 3 theme</task>
+      <task id="27">Testing - Manual test with Motor policy (basic + type-specific fields)</task>
+      <task id="28">Testing - Manual test with Endowment policy (basic + type-specific fields)</task>
+      <task id="29">Testing - Manual test with House policy (basic + type-specific fields)</task>
+      <task id="30">Testing - Manual test with Commercial policy (basic + type-specific fields)</task>
+      <task id="31">Testing - Error case: invalid policy ID in URL</task>
+      <task id="32">Testing - Error case: API failure</task>
+      <task id="33">Testing - Responsive design: desktop, tablet, mobile layouts</task>
+      <task id="34">Testing - Customer link navigates to detail page</task>
+      <task id="35">Testing - Back button returns to policy list</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">
+      <title>Policy Details Display</title>
+      <requirements>
+        <req>Page routed to /policies/{id} (Vaadin routing parameter)</req>
+        <req>Calls backend API: GET /api/v1/policies/{id}</req>
+        <req>Displays policy information in read-only form: ID, Type, Customer Name, Status, Premium Amount, Start Date, End Date, Created Date, Last Updated Date</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="2">
+      <title>Type-Specific Attributes</title>
+      <requirements>
+        <req>Motor: Vehicle Registration, Vehicle Model, Coverage Type</req>
+        <req>Endowment: Maturity Date, Bonus Rate, Fund Value</req>
+        <req>House: Property Address, Coverage Limit, Deductible</req>
+        <req>Commercial: Business Type, Coverage Limit, Deductible</req>
+        <req>Type-specific fields displayed in separate section (clearly labeled)</req>
+        <req>Backend API returns type-specific fields based on policy type</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="3">
+      <title>Customer Link</title>
+      <requirements>
+        <req>Customer name displayed as clickable link</req>
+        <req>Link navigates to Customer Detail page (Story 3.5)</req>
+        <req>Customer contact information displayed (optional): phone, email</req>
+        <req>"View Customer" button as alternative to link</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="4">
+      <title>Action Buttons</title>
+      <requirements>
+        <req>"Edit Policy" button → navigates to Policy Create/Edit page (future story)</req>
+        <req>"Back" button → returns to Policy List page (Story 3.7)</req>
+        <req>"Delete Policy" button (optional, grayed out if policy is active)</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="5">
+      <title>Loading &amp; Error States</title>
+      <requirements>
+        <req>Loading indicator while fetching policy data</req>
+        <req>If policy not found: "Policy not found" message</req>
+        <req>If API error: "Unable to load policy, please try again" message</req>
+        <req>Type-specific data loads after basic policy details</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="6">
+      <title>Responsive Layout</title>
+      <requirements>
+        <req>Desktop: 2-column layout (policy details on left, type-specific on right)</req>
+        <req>Tablet/Mobile: 1-column layout (stacked vertically)</req>
+        <req>All text readable and accessible on all devices</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="7">
+      <title>User Experience</title>
+      <requirements>
+        <req>Page title updates to policy number (e.g., "Policy POL-001234 - Details")</req>
+        <req>Breadcrumbs show navigation path: Dashboard > Policies > POL-001234</req>
+        <req>All information readable without scrolling horizontally (mobile-friendly)</req>
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic 3 Vaadin Frontend - Story 3.8</title>
+        <section>Policy Detail Page with Vaadin Display Components</section>
+        <snippet>Read-only policy detail view showing type-specific attributes (Motor registration, Endowment term, House address, etc.). Linked customer reference with navigation. Navigation buttons (Back, Edit, Delete).</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/epic-3-stories-summary.md</path>
+        <title>Epic 3 Stories Summary - Story 3.8</title>
+        <section>Tier 3: Policy Management (Ready for Development) - Story 3.8</section>
+        <snippet>Read-only policy detail view showing all policy fields including type-specific attributes. Type-specific sections (Motor registration, Endowment term, etc.). Linked customer reference. Edit/Delete buttons.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/data-models.md</path>
+        <title>Data Models - Policy Entity</title>
+        <section>Policy Entity Structure</section>
+        <snippet>Policy entity with fields: id, type (enum: MOTOR, ENDOWMENT, HOUSE, COMMERCIAL), customerId, status, premiumAmount, startDate, endDate. Type-specific subtables with polymorphic fields via REDEFINES pattern.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>System Architecture - Vaadin UI Patterns</title>
+        <section>Read-Only Display Components and Routing</section>
+        <snippet>Vaadin FormLayout for read-only display. RouteParameters for extracting URL parameters. ResponsiveLayout for desktop/mobile. Material Design 3 theme.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/Policy.java</path>
+        <kind>entity</kind>
+        <symbol>Policy</symbol>
+        <reason>Policy entity defines basic structure (id, type, customerId, status, premium, dates). Need to understand all fields to display correctly.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/PolicyType.java</path>
+        <kind>enum</kind>
+        <symbol>PolicyType</symbol>
+        <reason>Defines policy type enum (MOTOR, ENDOWMENT, HOUSE, COMMERCIAL). Used for conditional rendering of type-specific fields.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/Motor.java</path>
+        <kind>entity</kind>
+        <symbol>Motor</symbol>
+        <reason>Motor-specific policy fields (vehicleRegistration, vehicleModel, coverageType). Loaded separately based on policy type.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/Endowment.java</path>
+        <kind>entity</kind>
+        <symbol>Endowment</symbol>
+        <reason>Endowment-specific policy fields (maturityDate, bonusRate, fundValue).</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/House.java</path>
+        <kind>entity</kind>
+        <symbol>House</symbol>
+        <reason>House-specific policy fields (propertyAddress, coverageLimit, deductible).</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/Commercial.java</path>
+        <kind>entity</kind>
+        <symbol>Commercial</symbol>
+        <reason>Commercial-specific policy fields (businessType, coverageLimit, deductible).</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/api/controller/PolicyController.java</path>
+        <kind>controller</kind>
+        <symbol>PolicyController</symbol>
+        <reason>Provides GET /api/v1/policies/{id} endpoint that returns policy details + type-specific fields. This is primary API for this story.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/api/dto/PolicyDetailResponse.java</path>
+        <kind>dto</kind>
+        <symbol>PolicyDetailResponse</symbol>
+        <reason>Response DTO for policy detail API. Includes basic policy fields + type-specific fields (Motor, Endowment, House, Commercial).</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-frontend/src/main/java/com/example/ui/views/PolicyDetailPage.java</path>
+        <kind>view</kind>
+        <symbol>PolicyDetailPage</symbol>
+        <reason>Page component to create. Reference CustomerDetailPage (Story 3.5) for similar read-only detail page pattern.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-frontend/src/main/java/com/example/ui/views/CustomerDetailPage.java</path>
+        <kind>view</kind>
+        <symbol>CustomerDetailPage</symbol>
+        <reason>Reference implementation for detail page pattern (routing, API call, error handling, responsive layout).</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <java>
+        <package name="vaadin-spring-boot-starter" version="24+">Vaadin framework with Spring Boot integration</package>
+        <package name="spring-boot-starter-web" version="3.4+">Spring Web for REST client calls</package>
+        <package name="vaadin-core" version="24+">Vaadin FormLayout, RouterLink, Button, Badge components</package>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <title>Polymorphic Type-Specific Fields</title>
+      <description>Policy detail must handle four different policy types (MOTOR, ENDOWMENT, HOUSE, COMMERCIAL) with distinct type-specific fields. Use conditional rendering based on policy.type enum. Display type-specific section only if policy is that type.</description>
+    </constraint>
+
+    <constraint>
+      <title>Read-Only Display</title>
+      <description>All fields must be displayed as read-only (no inline editing). Use Vaadin read-only FormLayout or Labels. Editing will be implemented in future Policy Edit story.</description>
+    </constraint>
+
+    <constraint>
+      <title>Vaadin Routing with Parameters</title>
+      <description>Use Vaadin @Route("/policies/{id}") with RouteParameters to extract policy ID from URL. Convert parameter to UUID for API call.</description>
+    </constraint>
+
+    <constraint>
+      <title>Material Design 3 Styling</title>
+      <description>Follow Material Design 3 color palette and spacing. Ensure consistent styling with other Vaadin pages (Story 3.5 Customer Detail for pattern).</description>
+    </constraint>
+
+    <constraint>
+      <title>Responsive 2-Column to 1-Column</title>
+      <description>Desktop layout: 2-column (basic details left, type-specific right). Mobile (&lt;768px): 1-column (stacked vertically). All text readable without horizontal scrolling.</description>
+    </constraint>
+
+    <constraint>
+      <title>Customer Navigation</title>
+      <description>Customer name must be clickable link (RouterLink) to /customers/{customerId}. Must include customerId in policy API response to enable navigation.</description>
+    </constraint>
+
+    <constraint>
+      <title>Breadcrumb Navigation</title>
+      <description>Display breadcrumb path: Dashboard > Policies > {Policy Number}. Breadcrumbs should be clickable to navigate back.</description>
+    </constraint>
+
+    <constraint>
+      <title>Error Handling</title>
+      <description>Handle 404 "Policy not found", API errors, and network failures gracefully with user-friendly messages and retry options.</description>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Policy Detail API</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/v1/policies/{policyId}</signature>
+      <path>genapp-backend/src/main/java/com/example/api/controller/PolicyController.java</path>
+      <description>Retrieve full policy details including basic fields and type-specific attributes. Response includes policy type to enable conditional rendering in UI.</description>
+    </interface>
+
+    <interface>
+      <name>Vaadin Router</name>
+      <kind>Navigation API</kind>
+      <signature>@Route("/policies/{id}"), RouteParameters, RouterLink</signature>
+      <path>genapp-frontend/src/main/java/com/example/ui/views/PolicyDetailPage.java</path>
+      <description>Page routing and navigation. Extract policy ID from URL parameter, navigate to customer detail on link click, navigate back to policy list on back button.</description>
+    </interface>
+
+    <interface>
+      <name>Vaadin FormLayout</name>
+      <kind>UI Component</kind>
+      <signature>FormLayout with read-only fields (TextField, Label, Badge)</signature>
+      <path>genapp-frontend/src/main/java/com/example/ui/views/PolicyDetailPage.java</path>
+      <description>Display policy details in organized form-like layout. Use read-only TextFields or Labels for display.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Integration tests calling backend GET /api/v1/policies/{id} endpoint with various policy types. Manual UI testing with different policy types to verify type-specific fields display correctly. Error case testing with invalid ID and API failures. Responsive design tested on desktop/tablet/mobile breakpoints.
+    </standards>
+
+    <locations>
+      <location>genapp-backend/src/test/java/com/example/api/controller/PolicyControllerTest.java</location>
+      <location>genapp-frontend/src/test/java/com/example/ui/views/PolicyDetailPageTest.java</location>
+    </locations>
+
+    <ideas>
+      <idea criteria="1">Test page loads with valid policy ID - all basic fields display correctly</idea>
+      <idea criteria="1">Test API call includes correct policy ID from URL parameter</idea>
+      <idea criteria="1">Test API response correctly mapped to page fields</idea>
+      <idea criteria="2">Test Motor policy - vehicle registration, model, coverage type display</idea>
+      <idea criteria="2">Test Endowment policy - maturity date, bonus rate, fund value display</idea>
+      <idea criteria="2">Test House policy - property address, coverage limit, deductible display</idea>
+      <idea criteria="2">Test Commercial policy - business type, coverage limit, deductible display</idea>
+      <idea criteria="2">Test type-specific section clearly distinct from basic details</idea>
+      <idea criteria="3">Test customer name displays as clickable link</idea>
+      <idea criteria="3">Test clicking customer name navigates to /customers/{customerId}</idea>
+      <idea criteria="3">Test customer contact info (phone, email) displays if available</idea>
+      <idea criteria="4">Test "Back" button navigates to /policies (policy list)</idea>
+      <idea criteria="4">Test "Edit Policy" button navigates to policy edit page</idea>
+      <idea criteria="4">Test "Delete Policy" button behavior (optional)</idea>
+      <idea criteria="5">Test loading spinner displays while fetching data</idea>
+      <idea criteria="5">Test 404 error displays "Policy not found" message</idea>
+      <idea criteria="5">Test API error displays "Unable to load policy" message with retry</idea>
+      <idea criteria="6">Test desktop layout: 2-column (basic left, type-specific right)</idea>
+      <idea criteria="6">Test mobile layout (&lt;768px): 1-column stacked vertically</idea>
+      <idea criteria="6">Test all text readable without horizontal scrolling on mobile</idea>
+      <idea criteria="7">Test page title shows policy number (e.g., "Policy POL-001234 - Details")</idea>
+      <idea criteria="7">Test breadcrumbs display path: Dashboard > Policies > POL-001234</idea>
+    </ideas>
+  </tests>
+</story-context>

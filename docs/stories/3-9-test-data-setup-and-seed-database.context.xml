@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>9</storyId>
+    <title>Test Data Setup and Seed Database</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-04</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-9-test-data-setup-and-seed-database.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>QA Engineer / Test Administrator</asA>
+    <iWant>to seed the development and test databases with realistic customer test data</iWant>
+    <soThat>I can perform comprehensive testing of the customer management UI without manually creating records</soThat>
+    <tasks>
+      <task id="1">Prepare Test Data - Create test customer CSV with 15-20 realistic records</task>
+      <task id="2">Prepare Test Data - Validate data conforms to API validation rules</task>
+      <task id="3">Prepare Test Data - Document test data IDs and key attributes</task>
+      <task id="4">Create Seed Scripts - Write SQL migration V3__seed_test_customers.sql</task>
+      <task id="5">Create Seed Scripts - Make script idempotent (upsert or delete-before-insert)</task>
+      <task id="6">Create Seed Scripts - Test script runs without errors</task>
+      <task id="7">Documentation - Create docs/test-data.md with test customer reference</task>
+      <task id="8">Documentation - Update README with seeding instructions</task>
+      <task id="9">Documentation - Add test data section to development guide</task>
+      <task id="10">Testing / Validation - Verify test data appears in UI after seeding</task>
+      <task id="11">Testing / Validation - Test search queries return expected customers</task>
+      <task id="12">Testing / Validation - Test pagination with seeded data</task>
+      <task id="13">Testing / Validation - Test reset/re-seed capability</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">
+      <title>Test Data File Created</title>
+      <requirements>
+        <req>CSV file (test-customers.csv) created with 15-20 realistic customer records</req>
+        <req>Columns: firstName, lastName, email, phone, dateOfBirth, address, city, state, zipCode</req>
+        <req>Sample data representing diverse demographics (various ages, names, locations)</req>
+        <req>Data conforms to API validation rules (valid email format, phone format, age 18+)</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="2">
+      <title>Data Seeding Script</title>
+      <requirements>
+        <req>SQL/Flyway migration script (V3__seed_test_customers.sql) created</req>
+        <req>Script inserts test data into PostgreSQL CUSTOMER table via API or SQL</req>
+        <req>Script is idempotent (safe to run multiple times)</req>
+        <req>All customers created with status = ACTIVE</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="3">
+      <title>Test Data Quantity</title>
+      <requirements>
+        <req>Minimum 15 customers inserted to allow meaningful search/pagination testing</req>
+        <req>Mix of first/last name variations (common names, uncommon names, international names)</req>
+        <req>Email addresses follow pattern: test.customer.N@example.com (or realistic variations)</req>
+        <req>Phone numbers include different formats (some with dashes, some without, different country codes)</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="4">
+      <title>Accessible Test Accounts</title>
+      <requirements>
+        <req>Test data can be accessed via customer search API or directly in UI</req>
+        <req>Sample queries documented: Find all customers should return 15-20 results</req>
+        <req>Search by last name "Smith" should return at least 2 customers</req>
+        <req>Search by email domain "example.com" should return all test customers</req>
+        <req>Search by status "ACTIVE" should return all 15-20 customers</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="5">
+      <title>Documentation</title>
+      <requirements>
+        <req>README section created documenting how to seed test data</req>
+        <req>List of test customer records with their IDs (for reference in tests)</req>
+        <req>Instructions for resetting test data (clear existing, re-seed)</req>
+        <req>Example test data shown in docs/test-data.md</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="6">
+      <title>Data Reset Capability</title>
+      <requirements>
+        <req>Script allows clearing test data and re-seeding (for test isolation)</req>
+        <req>Optional: cleanup script that can remove all test data added by seed script</req>
+        <req>Development team can reset test database to clean state for CI/CD</req>
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown - Epic 3 Vaadin Frontend</title>
+        <section>Story 3.9: Test Data Setup and Seed Database</section>
+        <snippet>Create test data setup story to populate dev/test database with realistic customer test data for comprehensive testing of the customer management UI.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/epic-3-stories-summary.md</path>
+        <title>Epic 3 Stories Summary</title>
+        <section>Tier 4: Test Data &amp; Customer Functionalities (Newly Drafted) - Story 3.9</section>
+        <snippet>Populate dev/test database with realistic customer test data. Flyway migration script. Test data documentation with sample queries. Data reset capability for test isolation.</snippet>
+      </doc>
+
+      <doc>
+        <path>base/src/main/resources/db/migration</path>
+        <title>Flyway Database Migrations Location</title>
+        <section>Database Migration Scripts</section>
+        <snippet>Flyway automatically runs migration scripts named V{number}__{description}.sql on database initialization. Script should be idempotent for safety.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/data-models.md</path>
+        <title>Data Models Documentation</title>
+        <section>Customer Entity Schema</section>
+        <snippet>Customer table structure with fields: id (UUID), firstName, lastName, email, phone, dateOfBirth, address, city, state, zipCode, status (ACTIVE/INACTIVE), createdAt, updatedAt.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/Customer.java</path>
+        <kind>entity</kind>
+        <symbol>Customer</symbol>
+        <reason>Defines customer entity schema that test data will populate. Need to understand required fields and validation constraints.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/api/controller/CustomerController.java</path>
+        <kind>controller</kind>
+        <symbol>CustomerController</symbol>
+        <reason>Provides GET /api/v1/customers endpoint that test data should be queryable through. Used to verify seeding works.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/resources/application-dev.yml</path>
+        <kind>configuration</kind>
+        <symbol>spring.flyway</symbol>
+        <reason>Database migration configuration for development environment. Determines where migration scripts are located and how they execute.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/resources/application-test.yml</path>
+        <kind>configuration</kind>
+        <symbol>spring.flyway</symbol>
+        <reason>Test environment database configuration. Test data should be seeded in test database via Flyway migrations.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <java>
+        <package name="spring-boot-starter-data-jpa" version="3.4+">Required for database interaction and ORM</package>
+        <package name="postgresql" version="16+">PostgreSQL JDBC driver for database connectivity</package>
+        <package name="flyway-core" version="9.0+">Database migration management framework</package>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <title>Data Validation Rules</title>
+      <description>All test customer records must conform to API validation rules defined in Story 2.1 (Customer Domain Model): firstName/lastName required and 1-100 chars, email required and valid format, phone optional but must match pattern if provided, dateOfBirth optional but must be age 18+, zipCode optional but 5-6 digits.</description>
+    </constraint>
+
+    <constraint>
+      <title>Idempotent Script Requirement</title>
+      <description>SQL seed script must be safe to run multiple times without causing errors or duplicate data. Use UPSERT syntax or DELETE-before-INSERT pattern to ensure idempotency.</description>
+    </constraint>
+
+    <constraint>
+      <title>Flyway Migration Convention</title>
+      <description>Migration script must follow Flyway naming convention: V{number}__{description}.sql (e.g., V3__seed_test_customers.sql). Place in base/src/main/resources/db/migration/ directory.</description>
+    </constraint>
+
+    <constraint>
+      <title>Test Data Status</title>
+      <description>All test customers must be created with status = ACTIVE to enable testing of active customer scenarios. Inactive customer testing is separate.</description>
+    </constraint>
+
+    <constraint>
+      <title>No Production Data</title>
+      <description>Test data must use example.com email domain and clearly identifiable test names/IDs. Ensure test data never gets promoted to production environment.</description>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Customer Search API</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/v1/customers?search={query}&amp;status={status}&amp;page={page}&amp;size={size}</signature>
+      <path>genapp-backend/src/main/java/com/example/api/controller/CustomerController.java</path>
+      <description>Search API for verifying test data can be queried. Test data should appear in search results after seeding.</description>
+    </interface>
+
+    <interface>
+      <name>Customer Create API</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/v1/customers</signature>
+      <path>genapp-backend/src/main/java/com/example/api/controller/CustomerController.java</path>
+      <description>Create API for Option B seeding approach (CSV upload + script). Can be used to verify API client error handling during bulk data creation.</description>
+    </interface>
+
+    <interface>
+      <name>Flyway Database Migration</name>
+      <kind>Database migration framework</kind>
+      <signature>V{version}__{description}.sql</signature>
+      <path>base/src/main/resources/db/migration/</path>
+      <description>Framework for managing database schema changes and data seeding. Automatically executes migration scripts on application startup.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Test data seeding should follow integration testing standards: test data created at database layer via migration scripts, not through API calls (to avoid dependency on Story 2.2). Manual UI testing will verify data appears and is searchable. Data reset for test isolation should use transaction rollback or separate test database. SQL migration scripts should be validated to run without errors on both fresh and existing databases.
+    </standards>
+
+    <locations>
+      <location>genapp-backend/src/main/resources/db/migration/</location>
+      <location>genapp-backend/src/test/resources/</location>
+      <location>scripts/ (for any shell scripts for manual seeding)</location>
+    </locations>
+
+    <ideas>
+      <idea criteria="1">Verify test-customers.csv contains 15-20 records with valid email, phone, dateOfBirth conforming to validation rules</idea>
+      <idea criteria="2">Execute migration script on fresh database - verify no errors, all records inserted with ACTIVE status</idea>
+      <idea criteria="2">Execute migration script on database with existing data - verify idempotency (no duplicates, no errors)</idea>
+      <idea criteria="3">Check data diversity: verify at least 5 different last names, at least 2 customers with Smith last name</idea>
+      <idea criteria="4">Query API: GET /api/v1/customers?search=smith - verify returns 2+ results</idea>
+      <idea criteria="4">Query API: GET /api/v1/customers?status=ACTIVE - verify returns all 15-20 customers</idea>
+      <idea criteria="4">Query API: GET /api/v1/customers?search=example.com - verify returns all test customers</idea>
+      <idea criteria="5">Verify README.md documents seeding instructions and test data reset</idea>
+      <idea criteria="5">Verify docs/test-data.md exists with customer ID reference</idea>
+      <idea criteria="6">Test reset capability: execute migration, verify data exists, clear data, re-seed, verify data reappears</idea>
+      <idea criteria="6">Test pagination: seed data and verify pagination works correctly with 15-20 records</idea>
+    </ideas>
+  </tests>
+</story-context>

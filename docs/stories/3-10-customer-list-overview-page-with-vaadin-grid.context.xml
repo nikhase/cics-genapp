@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>10</storyId>
+    <title>Customer Lookup &amp; List Overview Page (SSC1-based)</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-04</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-10-customer-list-overview-page-with-vaadin-grid.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Customer Service Agent</asA>
+    <iWant>to quickly look up a customer by number/name AND see an overview list of all customers</iWant>
+    <soThat>I can navigate to the specific customer I need to manage using either direct lookup or browsing</soThat>
+    <tasks>
+      <task id="1">Create Customer List Page Component - Create CustomerListPage.java with route /customers/list</task>
+      <task id="2">Create Customer List Page Component - Extend VerticalLayout with Vaadin components</task>
+      <task id="3">Create Customer List Page Component - Configure Grid columns (ID, Name, Email, Phone, Status, Created, Actions)</task>
+      <task id="4">Implement Search and Filter Controls - Create search input field with 300ms debounce</task>
+      <task id="5">Implement Search and Filter Controls - Create status filter dropdown (All / Active / Inactive)</task>
+      <task id="6">Implement Search and Filter Controls - Implement Search and Clear buttons</task>
+      <task id="7">Implement Search and Filter Controls - Wire filters to update URL query parameters</task>
+      <task id="8">Implement Grid Data Loading - Create CustomerGridDataProvider (lazy data provider)</task>
+      <task id="9">Implement Grid Data Loading - Call GET /api/v1/customers with query params</task>
+      <task id="10">Implement Grid Data Loading - Handle pagination (limit, offset)</task>
+      <task id="11">Implement Grid Data Loading - Handle sorting (click column header)</task>
+      <task id="12">Implement Grid Data Loading - Show loading spinner while fetching</task>
+      <task id="13">Implement Grid Data Loading - Show error state if API fails</task>
+      <task id="14">Implement Action Buttons - View button → navigate to /customers/{customerId}</task>
+      <task id="15">Implement Action Buttons - Edit button → navigate to /customers/{customerId}?mode=edit</task>
+      <task id="16">Implement Action Buttons - Delete button → show confirmation dialog → call DELETE API → refresh grid</task>
+      <task id="17">Implement Pagination Controls - Rows per page selector (10, 25, 50)</task>
+      <task id="18">Implement Pagination Controls - Previous/Next buttons with boundary checks</task>
+      <task id="19">Implement Pagination Controls - Page indicator ("Page X of Y")</task>
+      <task id="20">Implement Pagination Controls - Jump-to-page input</task>
+      <task id="21">Implement Pagination Controls - Total count display</task>
+      <task id="22">Styling and Responsiveness - Apply Material Design theme (matches 3-1 theme setup)</task>
+      <task id="23">Styling and Responsiveness - Status badge colors (green/gray)</task>
+      <task id="24">Styling and Responsiveness - Responsive layout (mobile: collapse to Name, Status, Actions)</task>
+      <task id="25">Styling and Responsiveness - Hover effects on rows</task>
+      <task id="26">Styling and Responsiveness - Focus styles for keyboard navigation</task>
+      <task id="27">Accessibility - Add ARIA labels to buttons and badges</task>
+      <task id="28">Accessibility - Test with screen reader (NVDA/JAWS)</task>
+      <task id="29">Accessibility - Keyboard navigation (Tab, Enter, Escape)</task>
+      <task id="30">Accessibility - Focus indicators visible on all interactive elements</task>
+      <task id="31">Testing - Unit tests for CustomerListPage component</task>
+      <task id="32">Testing - Integration test: load page, verify grid displays test data</task>
+      <task id="33">Testing - Test search functionality with test data (search by name, email, phone)</task>
+      <task id="34">Testing - Test pagination (next/prev buttons, row count)</task>
+      <task id="35">Testing - Test delete confirmation dialog and API call</task>
+      <task id="36">Testing - Test empty state (when no customers)</task>
+      <task id="37">Testing - Test error handling (API failure)</task>
+      <task id="38">Testing - Test responsive layout on mobile</task>
+      <task id="39">Documentation - Update README with customer list page description</task>
+      <task id="40">Documentation - Document component structure and dependencies</task>
+      <task id="41">Documentation - Add screenshot/demo to development guide</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">
+      <title>Quick Lookup Panel (SSC1 Option 1)</title>
+      <requirements>
+        <req>Lookup panel displays prominently at top of page</req>
+        <req>Two input options: Customer Number (numeric 10-digit) OR Customer Name (text search)</req>
+        <req>Lookup button executes search</req>
+        <req>Found customer → Navigate directly to detail page</req>
+        <req>Not found → Show "Customer not found" error message</req>
+        <req>Matches SSC1 Option 1 workflow (enter number/name → view record)</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="2">
+      <title>Grid Display</title>
+      <requirements>
+        <req>Vaadin Grid displays columns: ID, Name, Email, Phone, Status, Created, Actions</req>
+        <req>Columns sortable by clicking header (sort direction indicator shown)</req>
+        <req>Default sort: Last Name (ASC)</req>
+        <req>Status badges: green for ACTIVE, gray for INACTIVE</req>
+        <req>ID truncated to first 8 characters</req>
+        <req>Date formatted as YYYY-MM-DD</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="3">
+      <title>Search and Filter Controls</title>
+      <requirements>
+        <req>Search input field with debounce (300ms)</req>
+        <req>Searches across firstName, lastName, email, phone (substring match, case-insensitive)</req>
+        <req>Status filter dropdown: All Customers / ACTIVE Only / INACTIVE Only (default All)</req>
+        <req>Search button to execute search</req>
+        <req>Clear button to reset all filters</req>
+        <req>URL reflects state: /customers/list?query=smith&amp;status=ACTIVE&amp;sort=lastName&amp;page=0</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="4">
+      <title>Pagination Controls</title>
+      <requirements>
+        <req>Rows per page dropdown: 10, 25, 50 (default 25)</req>
+        <req>Previous/Next buttons (disabled at boundaries)</req>
+        <req>Page indicator: "Page X of Y"</req>
+        <req>Jump-to-page control (text input)</req>
+        <req>Total count: "Showing 25 of 1,234 customers"</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="5">
+      <title>Action Buttons</title>
+      <requirements>
+        <req>View button → Navigate to /customers/{customerId}</req>
+        <req>Edit button → Navigate to /customers/{customerId}?mode=edit</req>
+        <req>Delete button → Soft-delete with confirmation dialog</req>
+        <req>Delete confirmation shows customer name and ID</req>
+        <req>On delete confirm: call DELETE API, show success, refresh grid</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="6">
+      <title>States and Error Handling</title>
+      <requirements>
+        <req>Loading: Spinner overlay while fetching data</req>
+        <req>Empty: "No customers found. Create your first customer." with link to create page</req>
+        <req>Error: Red alert banner with retry button if API fails</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="7">
+      <title>Responsiveness</title>
+      <requirements>
+        <req>Desktop: all columns visible in 2-column logical layout</req>
+        <req>Tablet/Mobile (&lt; 768px): columns collapse to Name, Status, Actions</req>
+        <req>ID, Email, Phone hidden on mobile (available in detail view)</req>
+        <req>Action buttons: text buttons on desktop, icon buttons on mobile</req>
+        <req>Vertical scrolling for long tables</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="8">
+      <title>Accessibility</title>
+      <requirements>
+        <req>ARIA labels on all buttons and badges</req>
+        <req>Keyboard navigation: Tab through grid, Enter to select, Escape to close dialogs</req>
+        <req>Focus indicators visible on all interactive elements</req>
+        <req>Status badges: aria-label="Active" / "Inactive"</req>
+        <req>Grid announced as table with proper headers to screen readers</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="9">
+      <title>API Integration</title>
+      <requirements>
+        <req>GET /api/v1/customers?query=...&amp;status=...&amp;limit=...&amp;offset=...&amp;sortBy=...&amp;sortOrder=...</req>
+        <req>Response format: { data: [...], pagination: { limit, offset, total, hasMore } }</req>
+        <req>DELETE /api/v1/customers/{customerId} (soft-delete)</req>
+        <req>Handle 401 (redirect to login) and 403 (permission error)</req>
+      </requirements>
+    </criterion>
+
+    <criterion id="10">
+      <title>Performance</title>
+      <requirements>
+        <req>Page loads in &lt; 2 seconds for typical datasets (1K-10K customers)</req>
+        <req>Grid renders &lt; 500ms for each page load</req>
+        <req>Search responds in &lt; 1 second</req>
+        <req>Pagination works smoothly without full page refresh</req>
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/3270screens/SSC1-Customer-Menu.md</path>
+        <title>SSC1 Customer Menu - 3270 Terminal Screen Specification</title>
+        <section>Legacy Screen Interface</section>
+        <snippet>Original 3270 terminal screen showing customer lookup (Option 1), add (Option 2), and update (Option 4) workflows. Vaadin implementation modernizes this hybrid menu/lookup interface.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic 3 Vaadin Frontend - Story 3.10</title>
+        <section>Story 3.10: Customer Lookup &amp; List Overview Page</section>
+        <snippet>Customer lookup form + comprehensive list/overview matching SSC1 legacy screen functionality. Quick lookup by customer number or name. Full grid with search, filter, sort, pagination.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/epic-3-stories-summary.md</path>
+        <title>Epic 3 Stories Summary - Story 3.10</title>
+        <section>Tier 4: Test Data &amp; Customer Functionalities</section>
+        <snippet>Customer lookup form with tabbed interface (by number or name). Full customer grid with search across name/email/phone, status filter, sorting, pagination. View/Edit/Delete actions with confirmation dialogs.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>System Architecture - Frontend Design Patterns</title>
+        <section>Vaadin UI Components and Data Loading</section>
+        <snippet>Vaadin Grid with lazy data providers for efficient pagination. Material Design 3 theme customization. Responsive layouts using Flex and responsive utilities.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/domain/Customer.java</path>
+        <kind>entity</kind>
+        <symbol>Customer</symbol>
+        <reason>Customer entity defines fields displayed in grid (firstName, lastName, email, phone, dateOfBirth, status). Need to understand structure for mapping API response to grid.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/api/controller/CustomerController.java</path>
+        <kind>controller</kind>
+        <symbol>CustomerController</symbol>
+        <reason>Provides GET /api/v1/customers endpoint with query/pagination/sort parameters. Also provides DELETE endpoint for soft-delete. This is the primary API for this story.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-backend/src/main/java/com/example/api/dto/CustomerSearchResponse.java</path>
+        <kind>dto</kind>
+        <symbol>CustomerSearchResponse</symbol>
+        <reason>Response DTO for search API. Need to understand response structure: { data: [...], pagination: { limit, offset, total, hasMore } }</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-frontend/src/main/java/com/example/ui/views</path>
+        <kind>directory</kind>
+        <symbol>View Components</symbol>
+        <reason>Location for CustomerListPage view component. Reference Story 3.3 (DashboardPage) and Story 3.5 (CustomerDetailPage) for similar Vaadin page structures.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-frontend/src/main/java/com/example/ui/components</path>
+        <kind>directory</kind>
+        <symbol>Reusable Components</symbol>
+        <reason>Location for CustomerGridDataProvider, SearchFilterBar, PaginationControls components that could be reused in other stories.</reason>
+      </artifact>
+
+      <artifact>
+        <path>genapp-frontend/src/main/resources/application.yml</path>
+        <kind>configuration</kind>
+        <symbol>theme.color, theme.spacing</symbol>
+        <reason>Material Design 3 theme configuration. Need to use consistent colors (green #4CAF50 for active, gray #757575 for inactive) and spacing (16px padding, 56px row height).</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <java>
+        <package name="vaadin-spring-boot-starter" version="24+">Vaadin framework with Spring Boot integration</package>
+        <package name="spring-boot-starter-web" version="3.4+">Spring Web for REST client calls</package>
+        <package name="vaadin-core" version="24+">Vaadin Grid, Dialog, TextField, ComboBox components</package>
+        <package name="spring-boot-starter-security" version="3.4+">Authentication context for API calls</package>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <title>SSC1 Functional Mapping</title>
+      <description>This story implements a modernized Vaadin version of the SSC1 3270 terminal screen. The quick lookup panel must support SSC1 Option 1 workflow (Customer Inquiry: enter number/name → view record). Map to existing customer detail/edit stories for navigation targets.</description>
+    </constraint>
+
+    <constraint>
+      <title>Vaadin Grid Data Provider</title>
+      <description>Use lazy data provider pattern to efficiently handle pagination and large datasets. Grid should not load all customers at once. Implement ClientSortedProvider or ServerSortedProvider to delegate sort/filter to backend API.</description>
+    </constraint>
+
+    <constraint>
+      <title>Material Design 3 Styling</title>
+      <description>Follow Material Design 3 color palette and spacing standards. Status badge colors: ACTIVE=#4CAF50 (green), INACTIVE=#757575 (gray), buttons primary=#1976D2, secondary=#6C757D. Row height 56px, padding 16px, column spacing 8px.</description>
+    </constraint>
+
+    <constraint>
+      <title>Responsive Layout</title>
+      <description>Grid must collapse on mobile (&lt;768px) to show only Name, Status, Actions columns. ID, Email, Phone hidden on mobile. Test on various breakpoints: phone (&lt;480px), tablet (480-768px), desktop (&gt;768px).</description>
+    </constraint>
+
+    <constraint>
+      <title>URL Query State</title>
+      <description>Search, filter, sort, and pagination state must be reflected in URL query parameters. URL: /customers/list?query={query}&amp;status={status}&amp;sort={field}&amp;order={asc|desc}&amp;page={n}&amp;size={n}. Enable bookmarking and back-button support.</description>
+    </constraint>
+
+    <constraint>
+      <title>Accessibility WCAG 2.1 AA</title>
+      <description>All interactive elements require ARIA labels. Grid must be announced as table with proper headers. Keyboard navigation: Tab/Shift+Tab, Enter to select, Escape to close. Focus indicators must be visible (outline or highlight). Test with screen readers.</description>
+    </constraint>
+
+    <constraint>
+      <title>Delete Soft-Delete Confirmation</title>
+      <description>Delete action must show confirmation dialog with customer name and ID before calling API. Prevent accidental deletion. Confirmation dialog: "Are you sure you want to delete this customer? {Name (ID)}" with Cancel and Delete buttons.</description>
+    </constraint>
+
+    <constraint>
+      <title>Test Data Dependency</title>
+      <description>This story depends on Story 3-9 (Test Data Setup) for realistic testing. Coordinate to ensure test data is seeded before manual testing of this story's grid and search functionality.</description>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Customer Search API</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/v1/customers?query={query}&amp;status={status}&amp;limit={limit}&amp;offset={offset}&amp;sortBy={field}&amp;sortOrder={asc|desc}</signature>
+      <path>genapp-backend/src/main/java/com/example/api/controller/CustomerController.java</path>
+      <description>Primary API for loading customer grid data. Returns paginated results with total count for pagination controls. Supports search, filtering by status, sorting, and pagination.</description>
+    </interface>
+
+    <interface>
+      <name>Customer Delete API</name>
+      <kind>REST endpoint</kind>
+      <signature>DELETE /api/v1/customers/{customerId}</signature>
+      <path>genapp-backend/src/main/java/com/example/api/controller/CustomerController.java</path>
+      <description>Soft-delete API for customer records. Called after user confirms delete action in dialog. Returns 200 OK or 204 No Content on success, 404 if not found.</description>
+    </interface>
+
+    <interface>
+      <name>Vaadin Router</name>
+      <kind>Navigation API</kind>
+      <signature>getUI().ifPresent(ui -&gt; ui.navigate(...)), RouterLink, route parameters</signature>
+      <path>genapp-frontend/src/main/java/com/example/ui/views/</path>
+      <description>Navigation between pages: View button to /customers/{customerId}, Edit button to /customers/{customerId}?mode=edit. Lookup panel to detail page on found customer.</description>
+    </interface>
+
+    <interface>
+      <name>Vaadin Grid</name>
+      <kind>UI Component</kind>
+      <signature>Grid&lt;Customer&gt; with LazyDataProvider</signature>
+      <path>genapp-frontend/src/main/java/com/example/ui/views/CustomerListPage.java</path>
+      <description>Main data table component. Supports lazy loading, sorting, column resizing, inline actions. Populate with customer data from API using grid.setDataProvider(...).</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Spring Boot integration tests using TestContainers for PostgreSQL. Vaadin component testing via TestBench or manual verification. API mocking with @MockBean for controller tests. UI behavior verified via manual testing with Vaadin application running. Responsive design tested on multiple breakpoints using browser dev tools or device simulation.
+    </standards>
+
+    <locations>
+      <location>genapp-backend/src/test/java/com/example/api/controller/</location>
+      <location>genapp-frontend/src/test/java/com/example/ui/views/</location>
+      <location>genapp-frontend/src/test/java/com/example/ui/components/</location>
+    </locations>
+
+    <ideas>
+      <idea criteria="1">Test lookup panel finds customer by exact customer number (10-digit match)</idea>
+      <idea criteria="1">Test lookup panel finds customer by first name substring match (case-insensitive)</idea>
+      <idea criteria="1">Test lookup panel finds customer by last name substring match</idea>
+      <idea criteria="1">Test lookup returns "Customer not found" error for invalid input</idea>
+      <idea criteria="1">Test found customer navigates to detail page</idea>
+      <idea criteria="2">Verify grid displays correct columns (ID, Name, Email, Phone, Status, Created, Actions)</idea>
+      <idea criteria="2">Verify grid sortable by clicking column header, sort direction indicator shows</idea>
+      <idea criteria="2">Verify default sort is Last Name ascending</idea>
+      <idea criteria="2">Verify status badges display correct colors (green ACTIVE, gray INACTIVE)</idea>
+      <idea criteria="3">Test search debounce (300ms) - no excessive API calls while typing</idea>
+      <idea criteria="3">Test search by name, email, phone (substring match, case-insensitive)</idea>
+      <idea criteria="3">Test status filter shows only active/inactive/all customers</idea>
+      <idea criteria="3">Test clear button resets search and filter</idea>
+      <idea criteria="3">Verify URL query params reflect search state</idea>
+      <idea criteria="4">Test pagination: next/previous buttons, page indicator, jump-to-page</idea>
+      <idea criteria="4">Test rows per page: 10, 25, 50 options</idea>
+      <idea criteria="4">Test boundary conditions: disabled previous on page 1, disabled next on last page</idea>
+      <idea criteria="4">Test total count display accurate</idea>
+      <idea criteria="5">Test View button navigates to detail page</idea>
+      <idea criteria="5">Test Edit button navigates to edit page with ?mode=edit</idea>
+      <idea criteria="5">Test Delete button shows confirmation dialog with customer name</idea>
+      <idea criteria="5">Test delete cancel dismisses dialog</idea>
+      <idea criteria="5">Test delete confirm calls DELETE API and refreshes grid</idea>
+      <idea criteria="6">Test loading spinner displays while fetching data</idea>
+      <idea criteria="6">Test error banner displays if API fails, with retry button</idea>
+      <idea criteria="6">Test empty state displays when no customers, with create link</idea>
+      <idea criteria="7">Test responsive layout: desktop (all columns), tablet (&lt;768px: Name/Status/Actions), mobile (&lt;480px: Name/Actions only)</idea>
+      <idea criteria="7">Test touch-friendly button sizes on mobile</idea>
+      <idea criteria="8">Test ARIA labels on buttons and badges</idea>
+      <idea criteria="8">Test keyboard navigation: Tab through rows, Enter to select, Escape to close dialog</idea>
+      <idea criteria="8">Test focus indicators visible on all interactive elements</idea>
+      <idea criteria="9">Test API call includes correct query parameters</idea>
+      <idea criteria="9">Test API response correctly mapped to grid rows</idea>
+      <idea criteria="9">Test 401 response redirects to login</idea>
+      <idea criteria="9">Test 403 response shows permission error message</idea>
+      <idea criteria="10">Performance: page load &lt; 2 seconds, grid render &lt; 500ms, search &lt; 1 second</idea>
+    </ideas>
+  </tests>
+</story-context>
