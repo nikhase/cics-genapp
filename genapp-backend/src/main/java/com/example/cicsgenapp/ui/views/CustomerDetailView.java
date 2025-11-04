@@ -134,6 +134,12 @@ public class CustomerDetailView extends VerticalLayout implements BeforeEnterObs
             // Convert string ID to UUID for service call
             java.util.UUID id = java.util.UUID.fromString(customerId);
             customer = customerService.getCustomerById(id);
+
+            if (customer == null) {
+                showError("Customer not found");
+                return;
+            }
+
             displayCustomerDetails();
             loadPolicies();
         } catch (IllegalArgumentException e) {
@@ -152,19 +158,23 @@ public class CustomerDetailView extends VerticalLayout implements BeforeEnterObs
     private void displayCustomerDetails() {
         detailsContainer.removeAll();
 
-        // Main layout with responsive columns
-        HorizontalLayout mainLayout = new HorizontalLayout();
+        // Main layout with responsive columns (2-column on desktop, 1-column on mobile)
+        VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.setWidthFull();
         mainLayout.setSpacing(true);
-        mainLayout.addClassNames(LumoUtility.Gap.MEDIUM);
 
-        // Left column: Customer details form
+        // Left column: Customer details form (70% on desktop, 100% on mobile)
         VerticalLayout detailsForm = createCustomerDetailsForm();
+        detailsForm.setWidthFull();
         mainLayout.add(detailsForm);
 
-        // Right column: Action buttons (on desktop, moves below on mobile)
+        // Right column: Action buttons (30% on desktop, 100% on mobile)
         VerticalLayout actionButtonsLayout = createActionButtons();
+        actionButtonsLayout.setWidthFull();
         mainLayout.add(actionButtonsLayout);
+
+        // Apply responsive layout classes (will be handled by client-side CSS)
+        mainLayout.addClassNames(LumoUtility.Gap.MEDIUM);
 
         detailsContainer.add(mainLayout);
         detailsContainer.setVisible(true);
@@ -307,8 +317,20 @@ public class CustomerDetailView extends VerticalLayout implements BeforeEnterObs
 
     private String formatDate(Object date) {
         if (date == null) return "N/A";
-        // TODO: Add proper date formatting with DateTimeFormatter
-        return date.toString();
+
+        try {
+            if (date instanceof java.time.LocalDateTime) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a");
+                return ((java.time.LocalDateTime) date).format(formatter);
+            } else if (date instanceof java.time.LocalDate) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
+                return ((java.time.LocalDate) date).format(formatter);
+            } else {
+                return date.toString();
+            }
+        } catch (Exception e) {
+            return date.toString();
+        }
     }
 
     private void showError(String message) {
