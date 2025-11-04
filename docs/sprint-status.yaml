@@ -68,13 +68,13 @@ development_status:
   # EPIC 3: React Frontend - Authentication & Core UI
   epic-3: backlog
   3-1-react-project-setup-with-vite-and-material-design: ready-for-dev
-  3-2-login-page-and-zitadel-oidc-authentication: drafted
-  3-3-dashboard-page-with-navigation-and-quick-actions: drafted
-  3-4-customer-search-and-list-page: backlog
-  3-5-customer-detail-and-edit-page: backlog
-  3-6-customer-create-page-with-form-wizard: backlog
-  3-7-form-components-and-validation-ui-library: backlog
-  3-8-api-integration-and-client-service-layer: backlog
+  3-2-login-page-and-zitadel-oidc-authentication: ready-for-dev
+  3-3-dashboard-page-with-navigation-and-quick-actions: ready-for-dev
+  3-4-customer-search-and-list-page: ready-for-dev
+  3-5-customer-detail-and-edit-page: ready-for-dev
+  3-6-customer-create-page-with-form-wizard: ready-for-dev
+  3-7-form-components-and-validation-ui-library: ready-for-dev
+  3-8-api-integration-and-client-service-layer: ready-for-dev
   epic-3-retrospective: optional
 
   # EPIC 4: Parallel Run Validation Framework

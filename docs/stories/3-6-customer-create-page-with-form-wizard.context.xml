@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.6</storyId>
+    <title>Customer Create Page with Form Wizard</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-04T10:00:00Z</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-6-customer-create-page-with-form-wizard.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Customer Service Agent</asA>
+    <iWant>to create a new customer using a guided multi-step wizard</iWant>
+    <soThat>I can add customers with minimal errors</soThat>
+    <tasks>
+      <task id="1">Create wizard layout and step management (AC: #1, #2)</task>
+      <task id="2">Implement Step 1 (Basic Info) form (AC: #3, #4, #5)</task>
+      <task id="3">Implement Step 2 (Contact) form</task>
+      <task id="4">Implement Step 3 (Address) form</task>
+      <task id="5">Implement Step 4 (Review) page</task>
+      <task id="6">Implement form state management and navigation (AC: #6, #7, #9)</task>
+      <task id="7">Implement API integration for customer creation (AC: #10)</task>
+      <task id="8">Implement success/error handling and user feedback (AC: #11, #12, #13)</task>
+      <task id="9">Implement accessibility and keyboard support (AC: #14)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Page created at route /customers/create</criterion>
+    <criterion id="2">Multi-step wizard with progress indicator showing Step N of 4</criterion>
+    <criterion id="3">Step 1: Basic Info - first name, last name, date of birth fields with validation</criterion>
+    <criterion id="4">Step 2: Contact - email (required, unique, valid format), phone (optional, valid format)</criterion>
+    <criterion id="5">Step 3: Address - street, city, state (dropdown), zip code (5-6 digits) fields</criterion>
+    <criterion id="6">Step 4: Review - read-only display of all entered data with Edit buttons per section</criterion>
+    <criterion id="7">Form fields with real-time validation feedback, error messages inline</criterion>
+    <criterion id="8">Next button disabled if current step has validation errors</criterion>
+    <criterion id="9">Previous button always enabled (can go back to any step)</criterion>
+    <criterion id="10">Confirm button creates customer via API (POST /api/v1/customers)</criterion>
+    <criterion id="11">Loading state while creating (spinner, button disabled)</criterion>
+    <criterion id="12">Success message with customer ID and options: View Customer, Create Another, Go to Dashboard</criterion>
+    <criterion id="13">Error handling for duplicate email and validation errors with clear messages</criterion>
+    <criterion id="14">Keyboard support: Tab navigation through form, Enter submits (on review step)</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown - EPIC 3: React Frontend - Authentication &amp; Core UI</title>
+        <section>Story 3.6: Customer Create Page with Form Wizard</section>
+        <snippet>Defines multi-step customer creation wizard with 4 steps (Basic Info, Contact, Address, Review), form validation, and success feedback.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-2-customer-create-api-post-api-v1-customers.md</path>
+        <title>Story 2.2: Customer Create API (POST /api/v1/customers)</title>
+        <section>Backend API Request/Response Format</section>
+        <snippet>Defines create customer API request schema with all customer fields, response format with created customer object and metadata.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Documentation</title>
+        <section>Multi-Step Form Patterns</section>
+        <snippet>Documents best practices for multi-step forms: form state management, validation at each step, confirmation screens, and success feedback patterns.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>docs/stories/3-8-api-integration-and-client-service-layer.md</path>
+        <kind>story-context</kind>
+        <symbol>Story 3.8 - API Service Layer</symbol>
+        <reason>Story 3.8 implements CustomerService.createCustomer() method. Story 3.6 depends on this for posting customer creation request.</reason>
+      </artifact>
+      <artifact>
+        <path>docs/stories/3-7-form-components-and-validation-ui-library.md</path>
+        <kind>story-context</kind>
+        <symbol>Story 3.7 - Form Components Library</symbol>
+        <reason>Story 3.7 creates reusable form components used in wizard steps: TextInput, DatePicker, EmailInput, PhoneInput, Select, FormError.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <ecosystem name="node">
+        <package>
+          <name>react</name>
+          <version>^18.2.0</version>
+          <reason>React framework for wizard component and page</reason>
+        </package>
+        <package>
+          <name>react-hook-form</name>
+          <version>^7.45.0</version>
+          <reason>Form state management across wizard steps</reason>
+        </package>
+        <package>
+          <name>@mui/material</name>
+          <version>^5.14.0</version>
+          <reason>Stepper, Step, StepLabel, Button, TextField, Card components</reason>
+        </package>
+        <package>
+          <name>@mui/icons-material</name>
+          <version>^5.14.0</version>
+          <reason>Navigation and step completion icons</reason>
+        </package>
+        <package>
+          <name>typescript</name>
+          <version>^5.2.0</version>
+          <reason>Type safety for form data, step navigation, and customer types</reason>
+        </package>
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <domain>Form State Management</domain>
+      <rule>Use react-hook-form or similar for managing form state across steps. Preserve form data when navigating between steps (don't reset on next/previous).</rule>
+      <source>AC #6, #9</source>
+    </constraint>
+    <constraint>
+      <domain>Step-Level Validation</domain>
+      <rule>Validate current step before allowing Next button. Don't submit entire form until Review step. Allow Previous without validation.</rule>
+      <source>AC #8, #9</source>
+    </constraint>
+    <constraint>
+      <domain>Progress Indicator</domain>
+      <rule>Use MUI Stepper component to show current step. Display "Step N of 4" text. Disable previous steps (user can only go back via Previous button, not by clicking steps).</rule>
+      <source>AC #2</source>
+    </constraint>
+    <constraint>
+      <domain>Review Step</domain>
+      <rule>Review step is read-only. Show all entered data grouped by section (Basic Info, Contact, Address). Provide Edit button for each section to jump back to that step.</rule>
+      <source>AC #6</source>
+    </constraint>
+    <constraint>
+      <domain>Duplicate Email Handling</domain>
+      <rule>If API returns 409 Conflict for duplicate email, show error message: "A customer with this email already exists". Do NOT proceed to success page.</rule>
+      <source>AC #13</source>
+    </constraint>
+    <constraint>
+      <domain>Success Feedback</domain>
+      <rule>After successful creation, show success page with customer ID, three action buttons (View Customer, Create Another, Go to Dashboard). No redirect immediately.</rule>
+      <source>AC #12</source>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>CustomerService.createCustomer API</name>
+      <kind>TypeScript-method</kind>
+      <signature>createCustomer(data: CreateCustomerRequest): Promise&lt;Customer&gt; - posts to POST /api/v1/customers</signature>
+      <path>src/services/CustomerService.ts (Story 3.8)</path>
+      <description>API wrapper for creating new customer. Story 3.6 calls this on Review step confirmation to create customer with all entered data.</description>
+    </interface>
+    <interface>
+      <name>react-hook-form API</name>
+      <kind>npm-library</kind>
+      <signature>useForm, useFieldArray, useWatch hooks for multi-step form management</signature>
+      <path>react-hook-form package</path>
+      <description>Form state management library used to maintain wizard form state across steps, validation, and error handling.</description>
+    </interface>
+    <interface>
+      <name>MUI Stepper Component</name>
+      <kind>react-component</kind>
+      <signature>Stepper, Step, StepLabel from @mui/material for progress indication</signature>
+      <path>@mui/material</path>
+      <description>Material-UI stepper component for displaying multi-step form progress and current step.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests use Jest + React Testing Library. Test each wizard step in isolation, form state persistence across steps, validation at each step, and success/error flows.
+    </standards>
+    <locations>
+      <location>src/pages/__tests__/CustomerCreatePage.test.tsx - Wizard integration tests</location>
+      <location>src/components/__tests__/BasicInfoStep.test.tsx - Step 1 form tests</location>
+      <location>src/components/__tests__/ContactStep.test.tsx - Step 2 form tests</location>
+      <location>src/components/__tests__/AddressStep.test.tsx - Step 3 form tests</location>
+      <location>src/components/__tests__/ReviewStep.test.tsx - Review step tests</location>
+    </locations>
+    <ideas>
+      <idea ac-ref="1">Verify wizard page loads at /customers/create route</idea>
+      <idea ac-ref="2">Verify progress indicator shows "Step 1 of 4" and updates as user navigates</idea>
+      <idea ac-ref="3,4,5">Verify each step renders with correct form fields and labels</idea>
+      <idea ac-ref="7">Verify real-time validation on each field; error messages appear/disappear</idea>
+      <idea ac-ref="8">Verify Next button disabled if current step has validation errors</idea>
+      <idea ac-ref="9">Verify Previous button always enabled; navigating back preserves form data</idea>
+      <idea ac-ref="6">Verify Review step displays all entered data read-only with Edit buttons</idea>
+      <idea ac-ref="10">Verify Confirm button calls API to create customer with all wizard data</idea>
+      <idea ac-ref="11">Verify loading spinner appears while API call in progress</idea>
+      <idea ac-ref="12">Verify success page displays with customer ID and action buttons</idea>
+      <idea ac-ref="13">Verify duplicate email error message displays, stays on Review step</idea>
+      <idea ac-ref="14">Verify keyboard navigation (Tab through fields) and Enter submits on Review step</idea>
+    </ideas>
+  </tests>
+
+</story-context>

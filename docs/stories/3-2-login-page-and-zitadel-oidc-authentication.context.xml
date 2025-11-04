@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.2</storyId>
+    <title>Login Page and Zitadel OIDC Authentication</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-04T10:00:00Z</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-2-login-page-and-zitadel-oidc-authentication.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>User</asA>
+    <iWant>to log in with my corporate credentials via Zitadel OIDC</iWant>
+    <soThat>I can securely access the system without managing passwords</soThat>
+    <tasks>
+      <task id="1">Create login page component at /login route (AC: #1, #2)</task>
+      <task id="2">Implement Zitadel OIDC redirect flow (AC: #3)</task>
+      <task id="3">Create /auth/callback route handler (AC: #5)</task>
+      <task id="4">Implement authorization code exchange with backend (AC: #6, #7)</task>
+      <task id="5">Implement JWT token storage and user context (AC: #8, #9)</task>
+      <task id="6">Create protected route guard and redirect logic (AC: #12)</task>
+      <task id="7">Implement logout functionality (AC: #11)</task>
+      <task id="8">Implement token refresh mechanism (AC: #13)</task>
+      <task id="9">Implement error handling and user feedback (AC: #14)</task>
+      <task id="10">Implement loading states and animations (AC: #15)</task>
+      <task id="11">Test Zitadel integration end-to-end</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Login page created at route /login</criterion>
+    <criterion id="2">Page displays Zitadel logo and "Sign in with corporate SSO" button</criterion>
+    <criterion id="3">Clicking button redirects to Zitadel authorization endpoint with correct parameters (client_id, redirect_uri, response_type=code, scope=openid profile email)</criterion>
+    <criterion id="4">Zitadel handles authentication (username/password or SSO)</criterion>
+    <criterion id="5">After authentication, Zitadel redirects to /auth/callback route with code parameter</criterion>
+    <criterion id="6">Frontend exchanges code for JWT token (via backend: POST /api/v1/auth/callback?code=...)</criterion>
+    <criterion id="7">Backend calls Zitadel's token endpoint to exchange code for JWT</criterion>
+    <criterion id="8">Frontend receives JWT and stores in secure session storage (NOT localStorage)</criterion>
+    <criterion id="9">User context updated with: userId, email, name, roles (from JWT claims)</criterion>
+    <criterion id="10">User redirected to /dashboard on successful login</criterion>
+    <criterion id="11">Logout button clears session storage, redirects to /login</criterion>
+    <criterion id="12">Protected routes check for valid token; redirect to /login if missing or expired</criterion>
+    <criterion id="13">Token refresh: if access token near expiration, automatically refresh via refresh token</criterion>
+    <criterion id="14">Error messages displayed on login failure: "Authentication failed", "Invalid credentials", or "Server error"</criterion>
+    <criterion id="15">Loading state while exchanging code for token (spinner displayed)</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown - EPIC 3: React Frontend - Authentication &amp; Core UI</title>
+        <section>Story 3.2: Login Page and Zitadel OIDC Authentication</section>
+        <snippet>Defines Zitadel OIDC login flow, authentication parameters, JWT token management, and required user context fields including userId, email, name, and roles for access control.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Documentation</title>
+        <section>Frontend Authentication Patterns</section>
+        <snippet>Documents OIDC/OAuth2 authentication patterns, JWT token handling, session storage best practices, and token refresh mechanisms for secure user authentication.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/1-5-oidc-authentication-with-zitadel-integration.md</path>
+        <title>Story 1.5: OIDC Authentication with Zitadel Integration</title>
+        <section>Backend Token Endpoint Implementation</section>
+        <snippet>Defines backend POST /api/v1/auth/callback endpoint that exchanges authorization code for JWT token. Frontend will call this endpoint after Zitadel redirects with code parameter.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Authentication and Security Requirements</section>
+        <snippet>PRD specifies OIDC/Zitadel as authentication provider, JWT token-based API access, role-based access control (customer_service_agent, compliance_officer, admin), and session management requirements.</snippet>
+      </doc>
+      <doc>
+        <path>docs/development-guide.md</path>
+        <title>Development Guide</title>
+        <section>Frontend Setup and Local Development</section>
+        <snippet>Provides guidance on local development environment setup including Node.js, npm, Zitadel dev instance configuration, and development server configuration.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>docs/stories/3-1-react-project-setup-with-vite-and-material-design.md</path>
+        <kind>story-context</kind>
+        <symbol>Story 3.1 - Project Foundation</symbol>
+        <reason>Story 3.1 establishes React project structure, Material-UI setup, React Router configuration. Story 3.2 uses this foundation to create login routes and components.</reason>
+      </artifact>
+      <artifact>
+        <path>docs/stories/1-5-oidc-authentication-with-zitadel-integration.md</path>
+        <kind>backend-story</kind>
+        <symbol>Story 1.5 - Backend Auth Implementation</symbol>
+        <reason>Story 1.5 implements POST /api/v1/auth/callback endpoint that frontend Story 3.2 depends on for code exchange. Understand endpoint signature and response format.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <ecosystem name="node">
+        <package>
+          <name>react</name>
+          <version>^18.2.0</version>
+          <reason>React framework from Story 3.1</reason>
+        </package>
+        <package>
+          <name>react-router-dom</name>
+          <version>^6.8.0</version>
+          <reason>Routing for /login and /auth/callback pages</reason>
+        </package>
+        <package>
+          <name>@mui/material</name>
+          <version>^5.14.0</version>
+          <reason>Material Design components for login page UI</reason>
+        </package>
+        <package>
+          <name>axios</name>
+          <version>^1.6.0</version>
+          <reason>HTTP client for POST /api/v1/auth/callback endpoint (integrated in Story 3.8)</reason>
+        </package>
+        <package>
+          <name>typescript</name>
+          <version>^5.2.0</version>
+          <reason>Type safety for auth context and token handling</reason>
+        </package>
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <domain>Authentication</domain>
+      <rule>JWT tokens MUST be stored in sessionStorage (session-scoped), NOT localStorage (persistent). This ensures tokens are cleared when browser closes.</rule>
+      <source>AC #8, Security Best Practices</source>
+    </constraint>
+    <constraint>
+      <domain>OIDC Flow</domain>
+      <rule>Use Authorization Code Flow (not Implicit). Frontend must include client_id, redirect_uri, response_type=code, scope=openid profile email in authorization request.</rule>
+      <source>AC #3</source>
+    </constraint>
+    <constraint>
+      <domain>Error Handling</domain>
+      <rule>User-friendly error messages must be displayed for: invalid credentials, network failures, token exchange failures. Never expose internal error details.</rule>
+      <source>AC #14</source>
+    </constraint>
+    <constraint>
+      <domain>Route Protection</domain>
+      <rule>Protected routes must check for valid JWT token on each navigation. If token missing or expired, redirect to /login immediately.</rule>
+      <source>AC #12</source>
+    </constraint>
+    <constraint>
+      <domain>Token Refresh</domain>
+      <rule>Implement automatic token refresh before expiration. If refresh fails, force logout and redirect to /login.</rule>
+      <source>AC #13</source>
+    </constraint>
+    <constraint>
+      <domain>User Context</domain>
+      <rule>Extract userId, email, name, roles from JWT claims. Roles determine access control for subsequent stories (audit log, reports, admin sections).</rule>
+      <source>AC #9, Story 3.3</source>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Zitadel Authorization Endpoint</name>
+      <kind>OAuth2-Redirect</kind>
+      <signature>GET {ZITADEL_AUTHORITY}/oauth/v2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=openid+profile+email&state={STATE}</signature>
+      <path>src/services/authService.ts</path>
+      <description>Frontend redirects user to Zitadel for authentication. Zitadel handles login and redirects back to /auth/callback with authorization code.</description>
+    </interface>
+    <interface>
+      <name>Backend Token Exchange Endpoint</name>
+      <kind>REST-POST</kind>
+      <signature>POST /api/v1/auth/callback?code={CODE} → {data: {token: JWT, user: {userId, email, name, roles}}}</signature>
+      <path>N/A (implemented in Story 1.5)</path>
+      <description>Frontend calls backend to exchange authorization code for JWT token. Backend calls Zitadel token endpoint internally, returns JWT to frontend.</description>
+    </interface>
+    <interface>
+      <name>React Context for Authentication</name>
+      <kind>react-context</kind>
+      <signature>AuthContext with provider, useAuth() hook, methods: login(code), logout(), refreshToken()</signature>
+      <path>src/context/AuthContext.tsx</path>
+      <description>Central authentication context for storing JWT token, user info, and auth methods. Consumed by protected route guards and other components needing auth state.</description>
+    </interface>
+    <interface>
+      <name>Protected Route Component</name>
+      <kind>react-component</kind>
+      <signature>ProtectedRoute component that wraps protected pages, checks for valid token, redirects to /login if absent</signature>
+      <path>src/router/ProtectedRoute.tsx</path>
+      <description>Route wrapper that ensures user is authenticated before accessing protected pages. Redirects to /login if token missing or expired.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests use Jest + React Testing Library. Integration tests verify Zitadel redirect and callback flow. Manual testing required with real Zitadel instance.
+    </standards>
+    <locations>
+      <location>src/pages/__tests__/LoginPage.test.tsx - Login page component tests</location>
+      <location>src/context/__tests__/AuthContext.test.tsx - Auth context and hooks tests</location>
+      <location>src/router/__tests__/ProtectedRoute.test.tsx - Protected route guard tests</location>
+      <location>src/services/__tests__/authService.test.ts - Auth service methods tests</location>
+    </locations>
+    <ideas>
+      <idea ac-ref="1,2">Verify login page renders with Zitadel SSO button, no broken links</idea>
+      <idea ac-ref="3">Verify button click constructs correct Zitadel authorization URL with all parameters</idea>
+      <idea ac-ref="5">Verify /auth/callback route is created and can parse code from query string</idea>
+      <idea ac-ref="6">Verify frontend calls backend POST /api/v1/auth/callback with code parameter</idea>
+      <idea ac-ref="8">Verify JWT token stored in sessionStorage, not localStorage</idea>
+      <idea ac-ref="9">Verify JWT claims parsed correctly, user context populated with userId, email, name, roles</idea>
+      <idea ac-ref="10">Verify redirect to /dashboard happens after successful token exchange</idea>
+      <idea ac-ref="11">Verify logout clears sessionStorage and redirects to /login</idea>
+      <idea ac-ref="12">Verify protected routes redirect unauthenticated users to /login</idea>
+      <idea ac-ref="13">Verify token refresh happens automatically before expiration</idea>
+      <idea ac-ref="14">Verify error messages display for failed authentication scenarios</idea>
+      <idea ac-ref="15">Verify loading spinner appears while exchanging code for token</idea>
+    </ideas>
+  </tests>
+
+</story-context>

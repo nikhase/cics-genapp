@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.4</storyId>
+    <title>Customer Search and List Page</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-04T10:00:00Z</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-4-customer-search-and-list-page.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Customer Service Agent</asA>
+    <iWant>to search for customers and see results in a paginated list</iWant>
+    <soThat>I can quickly find customers</soThat>
+    <tasks>
+      <task id="1">Create CustomerSearch page component (AC: #1, #2, #3)</task>
+      <task id="2">Integrate API call to search customers (AC: #4, #9)</task>
+      <task id="3">Implement results data table (AC: #4)</task>
+      <task id="4">Implement pagination controls (AC: #4)</task>
+      <task id="5">Implement actions column (AC: #5)</task>
+      <task id="6">Implement empty state and error states (AC: #6, #8)</task>
+      <task id="7">Implement loading state (AC: #7)</task>
+      <task id="8">Implement responsive design and accessibility (AC: #10, #11)</task>
+      <task id="9">Implement URL state management (AC: #9)</task>
+      <task id="10">Integration testing and performance verification</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Page created at route /customers/search</criterion>
+    <criterion id="2">Search form with query input, status filter dropdown, Search and Clear buttons</criterion>
+    <criterion id="3">Pressing Enter in search input submits search</criterion>
+    <criterion id="4">Results displayed in data table with columns: ID, Name, Email, Phone, Status, Actions. Sortable columns. Pagination controls (Previous/Next, "Page X of Y", rows per page selector)</criterion>
+    <criterion id="5">Actions column with View/Edit buttons and More menu (with delete option and confirmation)</criterion>
+    <criterion id="6">Empty state message if no results: "No customers found. Try different search criteria."</criterion>
+    <criterion id="7">Loading state while fetching (spinner centered on page)</criterion>
+    <criterion id="8">Error message if search fails (with retry button)</criterion>
+    <criterion id="9">URL reflects search state (shareable): /customers/search?query=smith&status=ACTIVE&page=1&limit=50</criterion>
+    <criterion id="10">Performance: &lt; 2s load time for typical searches (use debouncing on search input, 300ms delay)</criterion>
+    <criterion id="11">Accessibility: keyboard navigation, ARIA labels on buttons, screen reader support</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown - EPIC 3: React Frontend - Authentication &amp; Core UI</title>
+        <section>Story 3.4: Customer Search and List Page</section>
+        <snippet>Defines customer search and list UI with pagination, sorting, filtering, and action columns for managing customer records via web interface.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-4-customer-search-list-api-get-api-v1-customers.md</path>
+        <title>Story 2.4: Customer Search/List API (GET /api/v1/customers)</title>
+        <section>Backend API Response Format</section>
+        <snippet>Defines API response schema with pagination info, sorting parameters, and filter options (query, status, limit, offset, sortBy, sortOrder). Frontend consumes this API.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Documentation</title>
+        <section>Data Table and Pagination Patterns</section>
+        <snippet>Documents MUI Table component patterns, pagination best practices, URL state management, and accessibility requirements for data tables.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>docs/stories/3-8-api-integration-and-client-service-layer.md</path>
+        <kind>story-context</kind>
+        <symbol>Story 3.8 - API Service Layer</symbol>
+        <reason>Story 3.8 implements CustomerService.searchCustomers() method. Story 3.4 depends on this API client for fetching search results.</reason>
+      </artifact>
+      <artifact>
+        <path>docs/stories/3-7-form-components-and-validation-ui-library.md</path>
+        <kind>story-context</kind>
+        <symbol>Story 3.7 - Form Components</symbol>
+        <reason>Story 3.7 creates reusable TextInput and Select components used in search form. Story 3.4 reuses these for consistency.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <ecosystem name="node">
+        <package>
+          <name>react</name>
+          <version>^18.2.0</version>
+          <reason>React framework for page component</reason>
+        </package>
+        <package>
+          <name>react-router-dom</name>
+          <version>^6.8.0</version>
+          <reason>useSearchParams hook for URL query parameter management</reason>
+        </package>
+        <package>
+          <name>@mui/material</name>
+          <version>^5.14.0</version>
+          <reason>Table, TablePagination, Button, TextField, Card, CircularProgress components</reason>
+        </package>
+        <package>
+          <name>@mui/icons-material</name>
+          <version>^5.14.0</version>
+          <reason>MoreVert icon for actions menu</reason>
+        </package>
+        <package>
+          <name>lodash</name>
+          <version>^4.17.21</version>
+          <reason>debounce utility for search input</reason>
+        </package>
+        <package>
+          <name>typescript</name>
+          <version>^5.2.0</version>
+          <reason>Type safety for Customer, SearchQuery, and SearchResult types</reason>
+        </package>
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <domain>Search Debouncing</domain>
+      <rule>Debounce search input with 300ms delay to prevent excessive API calls while user is typing.</rule>
+      <source>AC #10</source>
+    </constraint>
+    <constraint>
+      <domain>URL State Management</domain>
+      <rule>Use useSearchParams hook to read/write URL query parameters. Format: ?query=...&status=...&page=...&limit=...&sortBy=...&sortOrder=...</rule>
+      <source>AC #9</source>
+    </constraint>
+    <constraint>
+      <domain>Pagination</domain>
+      <rule>Implement offset-based pagination (not cursor-based). Calculate offset from page number and limit. Provide Previous/Next buttons and rows-per-page selector.</rule>
+      <source>AC #4</source>
+    </constraint>
+    <constraint>
+      <domain>Sorting</domain>
+      <rule>Implement clickable column headers for sorting. Track sortBy (column) and sortOrder (ASC/DESC). Show visual indicator (arrow) on active sort column.</rule>
+      <source>AC #4</source>
+    </constraint>
+    <constraint>
+      <domain>Error Handling</domain>
+      <rule>Display user-friendly error messages with retry button. Don't expose internal error details. Handle network failures, API errors, and validation errors.</rule>
+      <source>AC #8</source>
+    </constraint>
+    <constraint>
+      <domain>Accessibility</domain>
+      <rule>ARIA labels on all interactive elements. Keyboard navigation (Tab through table, Enter to select row). Screen reader support for status badges and action buttons.</rule>
+      <source>AC #11</source>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>CustomerService.searchCustomers API</name>
+      <kind>TypeScript-method</kind>
+      <signature>searchCustomers(query: SearchQuery): Promise&lt;SearchResult&lt;Customer&gt;&gt; - query parameters: {query?, status?, limit, offset, sortBy, sortOrder}</signature>
+      <path>src/services/CustomerService.ts (Story 3.8)</path>
+      <description>API wrapper for GET /api/v1/customers endpoint. Story 3.4 calls this method with search parameters to fetch paginated customer list.</description>
+    </interface>
+    <interface>
+      <name>useSearchParams Hook</name>
+      <kind>react-hook</kind>
+      <signature>const [searchParams, setSearchParams] = useSearchParams() - manages URL query parameters</signature>
+      <path>React Router API</path>
+      <description>React Router hook for reading and writing URL query parameters. Story 3.4 uses this to preserve search state in URL for sharing and bookmarking.</description>
+    </interface>
+    <interface>
+      <name>MUI Table Component</name>
+      <kind>react-component</kind>
+      <signature>Table, TableHead, TableBody, TableCell, TableRow, TablePagination from @mui/material</signature>
+      <path>@mui/material</path>
+      <description>Material-UI table components used to display customer search results with sortable headers and pagination controls.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests use Jest + React Testing Library. Integration tests verify search, sorting, pagination, and error handling. Manual testing for performance (< 2s load time) and accessibility.
+    </standards>
+    <locations>
+      <location>src/pages/__tests__/CustomerSearchPage.test.tsx - Search page integration tests</location>
+      <location>src/components/__tests__/CustomerTable.test.tsx - Table component with sorting/pagination tests</location>
+      <location>src/services/__tests__/CustomerService.test.ts - API service method tests</location>
+    </locations>
+    <ideas>
+      <idea ac-ref="1,2,3">Verify search form renders with query input and filter dropdown; Enter key submits search</idea>
+      <idea ac-ref="4">Verify customer data displays in table with all columns; columns are sortable with visual indicators</idea>
+      <idea ac-ref="4">Verify pagination controls work: Previous/Next navigate pages, rows-per-page selector updates limit</idea>
+      <idea ac-ref="5">Verify View/Edit buttons navigate to customer detail/edit pages; More menu shows delete with confirmation</idea>
+      <idea ac-ref="6">Verify empty state message displays when no search results</idea>
+      <idea ac-ref="7">Verify spinner shows while API call in progress</idea>
+      <idea ac-ref="8">Verify error message and retry button appear on API failure</idea>
+      <idea ac-ref="9">Verify URL reflects current search state and can be shared/bookmarked</idea>
+      <idea ac-ref="10">Measure page load time and API response time; verify debouncing prevents excessive calls</idea>
+      <idea ac-ref="11">Verify keyboard navigation (Tab through table), ARIA labels on buttons, screen reader compatibility</idea>
+    </ideas>
+  </tests>
+
+</story-context>
