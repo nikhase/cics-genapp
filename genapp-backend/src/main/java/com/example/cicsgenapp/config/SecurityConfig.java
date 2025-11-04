@@ -64,25 +64,22 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable()) // Vaadin handles CSRF tokens automatically
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
         .formLogin(form -> form
-            .loginPage("/login")
             .permitAll()
-            .defaultSuccessUrl("/", true)
-            .failureUrl("/login?error"))
+            .defaultSuccessUrl("/", true))
         .logout(logout -> logout
-            .logoutUrl("/logout")
-            .logoutSuccessUrl("/login")
             .permitAll())
         .httpBasic(basic -> {}) // Enable for API access during development
         .authorizeHttpRequests(authz -> authz
             // Public endpoints
-            .requestMatchers("/login", "/logout").permitAll()
+            .requestMatchers("/login").permitAll()
+            .requestMatchers("/logout").permitAll()
             .requestMatchers("/actuator/health", "/actuator/health/live", "/actuator/health/ready")
             .permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
             .permitAll()
             // Vaadin internal resources (VAADIN/* path is used by Vaadin for frontend resources)
             .requestMatchers("/VAADIN/**").permitAll()
-            // Protected endpoints
+            // Protected endpoints - all other paths require authentication
             .anyRequest().authenticated());
 
     return http.build();

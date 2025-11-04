@@ -5,16 +5,19 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
- * LoginView is the login page for CICS GenApp.
+ * Vaadin LoginView for CICS GenApp authentication.
  *
  * <p>Implements Story 3.2 - Login Page with Spring Security Form Authentication.
  * Provides a Vaadin form with username and password fields for user authentication.
@@ -28,27 +31,18 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
  *   <li>Responsive, centered layout using Vaadin Lumo theme
  * </ul>
  *
- * <p><b>Acceptance Criteria (Story 3.2):</b>
- * <ul>
- *   <li>Vaadin form component at route `/login`
- *   <li>Username field with placeholder "Username"
- *   <li>Password field with placeholder "Password"
- *   <li>"Sign In" button (primary action)
- *   <li>Clean, professional appearance with Vaadin Lumo theme
- *   <li>Responsive layout (mobile, tablet, desktop)
- *   <li>Form submission to Spring Security `/login` endpoint
- *   <li>Error message display for failed login attempts
- *   <li>Client-side validation for required fields
- * </ul>
- *
  * @author Development Team
- * @version 1.1.0 (Story 3.2 Implementation)
+ * @version 1.0.0
  */
 @Route("/login")
 @PageTitle("Login - CICS GenApp")
 public class LoginView extends VerticalLayout {
 
-  public LoginView() {
+  private final AuthenticationManager authenticationManager;
+
+  public LoginView(AuthenticationManager authenticationManager) {
+    this.authenticationManager = authenticationManager;
+
     setWidthFull();
     setHeightFull();
     setAlignItems(Alignment.CENTER);
@@ -124,17 +118,40 @@ public class LoginView extends VerticalLayout {
         return;
       }
 
-      // Submit form via HTML form submission (Spring Security will handle)
-      // Note: In a real Vaadin form, we would use FormBinder, but for HTML form
-      // submission compatibility with Spring Security, we submit via JavaScript
-      getElement().executeJs("document.querySelector('form').submit();");
+      // Clear previous errors
+      errorMessage.setVisible(false);
+
+      // Attempt authentication
+      try {
+        UsernamePasswordAuthenticationToken token =
+            new UsernamePasswordAuthenticationToken(usernameField.getValue(),
+                passwordField.getValue());
+        Authentication authentication = authenticationManager.authenticate(token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Redirect to dashboard on success
+        getUI().ifPresent(ui -> ui.navigate("/"));
+      } catch (Exception e) {
+        // Show error message
+        errorMessage.setText("Invalid username or password");
+        errorMessage.setVisible(true);
+        passwordField.clear();
+      }
     });
+
+    // Demo credentials hint
+    Div credentialsHint = new Div();
+    credentialsHint.setText("Demo: admin / admin123 or user / user123");
+    credentialsHint.addClassNames(
+        LumoUtility.FontSize.SMALL,
+        LumoUtility.TextColor.SECONDARY,
+        LumoUtility.Margin.Top.MEDIUM);
 
     // Add fields to form
     loginForm.add(usernameField, passwordField, errorMessage, signInButton);
 
     // Add components to container
-    formContainer.add(formTitle, loginForm);
+    formContainer.add(formTitle, loginForm, credentialsHint);
 
     // Add container to view
     add(title, formContainer);

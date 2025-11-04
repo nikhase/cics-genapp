@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.cicsgenapp.api.CustomerController;
+import com.example.cicsgenapp.config.TestSecurityConfig;
 import com.example.cicsgenapp.dto.CreateCustomerRequest;
 import com.example.cicsgenapp.dto.DeleteCustomerRequest;
 import com.example.cicsgenapp.dto.UpdateCustomerRequest;
@@ -32,6 +33,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,8 +44,13 @@ import org.springframework.test.web.servlet.MvcResult;
  *
  * <p>Tests REST API endpoints for customer creation and retrieval, including happy path,
  * validation errors, duplicate email conflicts, 404 errors, and authorization checks.
+ *
+ * <p><b>Security Testing:</b> Uses TestSecurityConfig to enable RBAC testing with
+ * @WithMockUser annotations. The test security config allows authenticated requests
+ * while enforcing role-based access via @PreAuthorize annotations on controller methods.
  */
 @WebMvcTest(CustomerController.class)
+@Import(TestSecurityConfig.class)
 @DisplayName("Customer Controller Integration Tests")
 class CustomerControllerTest {
 

@@ -162,30 +162,24 @@ logging:
 
 ---
 
-# Test profile - uses H2 in-memory database for fast unit testing
+# Test profile - uses TestContainers PostgreSQL for integration testing
 spring:
   config:
     activate:
       on-profile: test
-  autoconfigure:
-    exclude:
-      - org.springframework.cloud.gateway.config.GatewayClassPathWarningAutoConfiguration$SpringMvcFoundOnClasspathConfiguration
   jpa:
     hibernate:
       ddl-auto: create-drop
     show-sql: false
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://localhost:5432/cicsgenapp_test
+    driver-class-name: org.postgresql.Driver
+    username: test_user
+    password: test_password
     hikari:
       maximum-pool-size: 5
       minimum-idle: 1
-  h2:
-    console:
-      enabled: true
   flyway:
     enabled: false
 
