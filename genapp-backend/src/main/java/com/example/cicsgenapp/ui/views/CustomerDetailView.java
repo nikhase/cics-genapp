@@ -251,6 +251,8 @@ public class CustomerDetailView extends VerticalLayout implements BeforeEnterObs
         );
         layout.add(editButton);
 
+        // Note: CustomerCreateEditView and CustomerEditView handle both /customers/new and /customers/:id/edit routes
+
         // Create Policy button
         Button createPolicyButton = new Button("Create Policy", VaadinIcon.PLUS.create());
         createPolicyButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);

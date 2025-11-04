@@ -79,7 +79,7 @@ docker run --name cics-genapp-postgres \
   -e POSTGRES_PASSWORD=genapp123 \
   -e POSTGRES_DB=cicsgenapp \
   -p 5432:5432 \
-  -d postgres:14-alpine
+  -d postgres:16-alpine
 ```
 
 Verify PostgreSQL is running:
