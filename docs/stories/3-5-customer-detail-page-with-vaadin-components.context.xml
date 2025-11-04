@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="3-5-customer-detail-page-with-vaadin-components" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3-5</storyId>
+    <title>Customer Detail Page with Vaadin Components</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-04</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-5-customer-detail.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Customer Service Agent</asA>
+    <iWant>view full details of a selected customer including name, email, phone, address, and linked policies</iWant>
+    <soThat>I can understand the customer's complete profile and relationship with the company</soThat>
+    <tasks>
+      <task id="3-5-1">Implement CustomerDetailView component with Vaadin routing and URL parameter extraction</task>
+      <task id="3-5-2">Call backend GET /api/v1/customers/{id} API endpoint</task>
+      <task id="3-5-3">Display customer information in read-only Vaadin form (9 fields)</task>
+      <task id="3-5-4">Implement linked policies section with GridPro or Grid component</task>
+      <task id="3-5-5">Add action buttons: Edit Customer, Create Policy, Back, Delete Customer</task>
+      <task id="3-5-6">Implement loading indicator and error state handling</task>
+      <task id="3-5-7">Ensure responsive layout (2-column desktop, 1-column mobile)</task>
+      <task id="3-5-8">Add breadcrumbs and dynamic page title</task>
+      <task id="3-5-9">Write unit and integration tests</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <title>Customer Details Display</title>
+      <requirements>
+        <requirement>Page routed to /customers/{id} using Vaadin routing parameter</requirement>
+        <requirement>Calls backend API GET /api/v1/customers/{id}</requirement>
+        <requirement>Displays read-only form with 9 fields: ID, First Name, Last Name, Email, Phone, Address, Status, Created Date, Last Updated Date</requirement>
+        <requirement>Information displayed in clear, organized layout using Vaadin FormLayout or VerticalLayout</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="AC2">
+      <title>Linked Policies Section</title>
+      <requirements>
+        <requirement>Grid showing all policies linked to customer with columns: Policy ID, Type (Motor/Endowment/House/Commercial), Status (Active/Lapsed/Renewed), Premium Amount, Created Date</requirement>
+        <requirement>Clicking policy row navigates to Policy Detail page (Story 3.8)</requirement>
+        <requirement>Display "No policies found for this customer" if customer has no policies</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="AC3">
+      <title>Action Buttons</title>
+      <requirements>
+        <requirement>"Edit Customer" button → navigates to Story 3.6 with pre-filled customer data</requirement>
+        <requirement>"Create Policy" button → navigates to policy create with customer pre-selected</requirement>
+        <requirement>"Back" button → returns to Customer Search page (Story 3.4)</requirement>
+        <requirement>"Delete Customer" button → optional, grayed out if customer has active policies</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="AC4">
+      <title>Loading &amp; Error States</title>
+      <requirements>
+        <requirement>Loading indicator displayed while fetching customer data</requirement>
+        <requirement>Display "Customer not found" message if API returns 404</requirement>
+        <requirement>Display "Unable to load customer, please try again" message on API errors</requirement>
+        <requirement>Linked policies can load asynchronously after customer details</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="AC5">
+      <title>Responsive Layout</title>
+      <requirements>
+        <requirement>Desktop: 2-column layout (customer details left, policies right)</requirement>
+        <requirement>Tablet/Mobile: 1-column layout (customer details, then policies below)</requirement>
+        <requirement>All text readable and accessible on all screen sizes</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="AC6">
+      <title>User Experience</title>
+      <requirements>
+        <requirement>Page title updates dynamically (e.g., "John Smith - Customer Details")</requirement>
+        <requirement>Breadcrumbs show path: Dashboard > Customers > John Smith</requirement>
+        <requirement>No horizontal scrolling required on mobile devices</requirement>
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/stories/3-1-vaadin-project-setup.md</path>
+        <title>Vaadin Project Setup Story</title>
+        <section>Vaadin Spring Boot integration, routing configuration, layout structure</section>
+        <snippet>Vaadin application is already integrated with Spring Boot, using MainLayout as root component with Navigation sidebar. Routing is configured in MainView.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/3-2-login-page-spring-security.md</path>
+        <title>Login Page &amp; Spring Security</title>
+        <section>Spring Security configuration, authenticated routes, user context</section>
+        <snippet>Spring Security is integrated. Authenticated users can access Vaadin components. Use SecurityContext to retrieve current user information.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/3-4-customer-search-list.md</path>
+        <title>Customer Search &amp; List Page</title>
+        <section>Customer API integration, Grid component usage, navigation patterns</section>
+        <snippet>Story 3.4 implements customer search with GET /api/v1/customers endpoint. Uses Vaadin Grid to display results and navigate to detail pages via UI.getCurrent().navigate().</snippet>
+      </doc>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>Product Requirements Document</title>
+        <section>Customer domain requirements, data model, API specifications</section>
+        <snippet>Customer model includes: id, firstName, lastName, email, phone, address, status, createdDate, updatedDate. Related policies accessible via foreign key relationship.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Vaadin Frontend Architecture, API integration patterns, error handling</section>
+        <snippet>Frontend follows Vaadin Component pattern. API calls via Spring RestTemplate or WebClient in backend service layer. Error responses (4xx, 5xx) handled via try-catch with user-friendly messages.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>genapp-frontend/src/main/java/com/ibm/genapp/ui/views/MainLayout.java</path>
+        <kind>component</kind>
+        <symbol>MainLayout</symbol>
+        <lines>1-150</lines>
+        <reason>Root layout component with navigation sidebar. Reference for consistent layout structure and navigation patterns.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-frontend/src/main/java/com/ibm/genapp/ui/views/CustomerSearchView.java</path>
+        <kind>component</kind>
+        <symbol>CustomerSearchView</symbol>
+        <lines>1-200</lines>
+        <reason>Story 3.4 implementation. Reference for Customer Grid, API integration pattern, and navigation to detail page.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/ibm/genapp/api/controller/CustomerController.java</path>
+        <kind>controller</kind>
+        <symbol>getCustomerById, getAllPoliciesByCustomerId</symbol>
+        <reason>Backend endpoints: GET /api/v1/customers/{id} and GET /api/v1/customers/{id}/policies. Must use these endpoints for detail page.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/ibm/genapp/domain/model/Customer.java</path>
+        <kind>model</kind>
+        <symbol>Customer</symbol>
+        <lines>1-80</lines>
+        <reason>Customer entity model. Contains all fields needed for display: id, firstName, lastName, email, phone, address, status, createdDate, updatedDate.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-backend/src/main/java/com/ibm/genapp/domain/model/Policy.java</path>
+        <kind>model</kind>
+        <symbol>Policy</symbol>
+        <lines>1-100</lines>
+        <reason>Policy entity model for linked policies grid. Fields: id, type, status, premiumAmount, createdDate.</reason>
+      </artifact>
+      <artifact>
+        <path>genapp-frontend/src/main/java/com/ibm/genapp/ui/views/LoginView.java</path>
+        <kind>component</kind>
+        <symbol>LoginView</symbol>
+        <reason>Reference for Vaadin routing without parameters. Use @PageTitle, @Route annotations.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <ecosystem name="maven">
+        <package>com.vaadin:vaadin-core:24.x</package>
+        <package>com.vaadin:vaadin-spring-boot-starter:24.x</package>
+        <package>org.springframework.boot:spring-boot-starter-web</package>
+        <package>org.springframework.boot:spring-boot-starter-security</package>
+        <package>org.springframework.boot:spring-boot-starter-data-jpa</package>
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <category>Architecture</category>
+      <description>Follow Vaadin component-based architecture used in Stories 3.1-3.4. All views extend Composite or View interface.</description>
+    </constraint>
+    <constraint>
+      <category>Routing</category>
+      <description>Use Vaadin @Route annotation with path parameters. Extract customer ID via @RouteParameter or route location handler.</description>
+    </constraint>
+    <constraint>
+      <category>API Integration</category>
+      <description>Call backend REST endpoints via Spring's RestTemplate or WebClient configured in service layer. Handle API errors gracefully with try-catch and user-friendly messages.</description>
+    </constraint>
+    <constraint>
+      <category>Styling</category>
+      <description>Use Vaadin built-in components and Lumo theme. No custom CSS required; use component spacing and layout utilities.</description>
+    </constraint>
+    <constraint>
+      <category>Responsive Design</category>
+      <description>Use Vaadin's ResponsiveStep and HorizontalLayout/VerticalLayout for 2-column (desktop) to 1-column (mobile) layout switching. Test on common screen sizes.</description>
+    </constraint>
+    <constraint>
+      <category>Read-Only Display</category>
+      <description>Customer details should be displayed in read-only mode. Use TextField with setReadOnly(true) or Text component instead of input fields.</description>
+    </constraint>
+    <constraint>
+      <category>Navigation</category>
+      <description>Use UI.getCurrent().navigate() for programmatic navigation. Pass customer ID as route parameter or URL segment.</description>
+    </constraint>
+    <constraint>
+      <category>Error Handling</category>
+      <description>All API calls must handle exceptions. Display Notification or Dialog with error message. Never expose stack traces to user.</description>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/v1/customers/{id}</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/v1/customers/{id} → {id, firstName, lastName, email, phone, address, status, createdDate, updatedDate}</signature>
+      <path>genapp-backend/src/main/java/com/ibm/genapp/api/controller/CustomerController.java:getCustomerById</path>
+    </interface>
+    <interface>
+      <name>GET /api/v1/customers/{id}/policies</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/v1/customers/{id}/policies → [{id, type, status, premiumAmount, createdDate}, ...]</signature>
+      <path>genapp-backend/src/main/java/com/ibm/genapp/api/controller/CustomerController.java:getPoliciesByCustomerId</path>
+    </interface>
+    <interface>
+      <name>Vaadin Route Parameter</name>
+      <kind>component interface</kind>
+      <signature>@Route("customers/:id") with @RouteParameter or BeforeEnterEvent handler</signature>
+      <path>genapp-frontend/src/main/java/com/ibm/genapp/ui/views/CustomerDetailView.java</path>
+    </interface>
+    <interface>
+      <name>Vaadin Grid Column API</name>
+      <kind>component interface</kind>
+      <signature>grid.addColumn(Policy::getId).setHeader("Policy ID").setWidth("100px")</signature>
+      <path>Vaadin framework reference</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      <paragraph>Unit tests use JUnit 5 with Mockito for mocking REST API calls and service layer. Integration tests use Spring @WebMvcTest for controllers and @DataJpaTest for repository layer. Frontend component tests mock the service layer API calls. Error scenarios (404, 500, timeout) are explicitly tested. Acceptance criteria are mapped 1:1 to test methods.</paragraph>
+    </standards>
+    <locations>
+      <location>genapp-frontend/src/test/java/com/ibm/genapp/ui/views/CustomerDetailViewTest.java</location>
+      <location>genapp-backend/src/test/java/com/ibm/genapp/api/controller/CustomerControllerTest.java</location>
+      <location>genapp-backend/src/test/java/com/ibm/genapp/service/CustomerServiceTest.java</location>
+    </locations>
+    <ideas>
+      <idea acId="AC1">Unit test: CustomerDetailView initializes with customer ID from route parameter and calls getCustomerById() API</idea>
+      <idea acId="AC1">Integration test: GET /api/v1/customers/{id} returns correct customer data with 200 status</idea>
+      <idea acId="AC1">Test: Verify all 9 customer fields are displayed in read-only form (no editing possible)</idea>
+      <idea acId="AC2">Unit test: When customer has policies, Grid displays correct columns and is populated</idea>
+      <idea acId="AC2">Unit test: When customer has no policies, empty message "No policies found..." is displayed</idea>
+      <idea acId="AC2">Integration test: GET /api/v1/customers/{id}/policies returns correct policy list</idea>
+      <idea acId="AC3">Unit test: "Edit Customer" button navigates to Story 3.6 with customer data</idea>
+      <idea acId="AC3">Unit test: "Back" button navigates to Customer Search (Story 3.4)</idea>
+      <idea acId="AC4">Unit test: When API returns 404, "Customer not found" message is displayed</idea>
+      <idea acId="AC4">Unit test: When API throws exception, error message "Unable to load customer..." is displayed</idea>
+      <idea acId="AC5">Unit test: Verify responsive layout switches from 2-column to 1-column on screen size change (use Vaadin test utilities)</idea>
+      <idea acId="AC6">Unit test: Page title is set to customer name dynamically</idea>
+      <idea acId="AC6">Unit test: Breadcrumb navigation path includes Dashboard, Customers, and customer name</idea>
+    </ideas>
+  </tests>
+</story-context>

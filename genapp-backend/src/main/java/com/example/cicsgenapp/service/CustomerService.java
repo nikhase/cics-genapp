@@ -394,4 +394,38 @@ public class CustomerService {
 
     return CustomerResponse.from(savedCustomer);
   }
+
+  /**
+   * Retrieves all policies linked to a customer.
+   *
+   * <p>Fetches policies associated with the given customer ID. This method is used by
+   * the Customer Detail View (Story 3.5) to display linked policies.
+   *
+   * <p><strong>Implementation Note:</strong> This is a placeholder method that returns an empty list.
+   * Once the Policy domain model and repository are implemented (Epic 5), this method
+   * should be updated to query the actual policy data from the database.
+   *
+   * @param customerId the customer ID to retrieve policies for
+   * @return List of PolicyResponse objects (currently empty list as placeholder)
+   * @throws ResourceNotFoundException if customer is not found
+   */
+  @Transactional(readOnly = true)
+  public List<?> getPoliciesByCustomerId(UUID customerId) {
+    logger.debug("Retrieving policies for customer with ID: {}", customerId);
+
+    // Verify customer exists
+    if (!customerRepository.existsById(customerId)) {
+      throw new ResourceNotFoundException(
+          "Customer " + customerId + " not found");
+    }
+
+    // TODO: Implement policy retrieval once Policy domain model is available
+    // For now, return empty list to support Story 3.5 frontend UI
+    // Expected implementation:
+    // List<Policy> policies = policyRepository.findByCustomerId(customerId);
+    // return policies.stream().map(PolicyResponse::from).collect(Collectors.toList());
+
+    logger.info("No policies found for customer: {} (Policy feature not yet implemented)", customerId);
+    return List.of();
+  }
 }

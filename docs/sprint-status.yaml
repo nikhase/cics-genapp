@@ -71,7 +71,7 @@ development_status:
   3-2-login-page-with-spring-security-form-authentication: done  # COMPLETED 2025-11-04 (commit f3e93fe)
   3-3-dashboard-page-with-vaadin-navigation-layout: review  # COMPLETED 2025-11-04 - All acceptance criteria met
   3-4-customer-search-and-list-page-with-vaadin-grid: review  # COMPLETED 2025-11-04 - Ready for code review
-  3-5-customer-detail-page-with-vaadin-components: ready-for-dev  # REPLANNED FROM 3-5
+  3-5-customer-detail-page-with-vaadin-components: in-progress  # Dev: Story 3.5 context created, implementation starting
   3-6-customer-create-edit-page-with-vaadin-form: ready-for-dev  # REPLANNED FROM 3-6
   3-7-policy-list-page-with-vaadin-grid: ready-for-dev  # NEW (was component library)
   3-8-policy-detail-page-with-vaadin-display-components: ready-for-dev  # NEW (was API integration)
