@@ -130,9 +130,11 @@ The application supports multiple Spring profiles for different environments:
 
 ### Development Profile (`dev`)
 - **Activation:** `--spring.profiles.active=dev`
-- **Configuration file:** `src/main/resources/application-dev.yml`
+- **Database:** PostgreSQL with Flyway migrations (validate mode)
 - **Features:**
   - Local PostgreSQL database
+  - Flyway manages schema (ddl-auto: validate)
+  - Repeatable test data seeding via R__seed_test_customers.sql
   - Debug logging enabled
   - Security relaxed for local testing
   - Mock authentication disabled
@@ -140,16 +142,17 @@ The application supports multiple Spring profiles for different environments:
 
 ### Test Profile (`test`)
 - **Activation:** `--spring.profiles.active=test`
-- **Configuration file:** `src/main/resources/application-test.yml`
+- **Database:** PostgreSQL with TestContainers (create-drop mode)
 - **Features:**
-  - In-memory H2 database (for testing)
-  - Test data pre-loaded
+  - TestContainers PostgreSQL for isolated integration testing
+  - Flyway disabled (TestContainers owns schema)
+  - Test data managed by migrations
   - Security enabled for testing
   - Used by Maven tests automatically
 
 ### Production Profile (`prod`)
 - **Activation:** `--spring.profiles.active=prod`
-- **Configuration file:** `src/main/resources/application-prod.yml`
+- **Database:** External PostgreSQL with environment variable configuration
 - **Features:**
   - Full security enabled
   - OIDC authentication required
@@ -311,7 +314,7 @@ Username: admin    Password: admin123   (Full access)
 Username: user     Password: user123    (Limited access)
 ```
 
-**Note:** These are for MVP development only. Story 3.2 will implement proper form-based authentication with database-backed users.
+**Note:** These are for MVP development only. The current implementation uses in-memory authentication. Story 3.2 will implement proper form-based authentication with database-backed users.
 
 ### Vaadin Features
 
@@ -388,18 +391,24 @@ The application uses Flyway for database migrations. Migrations are automaticall
 
 ```bash
 # Migrations are in: src/main/resources/db/migration/
-# Format: V1__Initial_schema.sql, V2__Add_customers_table.sql, etc.
+# Versioned migrations (V__): Run once in order, checksum tracked
+#   Format: V1__Initial_schema.sql, V2__Add_customers_table.sql, etc.
+# Repeatable migrations (R__): Re-run whenever checksum changes
+#   Format: R__seed_test_customers.sql, etc.
 ```
+
+**Important:** In dev profile, Hibernate is set to `ddl-auto: validate`, meaning Flyway owns schema management exclusively. Hibernte will only validate the schema exists.
 
 ### Test Data Seeding
 
-The development database is automatically populated with realistic test customer data via Flyway migration `V7__seed_test_customers.sql`. This data includes:
+The development database is automatically populated with realistic test customer data via Flyway repeatable migration `R__seed_test_customers.sql`. This data includes:
 
-- **18 test customer records** with diverse names, locations, and demographics
+- **17 test customer records** with diverse names, locations, and demographics
 - **International names** (German, French, Italian, Spanish) for Unicode support testing
 - **Realistic contact information** (email addresses using @example.com, valid E.164 phone numbers)
 - **Multiple geographic locations** (Oregon cities + one Washington city) for regional testing
 - **All customers marked ACTIVE** for testing active customer scenarios
+- **UPSERT pattern (ON CONFLICT DO UPDATE)** ensures fresh test data on every application startup
 
 #### Using Test Data
 
@@ -415,7 +424,7 @@ The test data is automatically loaded when the application starts. You can use i
 ```sql
 -- Find all test customers
 SELECT COUNT(*) FROM customer WHERE email LIKE '%@example.com';
--- Result: 18 test customers
+-- Result: 17 test customers
 
 -- Search by last name
 SELECT * FROM customer WHERE last_name = 'Smith' AND email LIKE '%@example.com';
@@ -423,21 +432,25 @@ SELECT * FROM customer WHERE last_name = 'Smith' AND email LIKE '%@example.com';
 
 -- Find active test customers
 SELECT COUNT(*) FROM customer WHERE status = 'ACTIVE' AND email LIKE '%@example.com';
--- Result: 18 (all test customers)
+-- Result: 17 (all test customers)
 ```
 
 #### Resetting Test Data
 
-To reset test data during development:
+The repeatable migration (R__ prefix) automatically ensures fresh test data on every application startup. If you need to manually reset:
 
 ```bash
-# Option 1: Delete test data and restart (Flyway will re-seed)
+# Option 1: The easiest way - just restart the application
+# The R__seed_test_customers.sql migration will UPSERT fresh data on startup
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
+
+# Option 2: Manually delete and let Flyway re-seed on restart
 DELETE FROM customer WHERE email LIKE '%@example.com';
+# Restart the application - Flyway will automatically re-seed
 
-# Then restart the application - Flyway will automatically re-seed on startup
-
-# Option 2: Reset specific test customer
+# Option 3: Reset specific test customer
 DELETE FROM customer WHERE customer_id = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid;
+# Restart - repeatable migration will restore it
 ```
 
 **Note:** Do NOT use `flyway:clean` in production. It deletes all migrations and data!
@@ -466,16 +479,16 @@ psql -h localhost -U genapp -d cicsgenapp -W
 
 ## Troubleshooting
 
-### Issue: `mvn clean install` fails with "Java version 17 not found"
+### Issue: `mvn clean install` fails with "Java version 21 not found"
 
-**Solution:** Ensure Java 17+ is installed and `JAVA_HOME` environment variable is set:
+**Solution:** Ensure Java 21 LTS is installed and `JAVA_HOME` environment variable is set:
 
 ```bash
 # On macOS/Linux
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 
 # On Windows
-set JAVA_HOME=C:\Program Files\Java\jdk-17
+set JAVA_HOME=C:\Program Files\Java\jdk-21
 
 # Verify
 java -version
@@ -604,5 +617,13 @@ See `LICENSE` file in the repository root.
 
 ---
 
-**Last Updated:** 2025-11-01
+**Last Updated:** 2025-11-04
 **Maintained by:** Development Team
+
+## Recent Changes
+
+### Database Configuration Fix (Nov 4, 2025)
+- Fixed dev profile to use `ddl-auto: validate` instead of `create-drop` to prevent data loss
+- Replaced versioned migration (V7__seed_test_customers.sql) with repeatable migration (R__seed_test_customers.sql)
+- Implemented UPSERT pattern for fresh test data on every startup
+- Updated documentation to reflect PostgreSQL-only setup (H2 removed)
