@@ -5,6 +5,7 @@
 
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import config from '../config/config';
 import * as authService from '../services/authService';
 
 export interface User {
@@ -43,6 +44,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedToken = sessionStorage.getItem('auth_token');
     const storedRefreshToken = sessionStorage.getItem('refresh_token');
     const storedUser = sessionStorage.getItem('auth_user');
+
+    // Development mode: use mock authentication if no stored session
+    if (!storedToken && config.isDevelopment) {
+      const mockToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLWRldiIsImVtYWlsIjoiZGV2QGdlbmFwcC5sb2NhbCIsIm5hbWUiOiJEZXZlbG9wZXIgVXNlciIsInJvbGVzIjpbImFkbWluIiwiY3VzdG9tZXJfc2VydmljZV9hZ2VudCIsImNvbXBsaWFuY2Vfb2ZmaWNlciJdLCJleHAiOjk5OTk5OTk5OTl9.dev-mock-token';
+      const mockUser: User = {
+        userId: 'user-dev',
+        email: 'dev@genapp.local',
+        name: 'Developer User',
+        roles: ['admin', 'customer_service_agent', 'compliance_officer'],
+      };
+
+      console.info(
+        '%c[DEV MODE] Using mock authentication',
+        'background: #ff9500; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold;'
+      );
+
+      sessionStorage.setItem('auth_token', mockToken);
+      sessionStorage.setItem('auth_user', JSON.stringify(mockUser));
+      setToken(mockToken);
+      setUser(mockUser);
+      setupTokenRefreshInterval(mockToken, null);
+      return;
+    }
 
     if (storedToken && storedUser) {
       try {
