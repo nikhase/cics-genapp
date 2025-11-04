@@ -83,12 +83,12 @@ public class PolicyService {
     var policies = policyPage.map(PolicyResponse::from).getContent();
 
     // Build response with pagination metadata
-    return new PagedResponse<>(
-        policies,
+    PagedResponse.PaginationInfo paginationInfo = new PagedResponse.PaginationInfo(
         limit,
         offset,
         policyPage.getTotalElements(),
         policyPage.hasNext());
+    return new PagedResponse<>(policies, paginationInfo);
   }
 
   /**
