@@ -14,15 +14,16 @@ const generateState = (): string => {
 
 /**
  * Generate PKCE code challenge (optional, for added security)
+ * Note: Currently unused but kept for future PKCE implementation
  */
-const generateCodeChallenge = (): string => {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return btoa(String.fromCharCode.apply(null, Array.from(array)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-};
+// const generateCodeChallenge = (): string => {
+//   const array = new Uint8Array(32);
+//   crypto.getRandomValues(array);
+//   return btoa(String.fromCharCode.apply(null, Array.from(array)))
+//     .replace(/\+/g, '-')
+//     .replace(/\//g, '_')
+//     .replace(/=/g, '');
+// };
 
 /**
  * Initiate login flow by redirecting to Zitadel authorization endpoint

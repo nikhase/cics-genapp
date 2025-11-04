@@ -3,8 +3,8 @@
  * Defines all routes with lazy loading and error boundaries
  */
 
-import { lazy, Suspense, ReactNode } from 'react';
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { createBrowserRouter, Navigate, RouterProvider, Outlet } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { NotFoundPage } from '../pages/NotFoundPage';
@@ -22,98 +22,125 @@ const DashboardPage = lazy(() =>
 );
 
 /**
+ * Protected routes layout
+ * Wraps Layout with AuthProvider to ensure Router context is available
+ */
+const ProtectedLayout: React.FC = () => (
+  <AuthProvider>
+    <Suspense fallback={<LoadingFallback />}>
+      <Layout />
+    </Suspense>
+  </AuthProvider>
+);
+
+/**
+ * Root route with AuthProvider wrapper
+ */
+const RootLayout: React.FC = () => (
+  <AuthProvider>
+    <Outlet />
+  </AuthProvider>
+);
+
+/**
  * Route definitions
  */
 const routes: RouteObject[] = [
   {
-    path: '/login',
-    element: (
-      <Suspense fallback={<LoadingFallback />}>
-        <LoginPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: '/auth/callback',
-    element: (
-      <Suspense fallback={<LoadingFallback />}>
-        <AuthCallbackPage />
-      </Suspense>
-    ),
-  },
-  {
     path: '/',
-    element: <Layout />,
+    element: <RootLayout />,
     children: [
       {
-        index: true,
+        path: 'login',
         element: (
           <Suspense fallback={<LoadingFallback />}>
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
+            <LoginPage />
           </Suspense>
         ),
       },
       {
-        path: 'dashboard',
+        path: 'auth/callback',
         element: (
           <Suspense fallback={<LoadingFallback />}>
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
+            <AuthCallbackPage />
           </Suspense>
         ),
       },
-      // Routes for customers (Story 3.4-3.6)
       {
-        path: 'customers',
+        path: '',
+        element: <ProtectedLayout />,
         children: [
           {
             index: true,
-            element: <Navigate to="/customers/search" replace />,
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              </Suspense>
+            ),
           },
           {
-            path: 'search',
-            element: <NotFoundPage />, // To be implemented in Story 3.4
+            path: 'dashboard',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              </Suspense>
+            ),
           },
+          // Routes for customers (Story 3.4-3.6)
           {
-            path: ':id',
-            element: <NotFoundPage />, // To be implemented in Story 3.5
+            path: 'customers',
+            children: [
+              {
+                index: true,
+                element: <Navigate to="/customers/search" replace />,
+              },
+              {
+                path: 'search',
+                element: <NotFoundPage />, // To be implemented in Story 3.4
+              },
+              {
+                path: ':id',
+                element: <NotFoundPage />, // To be implemented in Story 3.5
+              },
+              {
+                path: ':id/edit',
+                element: <NotFoundPage />, // To be implemented in Story 3.5
+              },
+              {
+                path: 'create',
+                element: <NotFoundPage />, // To be implemented in Story 3.6
+              },
+            ],
           },
+          // Routes for policies (Stories 5.x)
           {
-            path: ':id/edit',
-            element: <NotFoundPage />, // To be implemented in Story 3.5
-          },
-          {
-            path: 'create',
-            element: <NotFoundPage />, // To be implemented in Story 3.6
-          },
-        ],
-      },
-      // Routes for policies (Stories 5.x)
-      {
-        path: 'policies',
-        children: [
-          {
-            index: true,
-            element: <Navigate to="/policies/search" replace />,
-          },
-          {
-            path: 'search',
-            element: <NotFoundPage />, // To be implemented in Story 5.x
-          },
-          {
-            path: ':id',
-            element: <NotFoundPage />, // To be implemented in Story 5.x
-          },
-          {
-            path: ':id/edit',
-            element: <NotFoundPage />, // To be implemented in Story 5.x
-          },
-          {
-            path: 'create',
-            element: <NotFoundPage />, // To be implemented in Story 5.x
+            path: 'policies',
+            children: [
+              {
+                index: true,
+                element: <Navigate to="/policies/search" replace />,
+              },
+              {
+                path: 'search',
+                element: <NotFoundPage />, // To be implemented in Story 5.x
+              },
+              {
+                path: ':id',
+                element: <NotFoundPage />, // To be implemented in Story 5.x
+              },
+              {
+                path: ':id/edit',
+                element: <NotFoundPage />, // To be implemented in Story 5.x
+              },
+              {
+                path: 'create',
+                element: <NotFoundPage />, // To be implemented in Story 5.x
+              },
+            ],
           },
         ],
       },
@@ -133,12 +160,9 @@ const browserRouter = createBrowserRouter(routes);
 
 /**
  * App Root Component with Auth Provider
+ * RouterProvider is at the root to ensure Router context is available for AuthProvider
  */
-export const AppWithAuth: React.FC = () => (
-  <AuthProvider>
-    <RouterProvider router={browserRouter} />
-  </AuthProvider>
-);
+export const AppWithAuth: React.FC = () => <RouterProvider router={browserRouter} />;
 
 /**
  * Create and export browser router (legacy export for compatibility)

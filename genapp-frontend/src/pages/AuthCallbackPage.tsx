@@ -14,7 +14,7 @@ import { getAuthorizationCode, verifyState, clearOAuthSession } from '../service
 export const AuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, isLoading, error, clearError } = useAuth();
+  const { login, error, clearError } = useAuth();
   const [localError, setLocalError] = React.useState<string | null>(null);
 
   useEffect(() => {

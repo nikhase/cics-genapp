@@ -264,3 +264,8 @@ The `/docs/` folder contains auto-generated documentation created via BMAD's `do
 - **Original Documentation:** `base/Architecture.md`, `base/Building.md`, `base/Installation.md`, `base/Testing.md`, `base/Reference.md`
 - **Generated Documentation:** `docs/index.md` (navigation hub for all auto-generated docs)
 - **BMAD Framework:** `bmad/core/workflows/`, `bmad/bmm/workflows/`, `bmad/bmb/workflows/`
+
+## Version Control
+
+NEVER commit without my permission.
+ALWAYS present the commit message first before committing.
