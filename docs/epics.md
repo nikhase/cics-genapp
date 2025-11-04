@@ -25,7 +25,7 @@ Each epic includes:
 - Stories within epics are vertically sliced and sequentially ordered
 - No forward dependencies - each story builds only on previous work
 
-**Architecture Note:** All epics align with the target architecture documented in [target-architecture.md](./new/target-architecture.md), including Spring Boot 3.4+ LTS, Java 21 LTS, React 18, PostgreSQL 16 LTS, OIDC/Zitadel authentication, Debezium CDC, Unleash feature toggles, Docker/Kubernetes/Helm, and observability stack (ELK, Prometheus, Jaeger).
+**Architecture Note:** All epics align with the target architecture documented in [target-architecture.md](./new/target-architecture.md), including Spring Boot 3.4+ LTS, Java 21 LTS, Vaadin 24+ frontend, PostgreSQL 16 LTS, Spring Security authentication (with post-MVP OIDC/Zitadel), Debezium CDC, Unleash feature toggles, Docker/Kubernetes/Helm, and observability stack (ELK, Prometheus, Jaeger).
 
 ---
 
@@ -714,80 +714,85 @@ Implement the complete customer management functionality in Spring Boot, exposin
 
 ---
 
-## EPIC 3: React Frontend - Authentication & Core UI
+## EPIC 3: Frontend Foundation & Customer Management UI (Vaadin)
 
 **Expanded Goal:**
 
-Build the responsive React single-page application that replaces the 3270 terminal interface. This epic creates the React 18 + Vite project, implements Zitadel OIDC login, builds the dashboard, and creates customer management screens (search, detail, create). Upon completion, agents can perform customer operations via web UI and begin validating against the legacy COBOL system.
+Build the responsive Vaadin web application that replaces the 3270 terminal interface, establishing the frontend infrastructure and implementing the first complete domain (customer management). This epic creates the Vaadin 24+ project with Spring Boot integration, implements Spring Security form-based login (with post-MVP OIDC), builds the dashboard and navigation foundation, and creates customer management screens (search, detail, create/edit). Upon completion, agents can perform customer operations via web UI and begin validating against the legacy COBOL system. The infrastructure and patterns established here (form components, API integration, validation framework) serve as the foundation for policy management and other domains in Epic 5.
 
 **Story Count:** 10 stories | **Estimated Duration:** Weeks 11-14
 
+**Key Principle:** This epic is sequenced to establish **technology maturity** before policy management (Epic 5). By proving customer operations work reliably with parallel validation (Epic 4), we build confidence in the platform before expanding to policies.
+
 ---
 
-### Story 3.1: React Project Setup with Vite and Material Design
+### Story 3.1: Vaadin Project Setup with Spring Boot Integration
 
 **As a** Frontend Developer,
-**I want** to set up a React 18 SPA with Vite, TypeScript, routing, and Material Design 3,
-**So that** I have a solid foundation for building UI components.
+**I want** to set up a Vaadin 24+ project integrated with Spring Boot 3.4+, with Material Design 3 theme and project structure,
+**So that** I have a solid foundation for building server-side rendered web components.
 
 **Acceptance Criteria:**
 
-1. React 18 project created with Vite (npm create vite@latest cicsgenapp-frontend -- --template react-ts)
-2. TypeScript configured for type safety (tsconfig.json with strict mode enabled)
-3. React Router v6 configured for client-side routing (BrowserRouter, Routes, lazy loading)
-4. Material-UI (MUI) v5 installed with TypeScript support
-5. Clarity Enterprise Design System theme customization applied (color palette, typography)
-6. Project structure created:
-   - src/components/ (reusable UI components)
-   - src/pages/ (page-level components: Login, Dashboard, CustomerSearch, etc.)
-   - src/services/ (API client, authentication service)
-   - src/hooks/ (custom React hooks: useAuth, useApi, etc.)
-   - src/context/ (React Context: AuthContext, ThemeContext)
-   - src/types/ (TypeScript interfaces)
-   - src/styles/ (theme configuration, global CSS)
-7. ESLint and Prettier configured for code style
-8. Public folder with favicon, index.html, robots.txt
-9. Environment variables configured (.env.dev, .env.prod) with API_BASE_URL
-10. Build process tested: npm run build (optimized build, size < 500KB gzipped for JavaScript bundle)
-11. Dev server runs on http://localhost:3000
+1. Vaadin 24+ project created with Spring Boot 3.4+ LTS integration (using Vaadin Spring Boot starter)
+2. Java 21 LTS configured with Maven build
+3. Vaadin routing configured (Router, @Route annotations, navigation layout)
+4. Material Design 3 theme customization applied (color palette, typography, icons)
+5. Project structure created:
+   - src/main/java/com/example/ui/views/ (page-level views: LoginView, DashboardView, CustomerView, etc.)
+   - src/main/java/com/example/ui/components/ (reusable Vaadin components)
+   - src/main/java/com/example/service/ (API client service, authentication service)
+   - src/main/java/com/example/security/ (Spring Security configuration)
+   - src/main/resources/application.yml (environment-specific configuration)
+   - frontend/ (optional Lit components or CSS styling)
+6. Spring Security configured for form-based authentication (OIDC deferred to post-MVP)
+7. Vaadin development mode tested: `mvn spring-boot:run` (live reload enabled)
+8. Production build tested: `mvn clean install` (creates optimized JAR)
+9. Dev server runs on http://localhost:8080
+10. Responsive theme configured (Material Design 3 mobile breakpoints)
 
 **Prerequisites:** Story 1.2
 
 ---
 
-### Story 3.2: Login Page and Zitadel OIDC Authentication
+### Story 3.2: Login Page with Spring Security Form Authentication
 
 **As a** User,
-**I want** to log in with my corporate credentials via Zitadel OIDC,
-**So that** I can securely access the system without managing passwords.
+**I want** to log in with my username and password via Spring Security,
+**So that** I can securely access the system.
 
 **Acceptance Criteria:**
 
-1. Login page created at route /login
-2. Page displays Zitadel logo and "Sign in with corporate SSO" button
-3. Clicking button redirects to Zitadel authorization endpoint with correct parameters:
-   - `client_id` (configured in .env)
-   - `redirect_uri` (http://localhost:3000/auth/callback for dev, production URL for prod)
-   - `response_type=code`
-   - `scope=openid profile email`
-4. Zitadel handles authentication (username/password or SSO)
-5. After authentication, Zitadel redirects to /auth/callback route with `code` parameter
-6. Frontend exchanges code for JWT token (via backend: POST /api/v1/auth/callback?code=...)
-7. Backend calls Zitadel's token endpoint to exchange code for JWT
-8. Frontend receives JWT and stores in secure session storage (NOT localStorage)
-9. User context updated with: userId, email, name, roles (from JWT claims)
-10. User redirected to /dashboard on successful login
-11. Logout button clears session storage, redirects to /login
-12. Protected routes check for valid token; redirect to /login if missing or expired
-13. Token refresh: if access token near expiration, automatically refresh via refresh token
-14. Error messages displayed on login failure: "Authentication failed", "Invalid credentials", or "Server error"
-15. Loading state while exchanging code for token (spinner displayed)
+1. LoginView created at route `/login` (Vaadin @Route("/login"))
+2. Page displays login form with:
+   - Username field (text input)
+   - Password field (password input)
+   - "Sign In" button
+   - "Forgot Password?" link (deferred functionality)
+3. Form submission via POST to Spring Security `/login` endpoint
+4. Spring Security validates credentials against user database
+5. On successful authentication:
+   - User context populated with: userId, email, name, roles (from Spring Security Principal)
+   - User redirected to `/dashboard` route
+   - Session created (server-side via Spring Security)
+6. On failed authentication:
+   - Error message displayed: "Invalid username or password"
+   - Username field cleared, password field cleared
+   - User remains on login page
+7. Protected routes check for authenticated session; redirect to `/login` if not authenticated
+8. Logout endpoint: POST `/logout` (Spring Security standard) redirects to `/login`
+9. Remember-me functionality (optional): checkbox to extend session timeout
+10. CSRF protection enabled (Spring Security default)
+11. Responsive design (works on mobile/tablet)
+12. Accessibility: form labels, error announcements
 
-**Prerequisites:** Stories 1.2, 1.5, 3.1
+**Note:** OIDC/Zitadel integration deferred to post-MVP (Story 1.5 in backlog). Current implementation uses Spring Security form-based authentication with local user database.
+
+**Prerequisites:** Stories 1.2, 3.1
 
 ---
 
-### Story 3.3: Dashboard Page with Navigation and Quick Actions
+### Story 3.3: Dashboard Page with Vaadin Navigation Layout
 
 **As a** Customer Service Agent,
 **I want** to see a dashboard with overview of workload and quick actions,
@@ -795,74 +800,88 @@ Build the responsive React single-page application that replaces the 3270 termin
 
 **Acceptance Criteria:**
 
-1. Dashboard page created at route /dashboard (protected route, requires auth)
-2. Header section displays:
+1. DashboardView created at route `/` or `/dashboard` (Vaadin @Route("/dashboard"))
+2. Uses AppLayout (Vaadin component with header, sidebar, and content area)
+3. Header section displays:
    - App logo/title ("CICS GenApp Modernization")
    - User greeting ("Welcome, Jane Smith")
-   - User profile dropdown (with options: Profile, Settings, Logout)
+   - User profile button (dropdown menu with: Profile, Settings, Logout)
    - Time-of-day greeting ("Good Morning" / "Good Afternoon" / "Good Evening" based on local time)
-3. Sidebar navigation with menu items:
-   - 🏠 Dashboard (home icon)
-   - 👥 Customers (people icon)
-   - 📄 Policies (document icon)
-   - 📋 Audit Log (clock icon, visible to compliance_officer and admin roles only)
-   - 📊 Reports (chart icon, visible to admin roles)
-   - ⚙️ Admin (settings icon, visible to admin roles)
-4. Sidebar collapses on mobile devices (hamburger menu)
-5. Active menu item highlighted based on current route
-6. Main content area displays quick actions:
-   - "New Customer" button → /customers/create
-   - "New Policy" button → /policies/create
-   - "Search Customer" text input → /customers/search?query=...
-   - "Search Policy" text input → /policies/search?query=...
-7. Optional metrics dashboard (if business requires):
-   - Total customers count (retrieved from backend)
-   - Total policies count (retrieved from backend)
-   - Recent activity feed (last 5 operations)
-8. Responsive design: sidebar collapses on mobile, main content full width
-9. Keyboard shortcut: Ctrl+K opens search modal (search customers globally)
-10. Loading state while fetching metrics (skeleton loaders)
+4. Sidebar navigation (NavBar or Drawer) with menu items:
+   - 🏠 Dashboard (leads to /dashboard)
+   - 👥 Customers (leads to /customers)
+   - 📄 Policies (leads to /policies)
+   - 📋 Audit Log (leads to /audit, visible to ROLE_COMPLIANCE_OFFICER and ROLE_ADMIN only)
+   - 📊 Reports (leads to /reports, visible to ROLE_ADMIN only)
+   - ⚙️ Admin (leads to /admin, visible to ROLE_ADMIN only)
+5. Sidebar responsive: drawer mode on mobile, expand/collapse toggle
+6. Active menu item highlighted based on current route (routing-aware)
+7. Main content area displays quick actions:
+   - "New Customer" button → navigates to /customers/create
+   - "New Policy" button → navigates to /policies/create
+   - "Search Customer" TextField with search button → navigates to /customers?query=...
+   - "Search Policy" TextField with search button → navigates to /policies?query=...
+8. Optional metrics dashboard (fetched from backend API):
+   - Total customers count (GET /api/v1/admin/metrics/customers/count)
+   - Total policies count (GET /api/v1/admin/metrics/policies/count)
+   - Recent activity feed (last 5 operations from audit log)
+9. Responsive design: Vaadin responsive utilities (HorizontalLayout, VerticalLayout with flex)
+10. Logout functionality: logout button calls Spring Security /logout endpoint, redirects to /login
+11. Loading state while fetching metrics (Vaadin Spinner component)
+12. Accessibility: ARIA labels on navigation items, semantic HTML
 
 **Prerequisites:** Stories 1.2, 3.1, 3.2
 
 ---
 
-### Story 3.4: Customer Search and List Page
+### Story 3.4: Customer Search and List Page with Vaadin Grid
 
 **As a** Customer Service Agent,
-**I want** to search for customers and see results in a paginated list,
+**I want** to search for customers and see results in a paginated grid,
 **So that** I can quickly find customers.
 
 **Acceptance Criteria:**
 
-1. Page created at route /customers/search
-2. Search form with fields:
-   - Query input (placeholder: "Search by name, email, or phone")
-   - Status filter dropdown (All / Active / Inactive)
-   - Search button
-   - Clear button (resets form to defaults)
-3. Pressing Enter in search input submits search
-4. Results displayed in data table:
-   - Columns: ID (uuid, truncated), Name, Email, Phone, Status, Actions
-   - Status shown with badge: green for ACTIVE, gray for INACTIVE
-   - Sortable columns (click header to sort; arrow indicator shows direction)
-   - Pagination controls (Previous/Next buttons, "Page X of Y", Rows per page: 25/50/100)
-5. Actions column with buttons:
-   - "View" button → navigates to /customers/{customerId} (detail page)
-   - "Edit" button → navigates to /customers/{customerId}?mode=edit
-   - "More" menu (three dots) with delete option (soft-delete with confirmation)
-6. Empty state message if no results: "No customers found. Try different search criteria."
-7. Loading state while fetching (spinner centered on page)
-8. Error message if search fails (with retry button)
-9. URL reflects search state (shareable): /customers/search?query=smith&status=ACTIVE&page=1&limit=50
-10. Performance: < 2s load time for typical searches (use debouncing on search input, 300ms delay)
-11. Accessibility: keyboard navigation, ARIA labels on buttons, screen reader support
+1. CustomerListView created at route `/customers` (Vaadin @Route("/customers"))
+2. Search form with fields (using Vaadin components):
+   - TextField for query (placeholder: "Search by name, email, or phone")
+   - ComboBox for status filter (All / Active / Inactive)
+   - Button for search
+   - Button to clear filters
+3. Search performed on button click or Enter key in search field
+4. Results displayed in Vaadin Grid with columns:
+   - ID (UUID, truncated to first 8 chars)
+   - Name (first + last name)
+   - Email
+   - Phone
+   - Status (Badge component: green for ACTIVE, gray for INACTIVE)
+   - Actions (buttons)
+5. Grid features:
+   - Sortable columns (click header; arrow indicator shows direction)
+   - Pagination built-in (Vaadin Grid's built-in pagination)
+   - Rows per page selector (25/50/100 rows)
+   - Page navigation (Previous/Next, "Page X of Y")
+6. Actions column with buttons:
+   - "View" button → navigates to `/customers/{customerId}` (detail page)
+   - "Edit" button → navigates to `/customers/{customerId}/edit`
+   - Vertical menu (ContextMenu or right-click) with delete option
+7. Delete confirmation dialog:
+   - Title: "Delete Customer?"
+   - Message: "This customer will be marked inactive. This action cannot be undone."
+   - Buttons: "Cancel", "Delete"
+   - On confirm: calls DELETE /api/v1/customers/{customerId}, removes row from grid
+8. Empty state message if no results: "No customers found. Try different search criteria."
+9. Loading state while fetching (Vaadin Spinner overlay on grid)
+10. Error message if search fails (Vaadin Notification, "Error loading customers")
+11. Query state preserved in URL: `/customers?query=smith&status=ACTIVE` (for bookmarking)
+12. Performance: < 2s load time for typical searches (debounce search input at 300ms)
+13. Accessibility: Grid has ARIA roles, keyboard navigation (arrow keys to navigate rows)
 
 **Prerequisites:** Stories 1.2, 3.1, 3.3, Story 2.4 (API)
 
 ---
 
-### Story 3.5: Customer Detail and Edit Page
+### Story 3.5: Customer Detail Page with Vaadin Components
 
 **As a** Customer Service Agent,
 **I want** to view and edit customer details,
@@ -870,184 +889,215 @@ Build the responsive React single-page application that replaces the 3270 termin
 
 **Acceptance Criteria:**
 
-1. Page created at route /customers/{customerId}
-2. Detail view (read-only mode) shows customer information:
-   - Name (first/last)
-   - Date of birth
+1. CustomerDetailView created at route `/customers/{customerId}` (Vaadin @Route("/customers/:customerId"))
+2. Detail view (read-only mode) displays customer information using Vaadin FormLayout:
+   - Name (first/last, displayed as read-only TextField or Label)
+   - Date of birth (formatted as MM/DD/YYYY)
    - Email
    - Phone
    - Address (street, city, state, zip)
-   - Status (badge: green/gray)
-   - Created/updated timestamps
+   - Status (Badge component: green for ACTIVE, gray for INACTIVE)
+   - Created/updated timestamps (formatted)
    - Created/updated by (user information)
 3. Edit button switches to edit mode
-4. Edit mode displays form fields with current values pre-populated
+4. Edit mode displays form fields with current values pre-populated (using FormLayout)
 5. Form validation (real-time feedback):
-   - Email valid format
-   - Phone valid format (if provided)
+   - Email valid format (Vaadin EmailField validator)
+   - Phone valid format if provided (regex pattern)
    - Name required, 1-100 chars
-   - Show error message below field if validation fails
-6. Save button submits changes (disabled until form is valid)
+   - Error messages displayed below each field (red text, icon)
+6. Save button submits changes via PUT /api/v1/customers/{customerId} (disabled until form is valid)
 7. Cancel button discards changes and returns to read-only mode
-8. Success message on save: "Customer updated successfully" (toast notification, 3s duration)
-9. Error message on failure with details
-10. 404 Not Found error if customer doesn't exist
-11. Optimistic locking: if customer was updated by another user, show conflict error with option to refresh
-12. Loading state while fetching/saving (spinner)
+8. Success message on save: "Customer updated successfully" (Vaadin Notification, 3s)
+9. Error message on failure (Notification with error details)
+10. 404 error if customer doesn't exist (error view, "Customer not found")
+11. Optimistic locking: if customer was updated by another user, show conflict notification with refresh option
+12. Loading state while fetching/saving (Vaadin Spinner overlay)
 13. Related Policies section (read-only):
-    - Table of policies linked to this customer
-    - Columns: Policy Number, Type, Status, Start Date, Actions (View)
-    - "Create New Policy" button → /policies/create?customerId={customerId}
-14. Audit History section (if user has audit_viewer role):
-    - Expandable section showing immutable audit log for this customer
-    - Columns: Date, User, Operation, Changes
+    - Vaadin Grid showing policies linked to this customer
+    - Columns: Policy Number, Type, Status, Start Date, Actions
+    - "View" button on each row → navigates to `/policies/{policyId}`
+    - "Create New Policy" button → navigates to `/policies/create?customerId={customerId}`
+14. Audit History section (visible to users with ROLE_COMPLIANCE_OFFICER or ROLE_ADMIN):
+    - Expandable section using Vaadin Details component
+    - Grid showing: Date, User, Operation (CREATE/UPDATE/DELETE), Changes (JSON)
     - Limit to last 10 entries
+    - Immutable data (display only)
 
 **Prerequisites:** Stories 1.2, 3.1, 3.3, Stories 2.3, 2.5 (APIs)
 
 ---
 
-### Story 3.6: Customer Create Page with Form Wizard
+### Story 3.6: Customer Create/Edit Page with Vaadin Form
 
 **As a** Customer Service Agent,
-**I want** to create a new customer using a guided multi-step wizard,
-**So that** I can add customers with minimal errors.
+**I want** to create and edit customer records using a guided multi-step form,
+**So that** I can add and modify customers with minimal errors.
 
 **Acceptance Criteria:**
 
-1. Page created at route /customers/create
-2. Multi-step wizard with progress indicator:
+1. CustomerCreateEditView created at route `/customers/create` (new) and `/customers/{customerId}/edit` (edit mode)
+2. Multi-step form using Vaadin Stepper or custom step navigation:
    - **Step 1:** Basic Info (first name, last name, date of birth)
    - **Step 2:** Contact (email, phone)
    - **Step 3:** Address (street, city, state, zip code)
    - **Step 4:** Review and Confirm
-3. Form fields with validation:
-   - firstName: text, required, 1-100 chars, error: "First name is required"
-   - lastName: text, required, 1-100 chars
-   - dateOfBirth: date picker, optional, must be age 18+, error: "Must be at least 18 years old"
-   - email: email input, required, unique, valid email format
-   - phone: tel input, optional, valid phone format (regex validation)
-   - address: text, optional
-   - city: text, optional
-   - state: dropdown, optional (populated from state list)
-   - zipCode: text, optional, 5-6 digits
-4. Real-time validation feedback (field-level error messages displayed below field)
-5. Next button disabled if current step has errors
-6. Previous button always enabled (can go back)
-7. Progress indicator shows current step (e.g., "Step 1 of 4")
-8. Review step shows all entered data in read-only format:
-   - Basic Info, Contact, Address all displayed
-   - "Edit" button next to each section allows editing that section
-9. Confirm button creates customer via API (POST /api/v1/customers)
-10. Loading state while creating (spinner, button disabled)
-11. Success message with customer ID and option to:
-    - "View Customer" → /customers/{customerId}
-    - "Create Another" → reset wizard
-    - "Go to Dashboard" → /dashboard
+3. Form fields with validation (using Vaadin FormLayout and field components):
+   - firstName: TextField, required, 1-100 chars, error: "First name is required"
+   - lastName: TextField, required, 1-100 chars
+   - dateOfBirth: DatePicker, optional, must be age 18+, error: "Must be at least 18 years old"
+   - email: EmailField, required, unique (async validation), valid email format
+   - phone: TextField with pattern validator, optional, valid phone format (e.g., +1-555-0123)
+   - address: TextField, optional, max 200 chars
+   - city: TextField, optional, 1-100 chars
+   - state: ComboBox, optional, pre-populated with US states
+   - zipCode: TextField, optional, pattern \d{5}-?\d{4} (5-6 digits)
+4. Real-time validation feedback (field-level error messages displayed below field, red styling)
+5. Next button disabled if current step has validation errors
+6. Previous button always enabled (can go back and modify earlier steps)
+7. Progress indicator shows current step (e.g., "Step 1 of 4", visual progress bar)
+8. Review step displays all entered data in read-only format:
+   - Sections: Basic Info, Contact, Address
+   - "Edit" button next to each section allows re-entering that step
+   - All values displayed clearly for confirmation before submit
+9. Confirm button:
+   - For create: POST /api/v1/customers with form data
+   - For edit: PUT /api/v1/customers/{customerId} with changes
+10. Loading state while creating/updating (Vaadin Spinner overlay, button disabled)
+11. Success message with options:
+    - "View Customer" → navigates to /customers/{customerId}
+    - "Create Another" → reset form to step 1 (create mode only)
+    - "Go to Dashboard" → navigates to /dashboard
+    - "Go Back" → navigates to previous page or /customers (edit mode)
 12. Error handling:
     - Duplicate email error: "A customer with this email already exists"
-    - Server error: "Failed to create customer. Please try again."
-    - Validation error: show which field needs correction
-13. Keyboard support: Tab navigation through form, Enter submits (on review step)
+    - Server error: "Failed to create customer. Please try again." (with retry)
+    - Validation error: highlight field, show which field needs correction
+    - Async email validation: show "checking..." spinner while validating uniqueness
+13. Keyboard support: Tab navigation through form, Enter submits (on review step), Escape cancels
+14. Edit mode pre-populates all fields with current customer data on initial load
 
-**Prerequisites:** Stories 1.2, 3.1, 3.3, Story 2.2 (API)
+**Prerequisites:** Stories 1.2, 3.1, 3.3, Stories 2.2, 2.5 (APIs)
 
 ---
 
-### Story 3.7: Form Components and Validation UI Library
+### Story 3.7: Reusable Vaadin Form Components and Validation Library
 
 **As a** Frontend Developer,
-**I want** reusable form validation components and error handling UI,
-**So that** forms provide consistent user experience across all pages.
+**I want** reusable Vaadin form components and validation utilities,
+**So that** forms provide consistent validation and user experience across all pages.
 
 **Acceptance Criteria:**
 
-1. Reusable form components created:
-   - **TextInput** component with real-time validation feedback
-     - Props: label, placeholder, value, onChange, error, required, disabled
-     - Shows error message below field in red
-     - Visual error indicator (red border)
-     - Required asterisk (*)
-     - Optional helper text below field
-   - **Select/Dropdown** component (same validation features as TextInput)
-   - **DatePicker** component with calendar UI and validation
-     - Validates date format, age calculation
-     - Disabled dates handling
-     - Max/min date constraints
-   - **EmailInput** component with:
-     - Real-time email validation
-     - Async validation (check uniqueness via API)
-     - Show "checking..." state while validating
-   - **PhoneInput** component with:
-     - Phone format validation
-     - Format mask (user types, auto-formatted: (123) 456-7890)
-   - **FormError** component for form-level errors
-     - Displays above form with error icon
-     - Red background, dismissible
-   - **SuccessAlert** component for success messages
-     - Green background with checkmark
+1. Custom Vaadin form component classes created (Java/Vaadin):
+   - **ValidatedTextField** (extends TextField)
+     - Properties: label, placeholder, value, required, pattern, maxLength
+     - Real-time validation feedback with error message below field (red text)
+     - Visual error indicator (red border on validation error)
+     - Required asterisk (*) displayed in label
+     - Helper text (optional, displayed below field)
+   - **ValidatedEmailField** (extends EmailField)
+     - Built-in email format validation
+     - Async validation for email uniqueness (calls API)
+     - Shows "checking..." spinner during async validation
+     - Error message if email already exists
+   - **ValidatedPhoneField** (extends TextField)
+     - Phone format validation (regex pattern: +1-555-0123)
+     - Auto-formatting as user types (DP: (123) 456-7890)
+     - Optional field support
+   - **ValidatedDatePicker** (extends DatePicker)
+     - Date format validation
+     - Age calculation validation (e.g., must be 18+)
+     - Min/max date constraints
+     - Shows age when date selected (e.g., "Age: 35")
+   - **ValidatedComboBox** (extends ComboBox)
+     - Dropdown list with validation
+     - Required field support
+     - Search/filter within list
+   - **FormErrorNotification** component
+     - Displays form-level errors above form
+     - Red background with error icon, dismissible
+   - **SuccessNotification** component
+     - Displays success messages
+     - Green background with checkmark icon
      - Auto-dismiss after 3 seconds
-   - **LoadingSpinner** component
-     - Centered spinner with optional backdrop
-     - Shows while API calls in progress
-   - **ConfirmDialog** component for destructive actions
-     - Modal with warning icon
-     - "Cancel" and "Delete" buttons
-     - Requires user to confirm before deletion
-2. All components follow Material Design 3 design system (colors, spacing, typography)
-3. All components support dark mode (theme provider)
-4. Accessibility: ARIA labels, proper heading structure, keyboard navigation
-5. Components tested with Jest + React Testing Library
+   - **ConfirmDialog** component (extends Vaadin Dialog)
+     - Modal dialog for destructive actions
+     - Warning icon, title, message
+     - "Cancel" and "Delete/Confirm" buttons
+     - Requires explicit confirmation before action
+   - **LoadingOverlay** component
+     - Centered spinner with optional backdrop overlay
+     - Shows during API calls or long operations
+2. All components follow Material Design 3 design system (Vaadin Material theme: colors, spacing, typography)
+3. Components support responsive layout (mobile, tablet, desktop breakpoints)
+4. Accessibility: ARIA labels on all components, semantic HTML, keyboard navigation support
+5. Validation error messages are clear and actionable (e.g., "Email is required", not "email null")
+6. Components tested with JUnit 5 + Vaadin TestBench (or manual testing)
 
 **Prerequisites:** Stories 1.2, 3.1
 
 ---
 
-### Story 3.8: API Integration and Client Service Layer
+### Story 3.8: Backend API Service Layer (Spring Boot)
 
 **As a** Frontend Developer,
-**I want** a centralized API client service that handles authentication, error handling, and request/response,
-**So that** components can easily call APIs without repetitive boilerplate.
+**I want** a well-structured backend service layer that handles API calls with proper error handling,
+**So that** Vaadin UI components can easily call APIs without repetitive boilerplate.
 
 **Acceptance Criteria:**
 
-1. ApiClient service created with methods:
-   - `get<T>(url: string, options?: AxiosRequestConfig): Promise<T>`
-   - `post<T>(url: string, body: unknown, options?: AxiosRequestConfig): Promise<T>`
-   - `put<T>(url: string, body: unknown, options?: AxiosRequestConfig): Promise<T>`
-   - `delete<T>(url: string, options?: AxiosRequestConfig): Promise<T>`
-2. Automatically attaches JWT token to Authorization header: `Authorization: Bearer {token}`
-3. Handles response status codes:
-   - 2xx: resolve promise with parsed JSON
-   - 4xx: throw error with field-level details (validation errors)
-   - 5xx: throw error with message
-4. Retry logic for transient failures:
+1. HTTP client service created in Spring Boot:
+   - **RestTemplate** or **WebClient** configured for HTTP calls (prefer WebClient for async)
+   - Methods for standard CRUD operations:
+     - `get(url, responseType): T`
+     - `post(url, body, responseType): T`
+     - `put(url, body, responseType): T`
+     - `delete(url): void`
+2. Authentication handling:
+   - Automatically attaches Spring Security principal (authenticated user) to requests
+   - If using JWT tokens (post-MVP), attaches `Authorization: Bearer {token}` header
+   - Session-based authentication used currently (Spring Security session)
+3. Response and error handling:
+   - 2xx: Return parsed JSON response object
+   - 4xx: Parse error details and throw custom exception with field-level details
+   - 5xx: Throw exception with error message
+4. Retry logic for transient failures (with Resilience4j):
    - Max 3 retries with exponential backoff (100ms, 200ms, 400ms)
    - Retry on: 408 Request Timeout, 429 Too Many Requests, 5xx errors
    - Don't retry on: 4xx validation errors
-5. Handles 401 Unauthorized (token expired):
-   - Attempt to refresh token via refresh endpoint
-   - If refresh fails, redirect to /login
-6. Logging in development mode (console.log all API calls with timing)
-7. Correlation ID (X-Trace-Id header) included in all requests (UUID)
-8. Timeout handling (15s default timeout, configurable)
-9. CustomerService wrapper with methods:
-   - `createCustomer(data: CreateCustomerRequest): Promise<Customer>`
-   - `getCustomer(id: string): Promise<Customer>`
-   - `searchCustomers(query: SearchQuery): Promise<SearchResult<Customer>>`
-   - `updateCustomer(id: string, data: UpdateCustomerRequest): Promise<Customer>`
-   - `deleteCustomer(id: string): Promise<void>`
-10. PolicyService wrapper (for future use):
-    - Similar methods for policy operations
-11. Usage example in components:
-    ```typescript
-    const customers = await CustomerService.searchCustomers({query: "smith", status: "ACTIVE"});
+5. Correlation ID handling:
+   - Generate or propagate X-Trace-Id header in all requests (UUID)
+   - Used for distributed tracing across services
+6. Timeout handling:
+   - Default timeout: 15 seconds (configurable)
+   - Timeout exceptions caught and handled with user-friendly message
+7. Domain service classes (wrappers around HTTP client):
+   - **CustomerService**:
+     - `createCustomer(dto: CreateCustomerRequest): Customer`
+     - `getCustomer(id: UUID): Customer`
+     - `searchCustomers(query, status, limit, offset): Page<Customer>`
+     - `updateCustomer(id: UUID, dto: UpdateCustomerRequest): Customer`
+     - `deleteCustomer(id: UUID): void`
+   - **PolicyService** (placeholder for future use):
+     - Similar methods for policy operations
+8. Error mapping to user-friendly messages:
+   - 409 Conflict (duplicate email) → "A customer with this email already exists"
+   - 400 Bad Request (validation) → Show field-level errors
+   - 404 Not Found → "Customer not found"
+   - Network errors → "No internet connection, please check your network"
+   - 5xx errors → "Server error, please try again later"
+9. Logging:
+   - Log all API calls in development mode (method, URL, status, timing)
+   - Log errors with full context (request, response, stack trace)
+10. Vaadin component integration example:
+    ```java
+    Customer customer = customerService.getCustomer(customerId);
+    // OR for async:
+    customerService.getCustomerAsync(customerId).thenAccept(customer -> {
+      // update UI
+    });
     ```
-12. Error handling wrapper for common error scenarios:
-    - Duplicate email: extract and display user-friendly message
-    - Validation errors: display field-level errors
-    - Network errors: show "No internet connection" message
-    - Server errors: show "Server error, please try again later"
 
 **Prerequisites:** Stories 1.2, 3.1, 3.2, Stories 2.1-2.8 (APIs)
 
@@ -1317,13 +1367,15 @@ Implement the critical infrastructure for safe, gradual traffic cutover from leg
 
 ---
 
-## EPIC 5: Policy Management API & React UI
+## EPIC 5: Policy Management API & Vaadin UI
 
 **Expanded Goal:**
 
-Complete the modernized application by implementing the full policy management lifecycle in Spring Boot + React, supporting all 4 policy types (Motor, Endowment, House, Commercial). This epic creates the policy domain models with type-specific attributes, implements policy CRUD APIs with comprehensive validation, builds React UI for policy management including a type-specific create wizard, and integrates policies with customer management. Upon completion, the application achieves full feature parity with legacy system, agents can perform all customer and policy operations via web UI, and the system is ready for production traffic cutover.
+Complete the modernized application by implementing the full policy management lifecycle in Spring Boot + Vaadin, supporting all 4 policy types (Motor, Endowment, House, Commercial). This epic creates the policy domain models with type-specific attributes, implements policy CRUD APIs with comprehensive validation, builds Vaadin UI for policy management including a type-specific create wizard, and integrates policies with customer management. Upon completion, the application achieves full feature parity with legacy system, agents can perform all customer and policy operations via web UI, and the system is ready for production traffic cutover. This epic builds on the proven patterns and infrastructure established in Epic 3.
 
 **Story Count:** 10 stories | **Estimated Duration:** Weeks 19-24
+
+**Key Principle:** Policy management scales the patterns proven in Epic 3 (customer management). By this point, the Vaadin framework, Spring Boot backend, form validation components, and API service layer are all stable and reusable. This epic focuses on domain-specific logic (policy types, status transitions, validations) rather than framework/infrastructure concerns.
 
 ---
 
@@ -1569,7 +1621,7 @@ Complete the modernized application by implementing the full policy management l
 
 ---
 
-### Story 5.7: Policy Detail and Edit Page (React)
+### Story 5.7: Policy Detail Page with Vaadin Display Components
 
 **As a** Customer Service Agent,
 **I want** to view and edit policy details in the web UI,
@@ -1577,35 +1629,41 @@ Complete the modernized application by implementing the full policy management l
 
 **Acceptance Criteria:**
 
-1. Page created at route /policies/{policyId}
-2. Detail view (read-only) displays:
-   - Policy number, type, status (badge)
-   - Linked customer (clickable link to customer detail)
+1. PolicyDetailView created at route `/policies/{policyId}` (Vaadin @Route("/policies/:policyId"))
+2. Detail view (read-only) displays using FormLayout:
+   - Policy number, type, status (Badge component)
+   - Linked customer (clickable link to `/customers/{customerId}`)
    - Start/end dates, premium amount
    - Type-specific attributes displayed appropriately:
-     - MotorPolicy: registration, engine type, vehicle value, driver age
-     - EndowmentPolicy: sum assured, term, maturity amount
-     - HousePolicy: property address, property value, covered risks (list)
-     - CommercialPolicy: business type, annual revenue, employees
-   - Notes
-   - Created/updated timestamps and by whom
-3. Edit mode:
-   - Edit button switches to form
-   - Form fields for editable fields (premium, notes, type-specific attrs)
-   - Real-time validation
+     - **MotorPolicy:** registration number, engine type, vehicle value, driver age
+     - **EndowmentPolicy:** sum assured, term, maturity amount
+     - **HousePolicy:** property address, property value, covered risks (as comma-separated list)
+     - **CommercialPolicy:** business type, annual revenue, number of employees
+   - Notes (multi-line text)
+   - Created/updated timestamps and user information
+   - Linked customer section (card showing customer name, email, phone)
+3. Edit mode (toggled by Edit button):
+   - Form fields populate with current values
+   - Editable fields: premium amount, notes, type-specific attributes
+   - Immutable fields: policy number, customer, policy type, dates
+   - Real-time validation (inherited from Story 3.7 components)
    - Save/Cancel buttons
-4. Status change dropdown:
-   - Available transitions based on current status
-   - Confirmation dialog for transitions
-5. Success/error messages on update
-6. Loading spinner
-7. 404 if policy doesn't exist
+4. Status change section:
+   - Dropdown showing available transitions based on current status
+   - Confirmation dialog before status change
+   - API call to PATCH /api/v1/policies/{policyId}/status
+5. Messages:
+   - Success toast on update: "Policy updated successfully"
+   - Error notification on failure with retry option
+6. Loading state: Vaadin Spinner overlay during fetch/save
+7. 404 error handling: "Policy not found" message if policy doesn't exist
+8. Edit mode pre-populates all fields with current policy data on view load
 
 **Prerequisites:** Stories 1.2, 3.1, 5.1, 5.4, 5.5
 
 ---
 
-### Story 5.8: Policy Create Wizard (React) - Type-Specific Forms
+### Story 5.8: Policy Create Wizard with Vaadin - Type-Specific Forms
 
 **As a** Customer Service Agent,
 **I want** to create a new policy using a guided wizard with type-specific forms,
@@ -1613,30 +1671,54 @@ Complete the modernized application by implementing the full policy management l
 
 **Acceptance Criteria:**
 
-1. Page created at route /policies/create
-2. Multi-step wizard:
-   - **Step 1:** Select customer (search customer, select from results)
-   - **Step 2:** Select policy type (radio buttons: Motor / Endowment / House / Commercial)
+1. PolicyCreateView created at route `/policies/create` (Vaadin @Route("/policies/create"))
+2. Multi-step form using Vaadin Stepper or custom step navigation:
+   - **Step 1:** Select customer (search field + Grid of results, click to select)
+   - **Step 2:** Select policy type (RadioButtonGroup: Motor / Endowment / House / Commercial)
    - **Step 3:** Basic policy info (startDate, endDate, premiumAmount, notes)
-   - **Step 4:** Type-specific details (different form based on type selected)
+   - **Step 4:** Type-specific details (form changes based on selected type)
    - **Step 5:** Review and confirm
-3. Type-specific forms in Step 4:
-   - **MotorPolicy:** registrationNumber (text), engineType (dropdown), vehicleValue (number), driverAge (number)
-   - **EndowmentPolicy:** sumAssured (number), term (number, years), maturityAmount (number)
-   - **HousePolicy:** propertyAddress (text), propertyValue (number), coveredRisks (checkboxes: fire, theft, flood, etc.)
-   - **CommercialPolicy:** businessType (text), annualRevenue (number), numberOfEmployees (number)
+3. Type-specific forms in Step 4 (using ValidatedTextField, ComboBox, DatePicker from Story 3.7):
+   - **MotorPolicy:**
+     - registrationNumber (TextField, required, pattern: ^[A-Z]{2}\d{2}[A-Z]{3}$)
+     - engineType (ComboBox, required, options: PETROL, DIESEL, ELECTRIC, HYBRID)
+     - vehicleValue (NumberField, required, > 0)
+     - driverAge (NumberField, required, 18-100)
+   - **EndowmentPolicy:**
+     - sumAssured (NumberField, required, > 0)
+     - term (NumberField, required, 1-40 years)
+     - maturityAmount (NumberField, required, >= sumAssured)
+   - **HousePolicy:**
+     - propertyAddress (TextField, required)
+     - propertyValue (NumberField, required, > 0)
+     - coveredRisks (CheckboxGroup, required, at least 1 selected: fire, theft, flood, earthquake)
+   - **CommercialPolicy:**
+     - businessType (TextField, required)
+     - annualRevenue (NumberField, required, > 0)
+     - numberOfEmployees (NumberField, required, >= 1)
 4. Form validation:
-   - Real-time field validation
-   - Step-level validation (can't proceed if current step has errors)
-   - Error messages displayed inline
-5. Navigation: Next/Previous buttons, progress indicator
-6. Review step shows all entered data (read-only)
-7. Confirm button creates policy via API
-8. Success message with policy number
-9. Error handling and retry
-10. Option to create another or view newly created policy
+   - Real-time field validation feedback (red borders, error messages)
+   - Step-level validation: Next button disabled if current step has errors
+   - Type-specific validation rules enforced (see Story 5.3)
+5. Navigation: Next/Previous buttons, progress indicator (e.g., "Step 3 of 5", progress bar)
+6. Review step displays all entered data in read-only format:
+   - Sections: Customer, Policy Type, Basic Info, Type-Specific Details
+   - "Edit" button next to each section allows returning to that step
+7. Confirm button:
+   - Creates policy via API: POST /api/v1/policies
+   - Sends full payload with all customer, policy, and type-specific data
+   - Button disabled during submission
+8. Success notification with policy number and options:
+   - "View Policy" → navigates to `/policies/{policyId}`
+   - "Create Another" → resets form to Step 1 (create mode)
+   - "Go to Dashboard" → navigates to `/dashboard`
+9. Error handling:
+   - Validation errors: highlight field, show message
+   - Customer not found: show error in Step 1, allow re-search
+   - Server error: show notification with retry option
+10. Edit mode pre-populates form if editing existing policy (future enhancement)
 
-**Prerequisites:** Stories 1.2, 3.1, 3.6, 5.1, 5.2
+**Prerequisites:** Stories 1.2, 3.1, 3.6, 3.7, 5.1, 5.2, 5.3
 
 ---
 
@@ -1644,21 +1726,30 @@ Complete the modernized application by implementing the full policy management l
 
 **As a** Customer Service Agent,
 **I want** to see linked policies on customer detail page and linked customer on policy page,
-**So that** I can navigate between related entities.
+**So that** I can navigate between related entities seamlessly.
 
 **Acceptance Criteria:**
 
-1. Customer detail page includes "Linked Policies" section:
-   - Table of policies for this customer
-   - Columns: Policy Number, Type, Status, Start Date, Actions (View, Edit)
-   - "Create New Policy" button links to /policies/create?customerId={customerId}
-2. Policy detail page includes "Linked Customer" section:
-   - Customer card: Name, Email, Phone
-   - Clickable link to customer detail page
-   - Edit customer button
-3. When creating policy from customer page:
-   - Customer pre-selected in Step 1 of wizard
-4. Reciprocal navigation: Customer → Policies → Policy → Customer (all working)
+1. Customer detail page (Story 3.5) includes "Linked Policies" section:
+   - Vaadin Grid showing policies for this customer
+   - Columns: Policy Number, Type, Status, Start Date, Actions
+   - "View" action button → navigates to `/policies/{policyId}`
+   - "Edit" action button → navigates to `/policies/{policyId}/edit`
+   - "Create New Policy" button → navigates to `/policies/create?customerId={customerId}`
+   - Pre-selects this customer in Step 1 of the create wizard
+2. Policy detail page (Story 5.7) includes "Linked Customer" section:
+   - Customer card component showing: Name, Email, Phone
+   - Clickable link to customer → navigates to `/customers/{customerId}`
+   - "Edit Customer" button (if user has permission) → navigates to `/customers/{customerId}/edit`
+3. Policy create wizard (Story 5.8) customer selection:
+   - When creating policy from customer detail page (Step 1):
+     - Customer pre-selected and displayed
+     - Allow changing customer via search if needed
+   - Search functionality filters customers by name, email, phone
+4. Navigation consistency:
+   - Full round-trip navigation works: Customer → View Policy → View Customer
+   - No dead links or missing references
+   - Both directions (customer→policies and policy→customer) functional
 
 **Prerequisites:** Stories 1.2, 3.5, 5.7
 
