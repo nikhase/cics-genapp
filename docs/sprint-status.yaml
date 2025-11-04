@@ -43,7 +43,7 @@ development_status:
   1-2-spring-boot-starter-project-with-core-configuration: done
   1-3-postgresql-database-connectivity-and-schema-management: done
   1-4-spring-cloud-gateway-and-strangler-pattern-routing: done # Code review completed 2025-11-03 - APPROVED with 3 minor fixes - ALL FIXES COMPLETED 2025-11-03
-  1-5-oidc-authentication-with-zitadel-integration: drafted
+  1-5-oidc-authentication-with-zitadel-integration: backlog  # DEFERRED TO POST-MVP (2025-11-04 change decision)
   1-6-unleash-feature-toggles-for-traffic-management: backlog
   1-7-structured-logging-and-observability-setup: backlog
   1-8-containerization-with-docker-and-multi-stage-builds: backlog
@@ -65,16 +65,16 @@ development_status:
   2-8-api-documentation-openapi-swagger-and-audit-logging: review
   epic-2-retrospective: optional
 
-  # EPIC 3: React Frontend - Authentication & Core UI
+  # EPIC 3: Vaadin Frontend - Core User Interface (PIVOTED FROM REACT - 2025-11-04)
   epic-3: backlog
-  3-1-react-project-setup-with-vite-and-material-design: review
-  3-2-login-page-and-zitadel-oidc-authentication: review  # Implementation complete 2025-11-04 - ready for code review
-  3-3-dashboard-page-with-navigation-and-quick-actions: ready-for-dev
-  3-4-customer-search-and-list-page: ready-for-dev
-  3-5-customer-detail-and-edit-page: ready-for-dev
-  3-6-customer-create-page-with-form-wizard: ready-for-dev
-  3-7-form-components-and-validation-ui-library: ready-for-dev
-  3-8-api-integration-and-client-service-layer: ready-for-dev
+  3-1-vaadin-project-setup-with-spring-boot-integration: ready-for-dev  # REPLANNED FROM 3-1 (React → Vaadin)
+  3-2-login-page-with-spring-security-form-authentication: ready-for-dev  # REPLANNED FROM 3-2 (Zitadel → Spring Security)
+  3-3-dashboard-page-with-vaadin-navigation-layout: ready-for-dev  # REPLANNED FROM 3-3
+  3-4-customer-search-and-list-page-with-vaadin-grid: ready-for-dev  # REPLANNED FROM 3-4
+  3-5-customer-detail-page-with-vaadin-components: ready-for-dev  # REPLANNED FROM 3-5
+  3-6-customer-create-edit-page-with-vaadin-form: ready-for-dev  # REPLANNED FROM 3-6
+  3-7-policy-list-page-with-vaadin-grid: ready-for-dev  # NEW (was component library)
+  3-8-policy-detail-page-with-vaadin-display-components: ready-for-dev  # NEW (was API integration)
   epic-3-retrospective: optional
 
   # EPIC 4: Parallel Run Validation Framework

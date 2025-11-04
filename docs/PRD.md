@@ -171,16 +171,16 @@ The modernization initiative addresses multiple business drivers simultaneously:
 ## UX Design Principles
 
 1. **Simplicity over Feature Overload** - Minimize clicks to accomplish tasks; wizard-based forms guide users step-by-step
-2. **Familiar Mental Models** - Web UI follows standard SPA patterns; navigation is intuitive for users familiar with modern web apps
+2. **Familiar Mental Models** - Web UI follows standard web application patterns (server-rendered with familiar form layouts); navigation is intuitive
 3. **Real-Time Feedback** - Form validation, loading indicators, success/error messages provide immediate response
-4. **Accessibility First** - WCAG 2.1 AA compliance; keyboard navigation, screen reader support, sufficient color contrast
-5. **Mobile-Responsive** - Works on desktop, tablet, and mobile devices (Progressive Web App ready)
+4. **Accessibility First** - WCAG 2.1 AA compliance; Vaadin components have built-in accessibility support; keyboard navigation, screen reader support
+5. **Responsive Design** - Works on desktop, tablet, and mobile devices; Vaadin responsive layouts adapt to screen size
 
 ---
 
 ## User Interface Design Goals
 
-1. **Modern, Clean Aesthetic** - Material Design 3 via MUI; Clarity Enterprise Design System theme for insurance/business context
+1. **Modern, Clean Aesthetic** - Vaadin Lumo design system with built-in light/dark theme support; professional and clean enterprise appearance
 2. **Information Hierarchy** - Key data (customer name, policy status) prominent; secondary data accessible but not overwhelming
 3. **Consistent Navigation** - Sidebar menu with role-based visibility; breadcrumbs for context; quick-access shortcuts (Ctrl+K search)
 4. **Progressive Disclosure** - Hide advanced options; show power-user features when needed (admin panel, audit logs)
@@ -192,7 +192,7 @@ The modernization initiative addresses multiple business drivers simultaneously:
 
 - **Epic 1: Cloud Foundation & Deployment Infrastructure** - Spring Boot starter, PostgreSQL setup, Docker/Kubernetes, CI/CD pipeline, OIDC/Zitadel integration, observability stack
 - **Epic 2: Customer Service API & Core Backend** - Customer domain model, CRUD APIs, validation framework, audit logging, OpenAPI documentation
-- **Epic 3: React Frontend - Authentication & Core UI** - React SPA setup, Login/Dashboard, customer/policy search and detail pages, form components
+- **Epic 3: Vaadin Frontend - Core User Interface** - Vaadin full-stack Java setup, Login (Spring Security), Dashboard, customer/policy search/detail/create pages, built-in form validation
 - **Epic 4: Parallel Run Validation Framework** - Debezium CDC setup, data comparison service, validation dashboard, feature toggle management, circuit breaker patterns
 - **Epic 5: Policy Management API & React UI** - Policy domain models (4 types), CRUD APIs, type-specific validation, React policy pages, customer-policy linking
 
@@ -208,5 +208,6 @@ The modernization initiative addresses multiple business drivers simultaneously:
 - **Offline mode** (online-only for v1; offline capability considered if business requirement emerges)
 - **Advanced search/full-text search** (basic keyword search sufficient; Elasticsearch integration deferred)
 - **Direct 3270 terminal access from Spring Boot** (legacy COBOL remains operational; no terminal emulation in new system)
+- **OIDC Authentication (MVP)** (Simple Spring Security form-based authentication sufficient for MVP; OIDC/Zitadel integration deferred to post-launch for enhanced SSO)
 - **Comprehensive legacy Db2 rewrite** (CDC keeps Db2 in sync; full normalization/modernization deferred post-cutover)
 - **Third-party integrations** (insurance underwriting systems, payment processors deferred to Phase 2)
