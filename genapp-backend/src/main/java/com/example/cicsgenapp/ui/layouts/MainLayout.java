@@ -71,10 +71,15 @@ public class MainLayout extends AppLayout {
         new SideNavItem("Dashboard", "/", VaadinIcon.HOME.create());
     nav.addItem(dashboard);
 
-    // Customers section
+    // Customers section (SSC1-style menu)
     SideNavItem customers =
-        new SideNavItem("Customers", "/customers", VaadinIcon.USERS.create());
+        new SideNavItem("Customer Menu", "/customers", VaadinIcon.USERS.create());
     nav.addItem(customers);
+
+    // Customer List section
+    SideNavItem customerList =
+        new SideNavItem("Customer List", "/customers/list", VaadinIcon.LIST.create());
+    nav.addItem(customerList);
 
     // Policies section
     SideNavItem policies =
