@@ -48,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Development Team
  * @version 1.0.0 (Story 3.4 Implementation)
  */
-@Route(value = "/customers", layout = com.example.cicsgenapp.ui.layouts.MainLayout.class)
+@Route(value = "customers/search", layout = com.example.cicsgenapp.ui.layouts.MainLayout.class)
 @PageTitle("Search Customers - CICS GenApp")
 public class CustomerSearchView extends VerticalLayout {
 

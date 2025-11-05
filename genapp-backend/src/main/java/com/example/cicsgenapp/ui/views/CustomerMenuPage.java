@@ -41,8 +41,9 @@ import java.util.UUID;
  * @author Development Team
  * @version 1.0.0 (Story 3.11 - SSC1 Customer Menu Unified Interface)
  */
-@Route(value = "customers", layout = com.example.cicsgenapp.ui.layouts.MainLayout.class)
-@PageTitle("Customer Menu - CICS GenApp")
+// TEMPORARILY DISABLED - Constructor injection issue with Vaadin routing
+// @Route(value = "customers", layout = com.example.cicsgenapp.ui.layouts.MainLayout.class)
+// @PageTitle("Customer Menu - CICS GenApp")
 public class CustomerMenuPage extends VerticalLayout {
 
   private final CustomerService customerService;
