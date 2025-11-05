@@ -285,9 +285,25 @@ public class CustomerCreateEditView extends VerticalLayout implements BeforeEnte
         // Determine if this is create or edit mode
         String location = event.getLocation().getPath();
 
-        if (location.contains("/edit")) {
+        // Check for /edit in path OR mode=edit in query parameter
+        boolean isEditPath = location.contains("/edit");
+        boolean isEditQuery = event.getLocation().getQueryParameters()
+                .getParameters("mode")
+                .contains("edit");
+
+        if (isEditPath || isEditQuery) {
             isEditMode = true;
+            // Try to get ID from route parameters first, then from path
             customerId = event.getRouteParameters().get("id").orElse(null);
+
+            // If not found in route parameters, extract from path
+            // Path format: /customers/{id} or /customers/{id}/edit
+            if (customerId == null) {
+                String[] pathParts = location.split("/");
+                if (pathParts.length >= 3 && !pathParts[2].isEmpty() && !pathParts[2].equals("edit")) {
+                    customerId = pathParts[2];
+                }
+            }
 
             if (customerId == null) {
                 showError("Invalid customer ID");
