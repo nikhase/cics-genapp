@@ -7,16 +7,20 @@ import com.example.cicsgenapp.exception.CustomerAlreadyExistsException;
 import com.example.cicsgenapp.exception.ResourceNotFoundException;
 import com.example.cicsgenapp.service.CustomerService;
 import com.example.cicsgenapp.ui.components.BreadcrumbNavigation;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.ListItem;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.UnorderedList;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
@@ -29,6 +33,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +60,8 @@ import java.util.regex.Pattern;
 public class CustomerMenuPage extends VerticalLayout {
 
   private static final Pattern HOUSE_NUMBER_PATTERN = Pattern.compile("^(\\d+)\\s+(.*)$");
+  private static final Pattern DOB_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
+  private static final DateTimeFormatter DOB_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
   private final CustomerService customerService;
 
@@ -60,7 +69,6 @@ public class CustomerMenuPage extends VerticalLayout {
   private int selectedOption = 1;  // Default to Inquiry
   private UUID currentCustomerId;
   private FormState formState = FormState.INQUIRY;
-  private boolean inputHasFocus;
 
   // Menu section
   private RadioButtonGroup<Integer> optionGroup;
@@ -71,7 +79,7 @@ public class CustomerMenuPage extends VerticalLayout {
   private TextField customerNumberField;
   private TextField firstNameField;
   private TextField lastNameField;
-  private DatePicker dobField;
+  private TextField dobField;
   private TextField houseNameField;
   private NumberField houseNumberField;
   private TextField postcodeField;
@@ -193,6 +201,8 @@ public class CustomerMenuPage extends VerticalLayout {
     descriptionBox.add(menuDescription);
     menu.add(descriptionBox);
 
+    menu.add(createShortcutHelpSection());
+
     return menu;
   }
 
@@ -214,6 +224,35 @@ public class CustomerMenuPage extends VerticalLayout {
         menuDescription.setText("");
         break;
     }
+  }
+
+  private Div createShortcutHelpSection() {
+    Div wrapper = new Div();
+    wrapper.addClassNames(
+        LumoUtility.Margin.Top.LARGE,
+        LumoUtility.Padding.MEDIUM,
+        LumoUtility.Background.CONTRAST_5,
+        LumoUtility.BorderRadius.MEDIUM,
+        LumoUtility.Display.BLOCK);
+
+    H4 title = new H4("Keyboard Shortcuts");
+    title.addClassNames(LumoUtility.Margin.Top.NONE, LumoUtility.Margin.Bottom.XSMALL);
+
+    UnorderedList list = new UnorderedList();
+    list.addClassNames(
+        LumoUtility.Margin.Top.NONE,
+        LumoUtility.Margin.Bottom.NONE,
+        LumoUtility.Padding.Left.MEDIUM,
+        LumoUtility.FontSize.SMALL);
+
+    list.add(new ListItem("Ctrl/⌘ + 1 – Customer Inquiry"));
+    list.add(new ListItem("Ctrl/⌘ + 2 – Customer Add"));
+    list.add(new ListItem("Ctrl/⌘ + 4 – Customer Update"));
+    list.add(new ListItem("Enter – Submit current option"));
+    list.add(new ListItem("Esc – Clear the form"));
+
+    wrapper.add(title, list);
+    return wrapper;
   }
 
   private VerticalLayout createFormSection() {
@@ -270,8 +309,11 @@ public class CustomerMenuPage extends VerticalLayout {
     formLayout.setColspan(customerNumberField, 2);
 
     // Personal details section
-    dobField = new DatePicker("Date of Birth");
+    dobField = new TextField("Date of Birth");
     dobField.setPlaceholder("yyyy-mm-dd");
+    dobField.setHelperText("Format: YYYY-MM-DD");
+    dobField.setMaxLength(10);
+    dobField.setPattern("\\d{4}-\\d{2}-\\d{2}");
 
     houseNameField = new TextField("House Name");
     houseNameField.setPlaceholder("House name");
@@ -313,7 +355,6 @@ public class CustomerMenuPage extends VerticalLayout {
     formLayout.setColspan(emailField, 2);  // Email spans both columns
 
     form.add(formLayout);
-    registerFocusTracking();
 
     // Button bar
     HorizontalLayout buttonBar = new HorizontalLayout();
@@ -415,7 +456,7 @@ public class CustomerMenuPage extends VerticalLayout {
     lastNameField.setEnabled(true);
 
     dobField.setReadOnly(false);
-    dobField.setRequired(true);
+    dobField.setRequiredIndicatorVisible(true);
     dobField.setEnabled(true);
 
     houseNameField.setReadOnly(false);
@@ -491,29 +532,6 @@ public class CustomerMenuPage extends VerticalLayout {
     emailField.setEnabled(true);
   }
 
-  private void registerFocusTracking() {
-    customerNumberField.addFocusListener(event -> inputHasFocus = true);
-    customerNumberField.addBlurListener(event -> inputHasFocus = false);
-    firstNameField.addFocusListener(event -> inputHasFocus = true);
-    firstNameField.addBlurListener(event -> inputHasFocus = false);
-    lastNameField.addFocusListener(event -> inputHasFocus = true);
-    lastNameField.addBlurListener(event -> inputHasFocus = false);
-    dobField.addFocusListener(event -> inputHasFocus = true);
-    dobField.addBlurListener(event -> inputHasFocus = false);
-    houseNameField.addFocusListener(event -> inputHasFocus = true);
-    houseNameField.addBlurListener(event -> inputHasFocus = false);
-    houseNumberField.addFocusListener(event -> inputHasFocus = true);
-    houseNumberField.addBlurListener(event -> inputHasFocus = false);
-    postcodeField.addFocusListener(event -> inputHasFocus = true);
-    postcodeField.addBlurListener(event -> inputHasFocus = false);
-    homePhoneField.addFocusListener(event -> inputHasFocus = true);
-    homePhoneField.addBlurListener(event -> inputHasFocus = false);
-    mobilePhoneField.addFocusListener(event -> inputHasFocus = true);
-    mobilePhoneField.addBlurListener(event -> inputHasFocus = false);
-    emailField.addFocusListener(event -> inputHasFocus = true);
-    emailField.addBlurListener(event -> inputHasFocus = false);
-  }
-
   private void setLoading(boolean active) {
     loadingIndicator.setVisible(active);
     submitButton.setEnabled(!active);
@@ -560,6 +578,32 @@ public class CustomerMenuPage extends VerticalLayout {
     return mobile.isEmpty() ? null : mobile;
   }
 
+  private LocalDate resolveDateOfBirth(boolean required) {
+    String value = dobField.getValue() != null ? dobField.getValue().trim() : "";
+
+    if (value.isEmpty()) {
+      if (required) {
+        showErrorMessage("Date of birth is required.");
+        dobField.focus();
+      }
+      return null;
+    }
+
+    if (!DOB_PATTERN.matcher(value).matches()) {
+      showErrorMessage("Date of birth must be in format YYYY-MM-DD.");
+      dobField.focus();
+      return null;
+    }
+
+    try {
+      return LocalDate.parse(value, DOB_FORMATTER);
+    } catch (DateTimeParseException ex) {
+      showErrorMessage("Invalid date. Please enter a valid date in YYYY-MM-DD format.");
+      dobField.focus();
+      return null;
+    }
+  }
+
   private String blankToNull(String value) {
     if (value == null) {
       return null;
@@ -573,9 +617,9 @@ public class CustomerMenuPage extends VerticalLayout {
   }
 
   private void registerKeyboardShortcuts() {
-    Shortcuts.addShortcutListener(this, event -> handleOptionShortcut(1), Key.of("1"));
-    Shortcuts.addShortcutListener(this, event -> handleOptionShortcut(2), Key.of("2"));
-    Shortcuts.addShortcutListener(this, event -> handleOptionShortcut(4), Key.of("4"));
+    registerShortcut(Key.of("1"), 1);
+    registerShortcut(Key.of("2"), 2);
+    registerShortcut(Key.of("4"), 4);
     Shortcuts.addShortcutListener(this, event -> clearForm(), Key.ESCAPE);
     Shortcuts.addShortcutListener(this, event -> {
       if (submitButton.isEnabled()) {
@@ -585,9 +629,6 @@ public class CustomerMenuPage extends VerticalLayout {
   }
 
   private void handleOptionShortcut(int option) {
-    if (inputHasFocus) {
-      return;
-    }
     selectOption(option);
   }
 
@@ -595,6 +636,13 @@ public class CustomerMenuPage extends VerticalLayout {
     if (optionGroup != null && optionGroup.isEnabled()) {
       optionGroup.setValue(option);
     }
+  }
+
+  private void registerShortcut(Key key, int option) {
+    Shortcuts.addShortcutListener(this, event -> handleOptionShortcut(option), key)
+        .withModifiers(KeyModifier.CONTROL);
+    Shortcuts.addShortcutListener(this, event -> handleOptionShortcut(option), key)
+        .withModifiers(KeyModifier.META);
   }
 
   private void handleSubmit() {
@@ -648,11 +696,6 @@ public class CustomerMenuPage extends VerticalLayout {
       lastNameField.focus();
       return;
     }
-    if (dobField.getValue() == null) {
-      showErrorMessage("Date of birth is required.");
-      dobField.focus();
-      return;
-    }
     if (houseNameField.getValue().trim().isEmpty()) {
       showErrorMessage("House name is required.");
       houseNameField.focus();
@@ -667,10 +710,15 @@ public class CustomerMenuPage extends VerticalLayout {
     setLoading(true);
 
     try {
+      LocalDate dateOfBirth = resolveDateOfBirth(true);
+      if (dateOfBirth == null) {
+        return;
+      }
+
       CreateCustomerRequest request = new CreateCustomerRequest();
       request.setFirstName(firstNameField.getValue().trim());
       request.setLastName(lastNameField.getValue().trim());
-      request.setDateOfBirth(dobField.getValue());
+      request.setDateOfBirth(dateOfBirth);
       request.setAddress(composeAddress());
       request.setCity(null);  // City/state not collected on SSC1 screen
       request.setState(null);
@@ -739,10 +787,15 @@ public class CustomerMenuPage extends VerticalLayout {
           return;
         }
 
+        LocalDate dateOfBirth = resolveDateOfBirth(true);
+        if (dateOfBirth == null) {
+          return;
+        }
+
         UpdateCustomerRequest request = new UpdateCustomerRequest();
         request.setFirstName(firstNameField.getValue().trim());
         request.setLastName(lastNameField.getValue().trim());
-        request.setDateOfBirth(dobField.getValue());
+        request.setDateOfBirth(dateOfBirth);
         request.setAddress(composeAddress());
         request.setCity(null);
         request.setState(null);
@@ -773,11 +826,9 @@ public class CustomerMenuPage extends VerticalLayout {
     firstNameField.setValue(valueOrEmpty(customer.getFirstName()));
     lastNameField.setValue(valueOrEmpty(customer.getLastName()));
 
-    if (customer.getDateOfBirth() != null) {
-      dobField.setValue(customer.getDateOfBirth());
-    } else {
-      dobField.clear();
-    }
+    dobField.setValue(customer.getDateOfBirth() != null
+        ? DOB_FORMATTER.format(customer.getDateOfBirth())
+        : "");
 
     String address = blankToNull(customer.getAddress());
     if (address != null) {
