@@ -3,7 +3,12 @@ package com.example.cicsgenapp.ui.views;
 import com.example.cicsgenapp.dto.CreateCustomerRequest;
 import com.example.cicsgenapp.dto.CustomerResponse;
 import com.example.cicsgenapp.dto.UpdateCustomerRequest;
+import com.example.cicsgenapp.exception.CustomerAlreadyExistsException;
+import com.example.cicsgenapp.exception.ResourceNotFoundException;
 import com.example.cicsgenapp.service.CustomerService;
+import com.example.cicsgenapp.ui.components.BreadcrumbNavigation;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -25,6 +30,8 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * CustomerMenuPage provides an SSC1-style unified customer management interface.
@@ -41,10 +48,11 @@ import java.util.UUID;
  * @author Development Team
  * @version 1.0.0 (Story 3.11 - SSC1 Customer Menu Unified Interface)
  */
-// TEMPORARILY DISABLED - Constructor injection issue with Vaadin routing
-// @Route(value = "customers", layout = com.example.cicsgenapp.ui.layouts.MainLayout.class)
-// @PageTitle("Customer Menu - CICS GenApp")
+@Route(value = "customers/menu", layout = com.example.cicsgenapp.ui.layouts.MainLayout.class)
+@PageTitle("Customer Menu - CICS GenApp")
 public class CustomerMenuPage extends VerticalLayout {
+
+  private static final Pattern HOUSE_NUMBER_PATTERN = Pattern.compile("^(\\d+)\\s+(.*)$");
 
   private final CustomerService customerService;
 
@@ -52,9 +60,11 @@ public class CustomerMenuPage extends VerticalLayout {
   private int selectedOption = 1;  // Default to Inquiry
   private UUID currentCustomerId;
   private FormState formState = FormState.INQUIRY;
+  private boolean inputHasFocus;
 
   // Menu section
   private RadioButtonGroup<Integer> optionGroup;
+  private Paragraph menuDescription;
 
   // Form section
   private H3 formTitle;
@@ -101,6 +111,13 @@ public class CustomerMenuPage extends VerticalLayout {
     setWidthFull();
     setHeightFull();
 
+    BreadcrumbNavigation breadcrumbs = new BreadcrumbNavigation();
+    breadcrumbs.setItems(
+        new BreadcrumbNavigation.Item("Dashboard", ""),
+        new BreadcrumbNavigation.Item("Customer Menu", null)
+    );
+    add(breadcrumbs);
+
     // Page title
     H1 title = new H1("SSC1 - General Insurance Customer Menu");
     title.addClassNames(LumoUtility.Margin.Top.NONE, LumoUtility.Margin.Bottom.MEDIUM);
@@ -125,6 +142,7 @@ public class CustomerMenuPage extends VerticalLayout {
 
     add(mainContent);
     setFlexGrow(1, mainContent);
+    registerKeyboardShortcuts();
   }
 
   private VerticalLayout createMenuSection() {
@@ -168,26 +186,32 @@ public class CustomerMenuPage extends VerticalLayout {
         LumoUtility.BorderRadius.MEDIUM,
         LumoUtility.Margin.Top.MEDIUM);
 
-    Paragraph description = new Paragraph();
-    description.addClassNames(LumoUtility.FontSize.SMALL);
-    updateMenuDescription(description);
+    menuDescription = new Paragraph();
+    menuDescription.addClassNames(LumoUtility.FontSize.SMALL);
+    updateMenuDescription();
 
-    descriptionBox.add(description);
+    descriptionBox.add(menuDescription);
     menu.add(descriptionBox);
 
     return menu;
   }
 
-  private void updateMenuDescription(Paragraph description) {
+  private void updateMenuDescription() {
+    if (menuDescription == null) {
+      return;
+    }
     switch (selectedOption) {
       case 1:
-        description.setText("Enter a customer number to look up and view customer details. All fields will be read-only.");
+        menuDescription.setText("Enter a customer number to look up and view customer details. All fields will be read-only.");
         break;
       case 2:
-        description.setText("Fill in the customer details below to create a new customer record.");
+        menuDescription.setText("Fill in the customer details below to create a new customer record.");
         break;
       case 4:
-        description.setText("Enter a customer number to load the record, then modify the details and save changes.");
+        menuDescription.setText("Enter a customer number to load the record, then modify the details and save changes.");
+        break;
+      default:
+        menuDescription.setText("");
         break;
     }
   }
@@ -224,13 +248,15 @@ public class CustomerMenuPage extends VerticalLayout {
         new FormLayout.ResponsiveStep("0", 1),  // 1 column on small screens
         new FormLayout.ResponsiveStep("768px", 2)  // 2 columns on larger screens
     );
-    formLayout.setColspan(emailField, 2);  // Email spans both columns
 
     // Customer identification section
     customerNumberField = new TextField("Customer Number");
-    customerNumberField.setPlaceholder("Enter 10-digit customer number");
-    customerNumberField.setMaxLength(10);
+    customerNumberField.setPlaceholder("Enter customer ID (UUID or legacy number)");
+    customerNumberField.setHelperText("Accepts generated customer ID (UUID format).");
+    customerNumberField.setMaxLength(36);
+    customerNumberField.setPattern("[0-9A-Fa-f-]{1,36}");
     customerNumberField.setRequired(true);
+    customerNumberField.setClearButtonVisible(true);
 
     firstNameField = new TextField("First Name");
     firstNameField.setPlaceholder("First name");
@@ -240,9 +266,8 @@ public class CustomerMenuPage extends VerticalLayout {
     lastNameField.setPlaceholder("Last name");
     lastNameField.setMaxLength(20);
 
-    formLayout.add(customerNumberField);
-    formLayout.add(firstNameField);
-    formLayout.add(lastNameField);
+    formLayout.add(customerNumberField, firstNameField, lastNameField);
+    formLayout.setColspan(customerNumberField, 2);
 
     // Personal details section
     dobField = new DatePicker("Date of Birth");
@@ -260,6 +285,7 @@ public class CustomerMenuPage extends VerticalLayout {
     houseNumberField.setPlaceholder("0000");
     houseNumberField.setMin(0);
     houseNumberField.setMax(9999);
+    houseNumberField.setStep(1);
 
     postcodeField = new TextField("Postcode");
     postcodeField.setPlaceholder("Postcode");
@@ -284,8 +310,10 @@ public class CustomerMenuPage extends VerticalLayout {
     formLayout.add(homePhoneField);
     formLayout.add(mobilePhoneField);
     formLayout.add(emailField);
+    formLayout.setColspan(emailField, 2);  // Email spans both columns
 
     form.add(formLayout);
+    registerFocusTracking();
 
     // Button bar
     HorizontalLayout buttonBar = new HorizontalLayout();
@@ -337,6 +365,9 @@ public class CustomerMenuPage extends VerticalLayout {
     // Clear form
     clearForm();
 
+    // Update description to match current option
+    updateMenuDescription();
+
     // Apply field state based on option
     switch (formState) {
       case INQUIRY -> applyInquiryState();
@@ -351,6 +382,7 @@ public class CustomerMenuPage extends VerticalLayout {
   private void applyInquiryState() {
     // Customer number: enabled for input
     customerNumberField.setReadOnly(false);
+    customerNumberField.setEnabled(true);
     customerNumberField.setRequired(true);
     customerNumberField.focus();
 
@@ -380,27 +412,36 @@ public class CustomerMenuPage extends VerticalLayout {
 
     lastNameField.setReadOnly(false);
     lastNameField.setRequired(true);
+    lastNameField.setEnabled(true);
 
     dobField.setReadOnly(false);
     dobField.setRequired(true);
+    dobField.setEnabled(true);
 
     houseNameField.setReadOnly(false);
     houseNameField.setRequired(true);
+    houseNameField.setEnabled(true);
 
     houseNumberField.setReadOnly(false);
     houseNumberField.setRequired(true);
+    houseNumberField.setEnabled(true);
 
     postcodeField.setReadOnly(false);
     postcodeField.setRequired(true);
+    postcodeField.setEnabled(true);
 
     homePhoneField.setReadOnly(false);
+    homePhoneField.setEnabled(true);
     mobilePhoneField.setReadOnly(false);
+    mobilePhoneField.setEnabled(true);
     emailField.setReadOnly(false);
+    emailField.setEnabled(true);
   }
 
   private void applyUpdateState() {
     // Customer number: enabled for lookup
     customerNumberField.setReadOnly(false);
+    customerNumberField.setEnabled(true);
     customerNumberField.setRequired(true);
     customerNumberField.focus();
 
@@ -410,26 +451,150 @@ public class CustomerMenuPage extends VerticalLayout {
 
   private void disableEditFields() {
     firstNameField.setReadOnly(true);
+    firstNameField.setEnabled(true);
     lastNameField.setReadOnly(true);
+    lastNameField.setEnabled(true);
     dobField.setReadOnly(true);
+    dobField.setEnabled(true);
     houseNameField.setReadOnly(true);
+    houseNameField.setEnabled(true);
     houseNumberField.setReadOnly(true);
+    houseNumberField.setEnabled(true);
     postcodeField.setReadOnly(true);
+    postcodeField.setEnabled(true);
     homePhoneField.setReadOnly(true);
+    homePhoneField.setEnabled(true);
     mobilePhoneField.setReadOnly(true);
+    mobilePhoneField.setEnabled(true);
     emailField.setReadOnly(true);
+    emailField.setEnabled(true);
   }
 
   private void enableEditFields() {
     firstNameField.setReadOnly(false);
+    firstNameField.setEnabled(true);
     lastNameField.setReadOnly(false);
+    lastNameField.setEnabled(true);
     dobField.setReadOnly(false);
+    dobField.setEnabled(true);
     houseNameField.setReadOnly(false);
+    houseNameField.setEnabled(true);
     houseNumberField.setReadOnly(false);
+    houseNumberField.setEnabled(true);
     postcodeField.setReadOnly(false);
+    postcodeField.setEnabled(true);
     homePhoneField.setReadOnly(false);
+    homePhoneField.setEnabled(true);
     mobilePhoneField.setReadOnly(false);
+    mobilePhoneField.setEnabled(true);
     emailField.setReadOnly(false);
+    emailField.setEnabled(true);
+  }
+
+  private void registerFocusTracking() {
+    customerNumberField.addFocusListener(event -> inputHasFocus = true);
+    customerNumberField.addBlurListener(event -> inputHasFocus = false);
+    firstNameField.addFocusListener(event -> inputHasFocus = true);
+    firstNameField.addBlurListener(event -> inputHasFocus = false);
+    lastNameField.addFocusListener(event -> inputHasFocus = true);
+    lastNameField.addBlurListener(event -> inputHasFocus = false);
+    dobField.addFocusListener(event -> inputHasFocus = true);
+    dobField.addBlurListener(event -> inputHasFocus = false);
+    houseNameField.addFocusListener(event -> inputHasFocus = true);
+    houseNameField.addBlurListener(event -> inputHasFocus = false);
+    houseNumberField.addFocusListener(event -> inputHasFocus = true);
+    houseNumberField.addBlurListener(event -> inputHasFocus = false);
+    postcodeField.addFocusListener(event -> inputHasFocus = true);
+    postcodeField.addBlurListener(event -> inputHasFocus = false);
+    homePhoneField.addFocusListener(event -> inputHasFocus = true);
+    homePhoneField.addBlurListener(event -> inputHasFocus = false);
+    mobilePhoneField.addFocusListener(event -> inputHasFocus = true);
+    mobilePhoneField.addBlurListener(event -> inputHasFocus = false);
+    emailField.addFocusListener(event -> inputHasFocus = true);
+    emailField.addBlurListener(event -> inputHasFocus = false);
+  }
+
+  private void setLoading(boolean active) {
+    loadingIndicator.setVisible(active);
+    submitButton.setEnabled(!active);
+    clearButton.setEnabled(!active);
+    if (optionGroup != null) {
+      optionGroup.setEnabled(!active);
+    }
+  }
+
+  private UUID resolveCustomerIdentifier(String rawValue) {
+    try {
+      return UUID.fromString(rawValue);
+    } catch (IllegalArgumentException ex) {
+      if (rawValue.matches("\\d+")) {
+        showErrorMessage("Legacy numeric customer numbers are not yet mapped. Please enter the generated customer ID shown on the detail pages.");
+      } else {
+        showErrorMessage("Invalid customer number format. Please enter a valid UUID (e.g., 550e8400-e29b-41d4-a716-446655440000).");
+      }
+      return null;
+    }
+  }
+
+  private String composeAddress() {
+    String houseName = houseNameField.getValue() != null ? houseNameField.getValue().trim() : "";
+    Double numberValue = houseNumberField.getValue();
+    String houseNumber = numberValue != null ? String.valueOf(numberValue.intValue()) : "";
+
+    if (!houseNumber.isEmpty() && !houseName.isEmpty()) {
+      return houseNumber + " " + houseName;
+    }
+    if (!houseNumber.isEmpty()) {
+      return houseNumber;
+    }
+    return houseName.isEmpty() ? null : houseName;
+  }
+
+  private String resolvePrimaryPhone() {
+    String home = homePhoneField.getValue() != null ? homePhoneField.getValue().trim() : "";
+    String mobile = mobilePhoneField.getValue() != null ? mobilePhoneField.getValue().trim() : "";
+
+    if (!home.isEmpty()) {
+      return home;
+    }
+    return mobile.isEmpty() ? null : mobile;
+  }
+
+  private String blankToNull(String value) {
+    if (value == null) {
+      return null;
+    }
+    String trimmed = value.trim();
+    return trimmed.isEmpty() ? null : trimmed;
+  }
+
+  private String valueOrEmpty(String value) {
+    return value == null ? "" : value;
+  }
+
+  private void registerKeyboardShortcuts() {
+    Shortcuts.addShortcutListener(this, event -> handleOptionShortcut(1), Key.of("1"));
+    Shortcuts.addShortcutListener(this, event -> handleOptionShortcut(2), Key.of("2"));
+    Shortcuts.addShortcutListener(this, event -> handleOptionShortcut(4), Key.of("4"));
+    Shortcuts.addShortcutListener(this, event -> clearForm(), Key.ESCAPE);
+    Shortcuts.addShortcutListener(this, event -> {
+      if (submitButton.isEnabled()) {
+        submitButton.click();
+      }
+    }, Key.ENTER);
+  }
+
+  private void handleOptionShortcut(int option) {
+    if (inputHasFocus) {
+      return;
+    }
+    selectOption(option);
+  }
+
+  private void selectOption(int option) {
+    if (optionGroup != null && optionGroup.isEnabled()) {
+      optionGroup.setValue(option);
+    }
   }
 
   private void handleSubmit() {
@@ -447,37 +612,27 @@ public class CustomerMenuPage extends VerticalLayout {
 
     if (customerNumber.isEmpty()) {
       showErrorMessage("Please enter a customer number.");
+      customerNumberField.focus();
       return;
     }
 
-    loadingIndicator.setVisible(true);
-    submitButton.setEnabled(false);
+    UUID customerId = resolveCustomerIdentifier(customerNumber);
+    if (customerId == null) {
+      return;
+    }
 
+    setLoading(true);
     try {
-      // Try to parse as UUID first, otherwise search by number
-      CustomerResponse customer = null;
-      try {
-        UUID customerId = UUID.fromString(customerNumber);
-        // API call would go here - for now, assume not found
-        // customer = customerService.getCustomer(customerId);
-      } catch (IllegalArgumentException e) {
-        // Not a valid UUID, show error
-        showErrorMessage("Invalid customer number format. Please enter a valid UUID or customer number.");
-        return;
-      }
-
-      if (customer != null) {
-        currentCustomerId = customer.getCustomerId();
-        populateFormFields(customer);
-        showSuccessMessage("Customer found successfully.");
-      } else {
-        showErrorMessage("Customer not found. Please verify the customer number.");
-      }
+      CustomerResponse customer = customerService.getCustomer(customerId);
+      currentCustomerId = customer.getCustomerId();
+      populateFormFields(customer);
+      showSuccessMessage("Customer found successfully.");
+    } catch (ResourceNotFoundException e) {
+      showErrorMessage("Customer not found. Please verify the customer number.");
     } catch (Exception e) {
       showErrorMessage("Error looking up customer: " + e.getMessage());
     } finally {
-      loadingIndicator.setVisible(false);
-      submitButton.setEnabled(true);
+      setLoading(false);
     }
   }
 
@@ -509,33 +664,31 @@ public class CustomerMenuPage extends VerticalLayout {
       return;
     }
 
-    loadingIndicator.setVisible(true);
-    submitButton.setEnabled(false);
+    setLoading(true);
 
     try {
-      // Build customer creation request (use CustomerResponse fields)
       CreateCustomerRequest request = new CreateCustomerRequest();
       request.setFirstName(firstNameField.getValue().trim());
       request.setLastName(lastNameField.getValue().trim());
       request.setDateOfBirth(dobField.getValue());
-      request.setAddress(houseNameField.getValue().trim());
-      request.setCity("");  // Not collected from form
-      request.setState("");  // Not collected from form
+      request.setAddress(composeAddress());
+      request.setCity(null);  // City/state not collected on SSC1 screen
+      request.setState(null);
       request.setZipCode(postcodeField.getValue().trim());
-      request.setPhone(homePhoneField.getValue().trim().isEmpty() ? mobilePhoneField.getValue().trim() : homePhoneField.getValue().trim());
-      request.setEmail(emailField.getValue().trim().isEmpty() ? null : emailField.getValue().trim());
+      request.setPhone(resolvePrimaryPhone());
+      request.setEmail(blankToNull(emailField.getValue()));
 
-      // Call API to create customer
       CustomerResponse created = customerService.createCustomer(request);
       currentCustomerId = created.getCustomerId();
       populateFormFields(created);
       showSuccessMessage("Customer created successfully. ID: " + created.getCustomerId());
       clearForm();
+    } catch (CustomerAlreadyExistsException e) {
+      showErrorMessage("A customer with this email already exists. Please use a different email address.");
     } catch (Exception e) {
       showErrorMessage("Error creating customer: " + e.getMessage());
     } finally {
-      loadingIndicator.setVisible(false);
-      submitButton.setEnabled(true);
+      setLoading(false);
     }
   }
 
@@ -549,90 +702,106 @@ public class CustomerMenuPage extends VerticalLayout {
 
     // Check if we're in the lookup phase or update phase
     if (currentCustomerId == null || firstNameField.isReadOnly()) {
-      // Phase 1: Look up customer
-      loadingIndicator.setVisible(true);
-      submitButton.setEnabled(false);
+      UUID customerId = resolveCustomerIdentifier(customerNumber);
+      if (customerId == null) {
+        return;
+      }
+
+      setLoading(true);
 
       try {
-        // Try to parse as UUID
-        CustomerResponse customer = null;
-        try {
-          UUID customerId = UUID.fromString(customerNumber);
-          // API call would go here
-          // customer = customerService.getCustomer(customerId);
-        } catch (IllegalArgumentException e) {
-          showErrorMessage("Invalid customer number format. Please enter a valid UUID or customer number.");
-          return;
-        }
-
-        if (customer != null) {
-          currentCustomerId = customer.getCustomerId();
-          populateFormFields(customer);
-          enableEditFields();
-          submitButton.setText("Save Changes");
-          showSuccessMessage("Customer loaded. You can now modify the details.");
-        } else {
-          showErrorMessage("Customer not found. Please verify the customer number.");
-        }
+        CustomerResponse customer = customerService.getCustomer(customerId);
+        currentCustomerId = customer.getCustomerId();
+        populateFormFields(customer);
+        enableEditFields();
+        submitButton.setText("Save Changes");
+        showSuccessMessage("Customer loaded. You can now modify the details.");
+      } catch (ResourceNotFoundException e) {
+        showErrorMessage("Customer not found. Please verify the customer number.");
       } catch (Exception e) {
         showErrorMessage("Error looking up customer: " + e.getMessage());
       } finally {
-        loadingIndicator.setVisible(false);
-        submitButton.setEnabled(true);
+        setLoading(false);
       }
     } else {
       // Phase 2: Update customer
-      loadingIndicator.setVisible(true);
-      submitButton.setEnabled(false);
+      setLoading(true);
 
       try {
-        // Validate required fields
         if (firstNameField.getValue().trim().isEmpty()) {
           showErrorMessage("First name is required.");
+          firstNameField.focus();
           return;
         }
         if (lastNameField.getValue().trim().isEmpty()) {
           showErrorMessage("Last name is required.");
+          lastNameField.focus();
           return;
         }
 
-        // Build updated customer request
         UpdateCustomerRequest request = new UpdateCustomerRequest();
         request.setFirstName(firstNameField.getValue().trim());
         request.setLastName(lastNameField.getValue().trim());
         request.setDateOfBirth(dobField.getValue());
-        request.setAddress(houseNameField.getValue().trim());
-        request.setCity("");  // Not collected from form
-        request.setState("");  // Not collected from form
+        request.setAddress(composeAddress());
+        request.setCity(null);
+        request.setState(null);
         request.setZipCode(postcodeField.getValue().trim());
-        request.setPhone(homePhoneField.getValue().trim().isEmpty() ? mobilePhoneField.getValue().trim() : homePhoneField.getValue().trim());
-        request.setEmail(emailField.getValue().trim().isEmpty() ? null : emailField.getValue().trim());
+        request.setPhone(resolvePrimaryPhone());
+        request.setEmail(blankToNull(emailField.getValue()));
 
-        // Call API to update customer
-        customerService.updateCustomer(currentCustomerId, request);
+        CustomerResponse updated = customerService.updateCustomer(currentCustomerId, request);
+        populateFormFields(updated);
         showSuccessMessage("Customer updated successfully.");
         disableEditFields();
         submitButton.setText("Update Customer");
+      } catch (CustomerAlreadyExistsException e) {
+        showErrorMessage("A customer with this email already exists. Please use a different email address.");
       } catch (Exception e) {
         showErrorMessage("Error updating customer: " + e.getMessage());
       } finally {
-        loadingIndicator.setVisible(false);
-        submitButton.setEnabled(true);
+        setLoading(false);
       }
     }
   }
 
   private void populateFormFields(CustomerResponse customer) {
-    customerNumberField.setValue(customer.getCustomerId().toString());
-    firstNameField.setValue(customer.getFirstName() != null ? customer.getFirstName() : "");
-    lastNameField.setValue(customer.getLastName() != null ? customer.getLastName() : "");
-    dobField.setValue(customer.getDateOfBirth());
-    houseNameField.setValue(customer.getAddress() != null ? customer.getAddress() : "");
-    postcodeField.setValue(customer.getZipCode() != null ? customer.getZipCode() : "");
-    homePhoneField.setValue(customer.getPhone() != null ? customer.getPhone() : "");
-    mobilePhoneField.setValue("");  // Not provided by CustomerResponse
-    emailField.setValue(customer.getEmail() != null ? customer.getEmail() : "");
-    houseNumberField.setValue(null);  // Not provided by CustomerResponse
+    if (customer.getCustomerId() != null) {
+      customerNumberField.setValue(customer.getCustomerId().toString());
+    }
+
+    firstNameField.setValue(valueOrEmpty(customer.getFirstName()));
+    lastNameField.setValue(valueOrEmpty(customer.getLastName()));
+
+    if (customer.getDateOfBirth() != null) {
+      dobField.setValue(customer.getDateOfBirth());
+    } else {
+      dobField.clear();
+    }
+
+    String address = blankToNull(customer.getAddress());
+    if (address != null) {
+      Matcher matcher = HOUSE_NUMBER_PATTERN.matcher(address);
+      if (matcher.matches()) {
+        try {
+          houseNumberField.setValue(Double.valueOf(matcher.group(1)));
+        } catch (NumberFormatException ex) {
+          houseNumberField.clear();
+        }
+        houseNameField.setValue(matcher.group(2));
+      } else {
+        houseNumberField.clear();
+        houseNameField.setValue(address);
+      }
+    } else {
+      houseNumberField.clear();
+      houseNameField.clear();
+    }
+
+    postcodeField.setValue(valueOrEmpty(customer.getZipCode()));
+    homePhoneField.setValue(valueOrEmpty(customer.getPhone()));
+    mobilePhoneField.clear();  // Not provided separately
+    emailField.setValue(valueOrEmpty(customer.getEmail()));
   }
 
   private void clearForm() {
@@ -655,6 +824,14 @@ public class CustomerMenuPage extends VerticalLayout {
       case INQUIRY -> applyInquiryState();
       case ADD -> applyAddState();
       case UPDATE -> applyUpdateState();
+    }
+
+    switch (formState) {
+      case INQUIRY -> submitButton.setText("Look Up");
+      case ADD -> submitButton.setText("Create Customer");
+      case UPDATE -> submitButton.setText("Update Customer");
+      default -> {
+      }
     }
   }
 

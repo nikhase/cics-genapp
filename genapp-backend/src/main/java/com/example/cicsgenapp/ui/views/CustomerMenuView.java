@@ -12,17 +12,16 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import com.example.cicsgenapp.ui.components.BreadcrumbNavigation;
 
 /**
- * CustomerMenuView is the main menu for customer operations (analogous to SSC1 in the COBOL system).
- * Provides quick access to customer management features.
+ * CustomerMenuView is the legacy button-based navigation page retained temporarily.
  *
- * <p>Route: /customers/menu
+ * <p>Route: /customers/menu/legacy
  * Provides menu buttons for:
  * - View Customer List
  * - Search Customer
  * - Create New Customer
  */
-@Route(value = "/customers/menu", layout = com.example.cicsgenapp.ui.layouts.MainLayout.class)
-@PageTitle("Customer Menu - CICS GenApp")
+@Route(value = "/customers/menu/legacy", layout = com.example.cicsgenapp.ui.layouts.MainLayout.class)
+@PageTitle("Customer Menu (Legacy) - CICS GenApp")
 public class CustomerMenuView extends VerticalLayout {
 
     /**
