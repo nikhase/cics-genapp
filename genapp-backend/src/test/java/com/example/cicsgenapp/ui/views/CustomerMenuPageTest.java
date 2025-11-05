@@ -28,6 +28,8 @@ class CustomerMenuPageTest {
   private UI ui;
   private CustomerMenuPage page;
 
+  private CustomerResponse lookupResponse;
+
   @BeforeEach
   void setUp() {
     ui = new UI();
@@ -110,6 +112,21 @@ class CustomerMenuPageTest {
     assertThat(options.getValue()).isEqualTo(2);
   }
 
+  @Test
+  void enterLookupUsesLatestCustomerNumber() throws Exception {
+    CustomerResponse sample = new CustomerResponse();
+    UUID id = UUID.fromString("f47ac10b-58cc-4372-a567-0e02b2c3d482");
+    sample.setCustomerId(id);
+    customerService.setLookupResponse(sample);
+
+    getField("customerNumberField", TextField.class)
+        .setValue("f47ac10b-58cc-4372-a567-0e02b2c3d482");
+
+    invokeHandleSubmit();
+
+    assertThat(customerService.getLastLookupId()).isEqualTo(id);
+  }
+
   private void setOption(int option) throws NoSuchFieldException, IllegalAccessException {
     RadioButtonGroup<Integer> options = getField("optionGroup", RadioButtonGroup.class);
     options.setValue(option);
@@ -130,10 +147,19 @@ class CustomerMenuPageTest {
     method.invoke(page, option);
   }
 
+  private void invokeHandleSubmit()
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    Method method = CustomerMenuPage.class.getDeclaredMethod("handleSubmit");
+    method.setAccessible(true);
+    method.invoke(page);
+  }
+
   private static class RecordingCustomerService extends CustomerService {
 
     private CreateCustomerRequest lastCreateRequest;
     private CustomerResponse createResponse;
+    private UUID lastLookupId;
+    private CustomerResponse lookupResponse;
 
     RecordingCustomerService() {
       super(null, null);
@@ -145,12 +171,26 @@ class CustomerMenuPageTest {
       return createResponse;
     }
 
+    @Override
+    public CustomerResponse getCustomer(UUID customerId) {
+      this.lastLookupId = customerId;
+      return lookupResponse;
+    }
+
     CreateCustomerRequest getLastCreateRequest() {
       return lastCreateRequest;
     }
 
     void setCreateResponse(CustomerResponse response) {
       this.createResponse = response;
+    }
+
+    void setLookupResponse(CustomerResponse response) {
+      this.lookupResponse = response;
+    }
+
+    UUID getLastLookupId() {
+      return lastLookupId;
     }
   }
 }

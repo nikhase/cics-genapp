@@ -7,7 +7,6 @@ import com.example.cicsgenapp.exception.CustomerAlreadyExistsException;
 import com.example.cicsgenapp.exception.ResourceNotFoundException;
 import com.example.cicsgenapp.service.CustomerService;
 import com.example.cicsgenapp.ui.components.BreadcrumbNavigation;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.Shortcuts;
@@ -28,6 +27,7 @@ import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
@@ -296,6 +296,7 @@ public class CustomerMenuPage extends VerticalLayout {
     customerNumberField.setPattern("[0-9A-Fa-f-]{1,36}");
     customerNumberField.setRequired(true);
     customerNumberField.setClearButtonVisible(true);
+    customerNumberField.setValueChangeMode(ValueChangeMode.EAGER);
 
     firstNameField = new TextField("First Name");
     firstNameField.setPlaceholder("First name");
